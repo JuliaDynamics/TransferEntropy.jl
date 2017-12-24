@@ -1,6 +1,6 @@
 """
     marginaldists(unique_nonempty_bins::Array{Int, 2},
-                  densities::Vector{Float64})
+                  invmeasure::Vector{Float64})
 
 Compute margin distributions for a triangulation with an associated invariant
 measure (`invmeasure`).
@@ -15,7 +15,7 @@ with the nonempty bins.
 
 """
 function marginaldists(unique_nonempty_bins::Array{Int, 2},
-                       densities::Vector{Float64})
+                       invmeasure::Vector{Float64})
     dim = size(unique_nonempty_bins, 2)
 
     X2s = unique_nonempty_bins[:, 2] # Vector{Float64}
@@ -29,11 +29,11 @@ function marginaldists(unique_nonempty_bins::Array{Int, 2},
     JX1X2 = indexin_rows(X1X2s, unique_X1X2s)
     JX2X3 = indexin_rows(X2X3s, unique_X2X3s)
 
-    # X2 
+    # X2
     PX2 = zeros(Float64, size(unique_X2s, 1))
     for i = 1:size(unique_X2s, 1)
         inds = find(JX2 .== i)
-        PX2[i] = sum(densities[inds])
+        PX2[i] = sum(invmeasure[inds])
     end
 
     Px2 = zeros(Float64, size(X2s, 1))
@@ -45,7 +45,7 @@ function marginaldists(unique_nonempty_bins::Array{Int, 2},
     PX1X2 = zeros(Float64, size(unique_X1X2s, 1))
     for i = 1:size(unique_X1X2s, 1)
         inds = find(JX1X2 .== i)
-        PX1X2[i] = sum(densities[inds])
+        PX1X2[i] = sum(invmeasure[inds])
     end
 
     Px1x2 = zeros(Float64, size(X1X2s, 1))
@@ -57,7 +57,7 @@ function marginaldists(unique_nonempty_bins::Array{Int, 2},
     PX2X3 = zeros(Float64, size(unique_X2X3s, 1))
     for i = 1:size(unique_X2X3s, 1)
         inds = find(JX2X3 .== i)
-        PX2X3[i] = sum(densities[inds])
+        PX2X3[i] = sum(invmeasure[inds])
     end
 
     Px2x3 = zeros(Float64, size(X2X3s, 1))
