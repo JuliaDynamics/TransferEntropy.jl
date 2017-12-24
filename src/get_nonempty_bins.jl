@@ -33,9 +33,9 @@ function get_nonempty_bins(centroids::Array{Float64, 2},
     # Each row contains the indices
     nonempty_bins = zeros(Int, n_simplices, dim)
 
-    # Initialise column vector holding the invariant densities of the boxes
+    # Initialise column vector holding the invariant invmeasure of the boxes
     # corresponding to rows in 'joint'.
-    densities = zeros(Float64, n_simplices)
+    invmeasure = zeros(Float64, n_simplices)
 
     # For each simplex, find the index of the bin its centroid lies in for each
     # of the dimensions. For this, we need to know where to locate the bins.
@@ -44,7 +44,7 @@ function get_nonempty_bins(centroids::Array{Float64, 2},
     ranges = [(endvals[i] - startvals[i]) for i in 1:dim]
 
     for i = 1:n_simplices
-        densities[i] = invariantdist[i]
+        invmeasure[i] = invariantdist[i]
         for j = 1:dim
             stepsize = ranges[j] / δ[j]
             pos_along_range = centroids[i, j] - startvals[j]
@@ -57,5 +57,5 @@ function get_nonempty_bins(centroids::Array{Float64, 2},
         end
     end
 
-    return nonempty_bins, densities
+    return nonempty_bins, invmeasure
 end
