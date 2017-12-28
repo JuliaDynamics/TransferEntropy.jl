@@ -23,6 +23,13 @@ function get_nonempty_bins(centroids::Array{Float64, 2},
                     invariantdist::Array{Float64, 1},
                     δ::Vector{Int})
 
+    # If a centroid has zero measure associated with it, don't consider it.
+    # Do this by finding indices of centroids (row indices in the centroids
+    # array) of simplices with nonzero measure.
+    nonzeromeasure_inds = find(invariantdist .> 0)
+    centroids = centroids[nonzeromeasure_inds, :]
+    invariantdist = invariantdist[nonzeromeasure_inds]
+
     n_simplices = size(centroids, 1)
     dim = size(centroids, 2)
 
@@ -56,6 +63,5 @@ function get_nonempty_bins(centroids::Array{Float64, 2},
             end
         end
     end
-
     return nonempty_bins, invmeasure
 end

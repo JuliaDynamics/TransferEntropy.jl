@@ -15,7 +15,7 @@ with the nonempty bins.
 
 """
 function marginaldists(unique_nonempty_bins::Array{Int, 2},
-                       invmeasure::Vector{Float64})
+                       invmeasure::Array{Float64, 1})
     dim = size(unique_nonempty_bins, 2)
 
     X2s = unique_nonempty_bins[:, 2] # Vector{Float64}

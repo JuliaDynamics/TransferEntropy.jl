@@ -1,11 +1,15 @@
 """
-Compute transfer entropy from pre-provided joint and marginal distributions.
-"""
-function te_from_triangulation(centroids::Array{Int, 2},
-                               invmeasure::invmeasure::Vector{Float64})
+    te_from_triangulation(centroids::Array{Int, 2}, invmeasure::Vector{Float64})
 
-    # Find non empty bins.
-    nonempty_bins, invmeasure = get_nonempty_bins(centroids,
+Compute transfer entropy from pre-provided joint and marginal distributions.
+`n` is the number of equally sized rectangular bins to use.
+"""
+function te_from_triangulation(centroids::Array{Float64, 2},
+                               invariantdistribution::Array{Float64, 1},
+                               n::Int)
+
+    # Find non empty bins and their measure
+    nonempty_bins, measure = get_nonempty_bins(centroids,
                                                 invariantdistribution,
                                                 [n, n, n])
 
@@ -13,21 +17,17 @@ function te_from_triangulation(centroids::Array{Int, 2},
     joint = jointdist(nonempty_bins, measure)
 
     # Compute marginal distributions.
-    Py, Pxy, Pxz = marginaldists(unique(nonempty_bins, 1), measure)
+    Py, Pxy, Pyz = marginaldists(unique(nonempty_bins, 1), measure)
 
     # Initialise transfer entropy to 0. Because the measure of the bins
     # are guaranteed to be nonnegative, transfer entropy is also guaranteed
     # to be nonnegative.
-    TE = 0
+    te = 0.0
 
     # Compute transfer entropy.
-    for i = 1:size(unique(nonempty_bins, 1), 1)
-        Pxyz = joint[i]
-        Py = Py[i]
-        Pxy = Pxy[i]
-        Pyz = Pxz[i]
-        TE = TE + Pxyz * log(Pxyz * Py / (Pyz * Pxy))
+    for i = 1:length(joint)
+        te += joint[i] * log(joint[i] * Py[i] / (Pyz[i] * Pxy[i]))
     end
 
-    return TE
+    return te
 end
