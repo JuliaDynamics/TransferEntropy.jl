@@ -6,8 +6,10 @@ include("joint.jl")
 include("marginal.jl")
 include("te_from_triangulation.jl")
 
-export indexin_rows, get_nonempty_bins,
-        marginaldists, jointdist,
+export indexin_rows,
+        get_nonempty_bins,
+        marginaldists,
+        jointdist,
         te_from_triangulation
 
 end # module
