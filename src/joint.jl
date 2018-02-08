@@ -16,7 +16,7 @@ the nonempty bins.
 function jointdist(nonempty_bins::Array{Int, 2}, invmeasure::Array{Float64, 1})
 
     unique_bins = unique(nonempty_bins, 1)
-    Pjoint = Array(Float64, size(unique_bins, 1))
+    Pjoint = Array{Float64}(size(unique_bins, 1))
     Jjoint = indexin_rows(nonempty_bins, unique_bins)
 
     for i = 1:size(unique_bins, 1)
