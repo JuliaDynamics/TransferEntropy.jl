@@ -2,8 +2,6 @@ using Distributions
 using InvariantDistribution
 using SimplexSplitting
 using TransferEntropy
-using PlotlyJS
-
 
 function te_binsizes_ex(binsizes; npts::Int = 100, covariance = 0.4)
     # Create an uncorrelated source and target
@@ -25,7 +23,8 @@ function te_binsizes_ex(binsizes; npts::Int = 100, covariance = 0.4)
     println("Triangulating embedding ...")
     t = SimplexSplitting.triang_from_embedding(Embedding(e))
     println("Triangulating being splitted ...")
-    SimplexSplitting.refine_variable_k!(t, mean(t.radii))
+    SimplexSplitting.refine_variable_k!(t, (maximum(t.radii) - mean(t.radii))/2)
+    
     println("Markov matrix computation ...")
     M = mm_sparse(t)
 
