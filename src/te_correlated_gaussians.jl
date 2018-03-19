@@ -32,7 +32,7 @@ function te_correlated_gaussians(;
     n_pts::Int = 100,
     covariance = 0.4,
     parallel = true,
-    sparse = true)
+    sparse = false)
 
     # Gaussian embedding
     embedding = InvariantDistribution.invariant_gaussian_embedding(
@@ -43,18 +43,20 @@ function te_correlated_gaussians(;
 
     t = SimplexSplitting.triang_from_embedding(SimplexSplitting.Embedding(embedding))
 
-    println("Triangulating embedding that initally has ",
+    print("Triangulating embedding that initally has ",
             size(t.simplex_inds, 1), " simplices...")
     #SimplexSplitting.refine_variable_k!(t, maximum(t.radii) -
     #                                   (maximum(t.radii)- mean(t.radii))/2)
-    println("The final number of simplices is", size(t.simplex_inds))
+    println(" and the final number of simplices after splitting is ", size(t.simplex_inds, 1))
     println("Markov matrix computation ...")
-    if parallel & sparse
+    if parallel & !sparse
         M = mm_p(t)
-    elseif parallel & !sparse
+    elseif parallel & sparse
         M = Array(mm_sparse_parallel(t))
-    else
+    elseif !parallel & sparse
         M = mm_sparse(t)
+    elseif !parallel & !sparse
+        M = markovmatrix(t)
     end
 
     println("Computing invariant distribution ...")
@@ -84,7 +86,7 @@ function te_correlated_gaussians(;
         for i = 1:length(joint)
             te += joint[i] * log(joint[i] * Py[i] / (Pyz[i] * Pxy[i]))
         end
-        
+
         return te
     end
 
@@ -92,7 +94,94 @@ function te_correlated_gaussians(;
     TE = pmap(te_local, Progress(length(binsizes)), binsizes)
 
     print("Finished transfer entropy computation.")
-    return TEresult(embedding, lag, t, M, invmeasure, inds_nonzero_simplices, binsizes, TE)
+    return embedding, lag, t, M, invmeasure, inds_nonzero_simplices, binsizes, TE
+end
+
+function te_correlated_gaussians_with_uncertainty(;
+    binsizes = vcat(1:1:10, 12:2:200, 205:5:750, 750:10:1000, 1025:25:1500, 1550:50:2000,
+                    2100:100:3000, 3200:200:5000),
+    lag::Int = 1,
+    n_pts::Int = 100,
+    n_repetitions::Int = 3,
+    covariance = 0.4,
+    parallel = true,
+    sparse = false)
+
+    # Gaussian embedding
+    embedding = InvariantDistribution.invariant_gaussian_embedding(
+        npts = n_pts,
+        covariance = covariance,
+        tau = 1
+    )
+
+    t = SimplexSplitting.triang_from_embedding(SimplexSplitting.Embedding(embedding))
+
+    print("Triangulating embedding that initally has ",
+            size(t.simplex_inds, 1), " simplices...")
+    #SimplexSplitting.refine_variable_k!(t, maximum(t.radii) -
+    #                                   (maximum(t.radii)- mean(t.radii))/2)
+    println(" and the final number of simplices after splitting is ", size(t.simplex_inds, 1))
+    println("Markov matrix computation ...")
+    if parallel & !sparse
+        M = mm_p(t)
+    elseif parallel & sparse
+        M = Array(mm_sparse_parallel(t))
+    elseif !parallel & sparse
+        M = mm_sparse(t)
+    elseif !parallel & !sparse
+        M = markovmatrix(t)
+    end
+
+    println("Computing invariant distribution ...")
+    invmeasure, inds_nonzero_simplices = invariantdist(M)
+
+
+    """ Function to compute TE """
+    function te_local(n::Int)
+
+        # Initialise transfer entropy estimates to 0. Because the measure of the
+        # bins are guaranteed to be nonnegative, transfer entropy is also guaranteed
+        # to be nonnegative.
+        TE_estimates_this_binsize = zeros(Float64, n_repetitions)
+
+        for i = 1:n_repetitions
+            # Represent each simplex as a single point. We can do this because
+            # within the region of the state space occupied by each simplex, points
+            # are indistinguishable from the point of view of the invariant measure.
+            # However, when we superimpose the grid, the position of the points
+            # we choose will influence the resulting marginal distributions.
+            # Therefore, we have to repeat this procedure several times to get an
+            # accurate transfer entropy estimate.
+            #point_representatives = generate_point_representives(t)
+
+            # Find non-empty bins and compute their measure.
+            nonempty_bins, measure = get_nonempty_bins(
+                #t.centroids[invariantdistribution[2], :], # if only centroids are used
+                generate_point_representives(t)[inds_nonzero_simplices, :],
+                invmeasure[inds_nonzero_simplices],
+                [n, n, n]
+            )
+
+            # Compute the joint distribution.
+            Pjoint = jointdist(nonempty_bins, measure)
+
+            # Compute marginal distributions.
+            Py, Pxy, Pyz = marginaldists(unique(nonempty_bins, 1), measure)
+
+            # Compute the transfer entropy.
+            for j = 1:length(Pjoint)
+                TE_estimates_this_binsize[i] += Pjoint[j] * log( (Pjoint[j] * Py[j]) / (Pyz[j] * Pxy[j]) )
+            end
+        end
+
+        return TE_estimates_this_binsize
+    end
+
+    println("Transfer entropy ...")
+    TE = pmap(te_local, Progress(length(binsizes)), binsizes)
+
+    print("Finished transfer entropy computation.")
+    return embedding, lag, t, M, invmeasure, inds_nonzero_simplices, binsizes, TE
 end
 
 

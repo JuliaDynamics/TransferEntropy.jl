@@ -5,7 +5,7 @@ Compute transfer entropy from pre-provided joint and marginal distributions.
 `n` is the number of equally sized rectangular bins to use.
 """
 function te_from_triangulation(centroids::Array{Float64, 2},
-                               invariantdistribution::Array{Float64, 1})
+                               invariantdistribution::Array{Float64, 1}, n::Int)
 
     # Find non empty bins and their measure
     nonempty_bins, measure = get_nonempty_bins(centroids,

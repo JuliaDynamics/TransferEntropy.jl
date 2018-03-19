@@ -22,10 +22,10 @@ The `sparse` argument indicates whether the Markov matrix computation, which is 
 function te_from_timeseries(
     source::Vector{Float64},
     target::Vector{Float64};
-    binsizes = vcat(1:1:10, 12:2:200, 205:5:750, 750:10:1000, 1025:25:1500, 1550:50:2000, 2100:100:3000, 3200:200:5000),
+    binsizes = vcat(1:1:10, 12:2:200, 205:5:500, 510:10:1000, 1025:25:1500, 1550:50:2000, 2100:100:3000, 3200:200:5000),
     lag::Int = 1,
     parallel = true,
-    sparse = true)
+    sparse = false)
 
     # Embed the data given the lag
     embedding = hcat(source[1:end-lag], target[1:end-lag], target[1+lag:end])
@@ -35,14 +35,16 @@ function te_from_timeseries(
 
     println("Triangulating embedding that initally has ", size(t.simplex_inds, 1), " simplices...")
     #SimplexSplitting.refine_variable_k!(t, maximum(t.radii) - (maximum(t.radii)- mean(t.radii))/2)
-    println("The final number of simplices is", size(t.simplex_inds))
+    println("The final number of simplices is", size(t.simplex_inds, 1))
     println("Markov matrix computation ...")
-    if parallel & sparse
+    if parallel & !sparse
         M = mm_p(t)
-    elseif parallel & !sparse
+    elseif parallel & sparse
         M = Array(mm_sparse_parallel(t))
-    else
+    elseif !parallel & sparse
         M = mm_sparse(t)
+    elseif !parallel & !sparse
+        M = markovmatrix(t)
     end
 
     println("Computing invariant distribution ...")
@@ -78,12 +80,14 @@ function te_from_timeseries_parallel(; binsizes = vcat(1:1:10, 12:2:200, 205:5:7
     #SimplexSplitting.refine_variable_k!(t, maximum(t.radii) - (maximum(t.radii)- mean(t.radii))/2)
     println("The final number of simplices is", size(t.simplex_inds))
     println("Markov matrix computation ...")
-    if parallel & sparse
+    if parallel & !sparse
         M = mm_p(t)
-    elseif parallel & !sparse
+    elseif parallel & sparse
         M = Array(mm_sparse_parallel(t))
-    else
+    elseif !parallel & sparse
         M = mm_sparse(t)
+    elseif !parallel & !sparse
+        M = markovmatrix(t)
     end
 
     println("Computing invariant distribution ...")
@@ -121,6 +125,7 @@ function te_from_timeseries_parallel(; binsizes = vcat(1:1:10, 12:2:200, 205:5:7
     TE = pmap(te_local, Progress(length(binsizes)), binsizes)
 
     print("Finished transfer entropy computation.")
+
     return TEresult(e, lag, t, M, invmeasure, inds_nonzero_simplices, binsizes, TE)
 end
 

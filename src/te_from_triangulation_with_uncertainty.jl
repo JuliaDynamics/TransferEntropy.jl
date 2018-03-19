@@ -74,7 +74,6 @@ function te_from_triangulation_withuncertainty(
         n_repetitions::Int
     )
 
-
     # Initialise transfer entropy estimates to 0. Because the measure of the
     # bins are guaranteed to be nonnegative, transfer entropy is also guaranteed
     # to be nonnegative.
@@ -92,9 +91,9 @@ function te_from_triangulation_withuncertainty(
 
         # Find non-empty bins and compute their measure.
         nonempty_bins, measure = get_nonempty_bins(
-            #t.centroids[invariantdistribution[2], :],
+            #t.centroids[invariantdistribution[2], :], # if only centroids are used
             generate_point_representives(t)[invariantdistribution[2], :],
-            invariantdistribution[1],
+            invariantdistribution[1][invariantdistribution[2]],
             [n, n, n]
         )
 
@@ -108,8 +107,87 @@ function te_from_triangulation_withuncertainty(
         for j = 1:length(Pjoint)
             TE_estimates_this_binsize[i] += Pjoint[j] * log( (Pjoint[j] * Py[j]) / (Pyz[j] * Pxy[j]) )
         end
-
     end
 
     return TE_estimates_this_binsize
+end
+
+
+function te_from_ts(source, target;
+        binsizes = vcat(1:2:20, 25:5:200, 200:10:500, 525:25:1000, 1100:1000:1500, 1750:250:3000),
+        n_repetitions::Int = 10,
+        lag::Int = 1,
+        parallel = true,
+        sparse = false)
+
+    # Embed the data given the lag
+    embedding = hcat(source[1:end-lag], target[1:end-lag], target[1+lag:end])
+    embedding = InvariantDistribution.invariantize_embedding(embedding, max_point_remove = 10)
+    t = triang_from_embedding(Embedding(embedding))
+    # Gaussian embedding
+
+    println("Triangulating embedding that initally has ", size(t.simplex_inds, 1), " simplices...")
+    #SimplexSplitting.refine_variable_k!(t, maximum(t.radii) - (maximum(t.radii)- mean(t.radii))/2)
+    println("The final number of simplices is", size(t.simplex_inds, 1))
+    println("Markov matrix computation ...")
+    if parallel & !sparse
+        M = mm_p(t)
+    elseif parallel & sparse
+        M = Array(mm_sparse_parallel(t))
+    elseif !parallel & sparse
+        M = mm_sparse(t)
+    elseif !parallel & !sparse
+        M = markovmatrix(t)
+    end
+
+    println("Computing invariant distribution ...")
+    invmeasure, inds_nonzero_simplices = invariantdist(M)
+
+    #te_from_triangulation_withuncertainty(t, invdist, 100, 10)
+
+    function local_te_from_triang_withuncertainty(n::Int)
+
+
+        # Initialise transfer entropy estimates to 0. Because the measure of the
+        # bins are guaranteed to be nonnegative, transfer entropy is also guaranteed
+        # to be nonnegative.
+        TE_estimates_this_binsize = zeros(Float64, n_repetitions)
+
+        for i = 1:n_repetitions
+            # Represent each simplex as a single point. We can do this because
+            # within the region of the state space occupied by each simplex, points
+            # are indistinguishable from the point of view of the invariant measure.
+            # However, when we superimpose the grid, the position of the points
+            # we choose will influence the resulting marginal distributions.
+            # Therefore, we have to repeat this procedure several times to get an
+            # accurate transfer entropy estimate.
+            #point_representatives = generate_point_representives(t)
+
+            # Find non-empty bins and compute their measure.
+            nonempty_bins, measure = get_nonempty_bins(
+                #t.centroids[invariantdistribution[2], :],
+                generate_point_representives(t)[inds_nonzero_simplices, :],
+                invmeasure[inds_nonzero_simplices],
+                [n, n, n]
+            )
+
+            # Compute the joint distribution.
+            Pjoint = jointdist(nonempty_bins, measure)
+
+            # Compute marginal distributions.
+            Py, Pxy, Pyz = marginaldists(unique(nonempty_bins, 1), measure)
+
+            # Compute the transfer entropy.
+            for j = 1:length(Pjoint)
+                TE_estimates_this_binsize[i] += Pjoint[j] * log( (Pjoint[j] * Py[j]) / (Pyz[j] * Pxy[j]) )
+            end
+
+        end
+
+        return TE_estimates_this_binsize
+    end
+    TE = pmap(local_te_from_triang_withuncertainty, Progress(length(binsizes)), binsizes)
+
+    return TEresult(embedding, lag, t, M, invmeasure, inds_nonzero_simplices, binsizes, hcat(TE...).')
+
 end
