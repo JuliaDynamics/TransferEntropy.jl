@@ -2,5 +2,5 @@ using TransferEntropy
 using Base.Test
 
 # write your own tests here
-@test 1 < 2
-include("random_centroids.jl")
+#include("random_centroids.jl")
+include("test_te_correlated_gaussians.jl")

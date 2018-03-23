@@ -11,21 +11,16 @@ function te_over_binsizes(binsizes; npts::Int = 1000, covariance = 0.4)
     source = rand(dist, npts, 1)
     dest = covariance .* source[1:end] .+ (1.0 - covariance) .* rand(dist, npts, 1)
 
-    embedding = hcat(source[1:end-1], source[2:end], dest[2:end])
-
-    if invariantset(embedding)
-      #println("The embedding forms an invariant set. Continuing.")
-    else
-      #println("The embedding does not form an invariant set. Quitting.")
-      return zeros(length(binsizes))
-    end
+    embedding = embed_correlated_gaussians(;npts = npts, covariance = covariance)
 
     # Embed using all points except the last (to allow projection of all vertices
     # in the triangulation).
-    points, simplex_inds = triangulate(embedding[1:end-1, :])
-    image_points = embedding[2:end, :]
+    t = SimplexSplitting.triang_from_embedding(embedding)
 
-    P = markovmatrix(points, image_points, simplex_inds)
+    #points, simplex_inds = triangulate(embedding[1:end-1, :])
+    #image_points = embedding[2:end, :]
+
+    P = markovmatrix(view(t.points, :, :), view(t.impoints, :, :), view(t.simplex_inds, :, :))
 
     invmeasure, inds_nonzero_simplices = invariantdist(P)
     #centroids = rand(dist, npts, 3)
@@ -38,7 +33,7 @@ function te_over_binsizes(binsizes; npts::Int = 1000, covariance = 0.4)
     count = 0
     for binsize in binsizes
         count +=1
-        te = te_from_triangulation(embedding, invmeasure, binsize)
+        te = te_from_triangulation(t.centroids, invmeasure, binsize)
         TE[count] = te
     end
     return TE
@@ -57,8 +52,8 @@ end
 ##################################################################
 binsizes = 1:1:150
 covars = 0.3
-reps = 30
-npts = 1000
+reps = 1
+npts = 50
 TEs = zeros(Float64, length(binsizes), reps, length(covars))
 
 
@@ -70,14 +65,6 @@ for j = 1:length(covars)
         te = te_over_binsizes(binsizes; npts = npts, covariance = covar)
         TEs[1:end, i, j] = te
     end
-
-    #@show size(TEs[1:end, 1:end, j])
-    #@show TEs[1:end, 1:end, j]
-    #@show mean(TEs[length(binsizes)-5:end, 1:end, j], 1)
-    #println("")
-    #mean_this_covar = mean(TEs[1:end, 1:end, j])
-
-    #println(" Expected TE: ", log(1/(1 - covar^2)), " ,", log(1/(1 - covar^2)/log(2)), " Computed TE: ", mean_this_covar)
 end
 ####################
 # PLOT THE TE CURVES
