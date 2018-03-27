@@ -113,16 +113,21 @@ function te_from_triangulation_withuncertainty(
 end
 
 
+"""
+Compute transfer entropy between a `source` and a target time series.
+"""
 function te_from_ts(source, target;
-        binsizes = vcat(1:2:20, 25:5:200, 200:10:500, 525:25:1000, 1100:1000:1500, 1750:250:3000),
+        binsizes = vcat(1:2:20, 25:5:200, 200:10:500),
         n_repetitions::Int = 10,
-        lag::Int = 1,
+        te_lag::Int = 1,
         parallel = true,
         sparse = false)
 
     # Embed the data given the lag
-    embedding = hcat(source[1:end-lag], target[1:end-lag], target[1+lag:end])
-    embedding = InvariantDistribution.invariantize_embedding(embedding, max_point_remove = 10)
+    embedding = hcat(source[1:end-te_lag],
+                    target[1:end-te_lag],
+                    target[(1 + te_lag):end])
+    embedding = invariantize_embedding(embedding, max_point_remove = 10)
     t = triang_from_embedding(Embedding(embedding))
     # Gaussian embedding
 
