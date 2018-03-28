@@ -62,7 +62,7 @@ function te_from_ts(
         M = markovmatrix(t)
     end
 
-    invmeasure, inds_nonzero_simplices = invariantdist(M)
+    invmeasure, inds_nonzero_simplices = estimate_invariant_probs(M)
 
     """
         local_te_from_triang(n_bins::Int)
