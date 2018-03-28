@@ -260,4 +260,21 @@ function generate_ensemble_invariantlogistic(
     return ensemble
 end
 
+"""
+Perform transfer entropy on correlated gaussian time series of length `n_pts`
+whose coupling is dictated by their `covariance` and the time series are
+related by a lag of `tau`.
+"""
+function te_correlated_gaussians(n_pts, covariance; tau = 1)
+
+	gaussian_embedding = InvariantDistribution.invariant_gaussian_embedding(
+		npts = n_pts,
+		covariance = covariance,
+		tau = tau
+	)
+
+	te_from_embedding(gaussian_embedding)
+end
+
+
 end
