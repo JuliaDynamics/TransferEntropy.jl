@@ -1,4 +1,4 @@
-__precompile__()
+__precompile__(true)
 module TransferEntropy
 
 using Distributions
@@ -18,15 +18,10 @@ using ChaoticMaps
 @everywhere include("joint.jl")
 @everywhere include("marginal.jl")
 @everywhere include("TEresult.jl")
-include("te_from_triangulation.jl")
-include("te_binsizes_ex.jl")
-include("te_correlated_gaussians.jl")
-include("te_from_triangulation_with_uncertainty.jl")
-include("te_from_timeseries.jl")
-include("TE_timeseries.jl")
-include("TE_examples.jl")
-
-#te_from_timeseries_parallel(npts = 12, covariance = 0.5, parallel = true, sparse = true)
+@everywhere include("te_from_embedding.jl")
+@everywhere include("te_from_triang.jl")
+@everywhere include("te_from_ts.jl")
+@everywhere include("TE_examples.jl")
 
 export indexin_rows,
         get_nonempty_bins,
@@ -34,16 +29,8 @@ export indexin_rows,
         jointdist,
         marginaldists,
         TEresult,
-        embed_correlated_gaussians,
-        te_correlated_gaussians, te_correlated_gaussians_init,
-        te_correlated_gaussians_with_uncertainty,
-        te_from_triangulation,
-        te_from_triangulation_withuncertainty,
-        te_from_timeseries,
-        te_from_ts,
-        te_from_timeseries_parallel,
-        te_binsizes_ex,
-        TE_timeseries,
-        TE_timeseries_withuncertainty,
+        te_from_embedding,
+        te_from_triang,
+        te_from_ts
         Examples
 end # module
