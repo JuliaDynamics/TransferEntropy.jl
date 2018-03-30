@@ -1,4 +1,4 @@
-include("helper_functions.jl")
+#include("helper_functions.jl")
 include("get_nonempty_bins.jl")
 include("joint.jl")
 include("marginal.jl")
@@ -33,7 +33,7 @@ TE estimates for this bin size.
 """
 function te_from_triang(
         t::Triangulation,
-        invariantdistribution::AbstractVector{Float64},
+        invariantdistribution::InvariantDistribution.InvDist,
         n_bins::Int,
         n_reps::Int
     )
@@ -54,9 +54,9 @@ function te_from_triang(
 
         # Find non-empty bins and compute their measure.
         nonempty_bins, measure = get_nonempty_bins(
-            point_representives(t)[invariantdistribution[2], :],
-            invariantdistribution[1][invariantdistribution[2]],
-            [n, n, n]
+    		point_representives(t)[invdist.nonzero_inds, :],
+    		invdist.dist[invdist.nonzero_inds],
+    		[n_bins, n_bins, n_bins]
         )
 
         # Compute the joint and marginal distributions.

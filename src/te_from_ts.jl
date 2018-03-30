@@ -1,4 +1,4 @@
-include("helper_functions.jl")
+#include("helper_functions.jl")
 include("get_nonempty_bins.jl")
 include("joint.jl")
 include("marginal.jl")
@@ -62,7 +62,7 @@ function te_from_ts(
         M = markovmatrix(t)
     end
 
-    invmeasure, inds_nonzero_simplices = estimate_invariant_probs(M)
+    invdist = estimate_invdist(M)
 
     """
         local_te_from_triang(n_bins::Int)
@@ -94,8 +94,8 @@ function te_from_ts(
 
             # Find the indices of the non-empty bins and compute their measure.
             nonempty_bins, measure = get_nonempty_bins(
-                point_representives(t)[inds_nonzero_simplices, :],
-                invmeasure[inds_nonzero_simplices],
+                point_representives(t)[invdist.nonzero_inds, :],
+                invdist.dist[invdist.nonzero_inds],
                 [n_bins, n_bins, n_bins]
             )
 
