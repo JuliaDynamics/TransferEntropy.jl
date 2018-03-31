@@ -1,8 +1,8 @@
-#include("helper_functions.jl")
 include("get_nonempty_bins.jl")
 include("joint.jl")
 include("marginal.jl")
-
+include("TEresult.jl")
+include("point_representatives.jl")
 """
 te_from_ts(
     source::AbstractVector{Float64},
@@ -94,7 +94,7 @@ function te_from_ts(
 
             # Find the indices of the non-empty bins and compute their measure.
             nonempty_bins, measure = get_nonempty_bins(
-                point_representives(t)[invdist.nonzero_inds, :],
+                point_representatives(t)[invdist.nonzero_inds, :],
                 invdist.dist[invdist.nonzero_inds],
                 [n_bins, n_bins, n_bins]
             )

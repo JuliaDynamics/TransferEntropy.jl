@@ -1,6 +1,8 @@
 include("get_nonempty_bins.jl")
 include("joint.jl")
 include("marginal.jl")
+include("TEresult.jl")
+include("point_representatives.jl")
 
 """
     te_from_embedding(
@@ -18,8 +20,8 @@ range of `binsizes`
 """
 function te_from_embedding(
         embedding::AbstractArray{Float64, 2},
-		te_lag::Int = 1,
-		binsizes::AbstractVector{Int} = vcat(1:2:20, 25:5:200, 200:10:500);
+		te_lag::Int = 1;
+		binsizes::AbstractVector{Int} = vcat(1:2:20, 25:5:200, 200:10:500),
         n_reps::Int = 10,
         parallel = true,
         sparse = false)
@@ -73,7 +75,7 @@ function te_from_embedding(
         # bins are guaranteed to be nonnegative, transfer entropy is also
         # guaranteed to be nonnegative.
         =#
-        TE_estimates = zeros(Float64, n_repetitions)
+        TE_estimates = zeros(Float64, n_reps)
 
         for i = 1:n_reps
             #=
@@ -89,7 +91,7 @@ function te_from_embedding(
 
             # Find the indices of the non-empty bins and compute their measure.
             nonempty_bins, measure = get_nonempty_bins(
-				point_representives(t)[invdist.nonzero_inds, :],
+				point_representatives(t)[invdist.nonzero_inds, :],
 				invdist.dist[invdist.nonzero_inds],
 				[n_bins, n_bins, n_bins]
             )
@@ -111,7 +113,7 @@ function te_from_embedding(
     # Parallelise transfer entropy estimates over bin sizes. Add progress meter.
     TE = pmap(local_te_from_triang, Progress(length(binsizes)), binsizes)
 
-    return TEresult(embedding, lag, t, M, invmeasure, inds_nonzero_simplices,
+    return TEresult(embedding, te_lag, t, M, invdist,
                     binsizes, hcat(TE...).')
 
 end
