@@ -24,7 +24,9 @@ function te_from_embedding(
 		binsizes::AbstractVector{Int} = vcat(1:2:20, 25:5:200, 200:10:500),
         n_reps::Int = 10,
         parallel = true,
-        sparse = false)
+        sparse = false,
+		discrete = false, sample_uniformly = true,
+		n_randpts = 100)
 
     #=
     # Embed the time series for transfer entropy estimation given the provided a
@@ -57,6 +59,8 @@ function te_from_embedding(
         M = mm_sparse(t)
     elseif !parallel & !sparse
         M = markovmatrix(t)
+    elseif discrete
+        M = mm_dd(t, n_randpts =  n_randpts, sample_randomly = !sample_uniformly)
     end
 
     invdist = estimate_invdist(M)
