@@ -8,7 +8,7 @@ Only one estimator is currently implemented.
 ### Transfer Operator Transfer Entropy (TOTE)
 Transfer entropy estimators traditionally derive state probabilities from counting. TOTE, in contrast, is based on a numerical approximation of the transfer operator of the underlying dynamics. 
 
-The estimation of the transfer operator is based on the classic works by Stanislaw Ulam, and more recently by Gary Froyland (<http://web.maths.unsw.edu.au/~froyland/>). A short background article describing the concept of the transfer operator from time series can be found here <https://www.earthsystemevolution.com/articles/20180324_estimating_ergodic_probability_distributions/>. 
+The estimation of the transfer operator is based on the classic works by Stanislaw Ulam, and more recently by Gary Froyland (<http://web.maths.unsw.edu.au/~froyland/>). A short background article describing the concept of the transfer operator from time series can be found at <https://www.earthsystemevolution.com/articles/20180324_estimating_ergodic_probability_distributions/>. 
 
 In short, the underlying dynamics is replaced by a stationary Markov process. From this Markov process, an invariant probability distribution on the state space is computed. Transfer entropy is then estimated from this invariant probability distribution. 
 
