@@ -22,6 +22,8 @@ Pkg.add("Parameters")
 Pkg.add("ProgressMeter")
 Pkg.add("ProgressMeter")
 Pkg.add("PmapProgressMeter")
+Pkg.add("Plots")
+Pkg.add("PlotlyJS")
 
 # Subroutines 
 Pkg.clone("https://github.com/kahaaga/Simplices.jl")
@@ -49,5 +51,36 @@ Calculate transfer entropy with the default `te_lag = 1`.
 
 The first argument is the assumed source (driver) and the second argument is the assumed response. `te_from_timeseries` returns a tuple of information produced during the run. This includes a state space reconstruction of the observations, a (possibly refined) triangulation of the state space, the estimated transfer operator (Markov matrix), the invariant distribution on the simplices of the triangulation and, finally, the transfer entropy estimate.
 =#
+
 te_result = te_from_timeseries(x, y)
+
+# Plot the results 
+using Plots; plotlyjs() 
+plot(te_result.binsizes, mean(te_result, 2), label = "Mean TE")
+
+##############################
+# Specifying keyword arguments 
+##############################
+
+# Manually setting bin sizes
+te_result = te_from_timeseries(x, y, binsizes = 10:10:100)
+
+# Adjusting the transfer entropy lag (method lag, not lag in underlying; default = 1)
+te_result = te_from_timeseries(x, y, te_lag = 2)
+
+# Refine triangulation
+te_result = te_from_timeseries(x, y, refine = true)
+
+# Discrete approximation (discrete is fast, but has errors of ~5% if ~100 pts is used)
+te_result = te_from_timeseries(x, y, discrete = true, n_randpts::Int = 100, sample_uniformly = true)
+
+# Exact approximation (much slower, but no bias introduced beyond what is present in data)
+te_result = te_from_timeseries(x, y, discrete = false) 
+
+# Exact approximation in parallel (start julia with `julia -p n_procs`, e.g. `julia -p 4`, or use `addprocs()`,
+# then load the library like this: `@everywhere using TransferEntropy`)
+te_result = te_from_timeseries(x, y, discrete = false, parallel = true) 
 ```
+
+## Problems? 
+If you run into problems, submit an issue or send an e-mail (`kahaaga@gmail.com` or `kristian.haaga@uib.no`). I'll be happy to help with setting up analyses. 
