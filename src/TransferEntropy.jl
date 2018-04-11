@@ -33,4 +33,5 @@ export indexin_rows,
         te_from_ts,
         TEresult,
         Examples
+
 end # module

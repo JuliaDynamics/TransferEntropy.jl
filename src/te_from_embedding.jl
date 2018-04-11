@@ -78,7 +78,7 @@ function te_from_embedding(
     easily apply the `pmap` function and parallelise transfer entropy estiamtion
     over bin sizes.
     """
-    function local_te_from_triang(n_bins::Int)
+     function local_te_from_triang(n_bins::Int)
         #=
         # Initialise transfer entropy estimates to 0. Because the measure of the
         # bins are guaranteed to be nonnegative, transfer entropy is also
