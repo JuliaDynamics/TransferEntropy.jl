@@ -8,10 +8,12 @@ Only one estimator is currently implemented.
 ### Transfer Operator Transfer Entropy (TOTE)
 Transfer entropy estimators traditionally derive state probabilities from counting. TOTE, in contrast, is based on a numerical approximation of the transfer operator of the underlying dynamics. 
 
-In short, the underlying dynamics is replaced by a stationary Markov process. From this Markov process, an invariant probaiblity distribution on the state space can be derived. Transfer entropy is then estimated from this invariant probability distribution. 
+The estimation of the transfer operator is based on the classic works by Stanislaw Ulam, and more recently by Gary Froyland (<http://web.maths.unsw.edu.au/~froyland/>). A short background article describing the concept of the transfer operator from time series can be found here <https://www.earthsystemevolution.com/articles/20180324_estimating_ergodic_probability_distributions/>. 
+
+In short, the underlying dynamics is replaced by a stationary Markov process. From this Markov process, an invariant probability distribution on the state space is computed. Transfer entropy is then estimated from this invariant probability distribution. 
 
 ## Installation
-TransferEntropy.jl relies on several sobroutines implemented in other packages. Before these become registered Julia packages, you will have to install dependencies manually.  Running the following in the Julia console should get you up and running. 
+TransferEntropy.jl relies on several subroutines implemented in other packages. Until these become registered Julia packages, you will have to install the dependencies manually.  Entering the following commands in the Julia console should get you up and running. 
 
 ```
 # Dependencies needed by the subroutines
@@ -35,9 +37,9 @@ Pkg.clone("https://github.com/kahaaga/TransferEntropy.jl")
 ```
 
 ## Usage 
-Using the estimator is easy. The workhorse is `ts_from_timeseries` function. In the future, this will take a `method` argument, but for now, method defaults to TOTE. 
+Using the estimator is easy. The workhorse is the `te_from_timeseries` function. In the future, this will take a `method` argument, but for now, `method` defaults to TOTE. 
 
-Imagine you have two time series `x` and `y`, just run the following
+Imagine you have two time series `x` and `y`. To compute TE, run the following:
 
 ```
 # Load the TransferEntropy package
@@ -84,5 +86,7 @@ te_result = te_from_timeseries(x, y, discrete = false)
 te_result = te_from_timeseries(x, y, discrete = false, parallel = true) 
 ```
 
-## Problems? 
-If you run into problems, submit an issue or send an e-mail (`kahaaga@gmail.com` or `kristian.haaga@uib.no`). I'll be happy to help with setting up analyses. 
+## Problems? Do you want to compute transfer entropy, but don't know how?  
+I'll be happy to help with setting up analyses. Feel free to contact me at e-mail (`kahaaga@gmail.com` or `kristian.haaga@uib.no`). 
+
+If you encounter problems, submit an issue or send an e-mail.
