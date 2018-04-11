@@ -35,7 +35,9 @@ Pkg.clone("https://github.com/kahaaga/TransferEntropy.jl")
 ```
 
 ## Usage 
-Using the estimator is easy. Imagine you have two time series `x` and `y`, just run the following
+Using the estimator is easy. The workhorse is `ts_from_timeseries` function. In the future, this will take a `method` argument, but for now, method defaults to TOTE. 
+
+Imagine you have two time series `x` and `y`, just run the following
 
 ```
 # Load the TransferEntropy package
