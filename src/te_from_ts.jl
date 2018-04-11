@@ -1,8 +1,12 @@
+using ProgressMeter, PmapProgressMeter
+
 include("get_nonempty_bins.jl")
 include("joint.jl")
 include("marginal.jl")
 include("TEresult.jl")
 include("point_representatives.jl")
+include("rowindexin.jl")
+
 """
 te_from_ts(
     source::AbstractVector{Float64},
@@ -23,8 +27,10 @@ function te_from_ts(
         binsizes::AbstractVector{Int} = vcat(1:2:20, 25:5:200, 200:10:500),
         n_reps::Int = 10,
         te_lag::Int = 1,
+        discrete = true, n_randpts::Int = 100, sample_uniformly = true,
         parallel = true,
-        sparse = false)
+        sparse = false,
+		refine = false)
 
     #=
     # Embed the time series for transfer entropy estimation given the provided a
@@ -48,18 +54,24 @@ function te_from_ts(
     # Refine triangulation until all simplices have radii less than
     `target_radius`
     =#
-    max_r, mean_r = maximum(t.radii), maximum(t.radii)
-    target_radius = max_r - (max_r - mean_r)/2
-    SimplexSplitting.refine_variable_k!(t, target_radius)
+    if refine
+        max_r, mean_r = maximum(t.radii), maximum(t.radii)
+        target_radius = max_r - (max_r - mean_r)/2
+        SimplexSplitting.refine_variable_k!(t, target_radius)
+    end
 
-    if parallel & !sparse
-        M = mm_p(t)
-    elseif parallel & sparse
-        M = Array(mm_sparse_parallel(t))
-    elseif !parallel & sparse
-        M = mm_sparse(t)
-    elseif !parallel & !sparse
-        M = markovmatrix(t)
+    if discrete
+        M = mm_dd2(t, n_randpts =  n_randpts, sample_randomly = !sample_uniformly)
+	else
+        if parallel & !sparse
+            M = mm_p(t)
+        elseif parallel & sparse
+            M = Array(mm_sparse_parallel(t))
+        elseif !parallel & sparse
+            M = mm_sparse(t)
+        elseif !parallel & !sparse
+            M = markovmatrix(t)
+        end
     end
 
     invdist = estimate_invdist(M)
@@ -78,7 +90,7 @@ function te_from_ts(
         # bins are guaranteed to be nonnegative, transfer entropy is also
         # guaranteed to be nonnegative.
         =#
-        TE_estimates = zeros(Float64, n_repetitions)
+        TE_estimates = zeros(Float64, n_reps)
 
         for i = 1:n_reps
             #=
@@ -116,7 +128,7 @@ function te_from_ts(
     # Parallelise transfer entropy estimates over bin sizes. Add progress meter.
     TE = pmap(local_te_from_triang, Progress(length(binsizes)), binsizes)
 
-    return TEresult(embedding, lag, t, M, invmeasure, inds_nonzero_simplices,
+    return embedding, t, M, invdist, TEresult(embedding, te_lag, t, M, invdist,
                     binsizes, hcat(TE...).')
 
 end

@@ -1,8 +1,11 @@
+using ProgressMeter, PmapProgressMeter
+
 include("get_nonempty_bins.jl")
 include("joint.jl")
 include("marginal.jl")
 include("TEresult.jl")
 include("point_representatives.jl")
+include("rowindexin.jl")
 
 """
     te_from_embedding(
@@ -51,16 +54,18 @@ function te_from_embedding(
     target_radius = max_r - (max_r - mean_r)/2
     SimplexSplitting.refine_variable_k!(t, target_radius)
 
-    if parallel & !sparse
-        M = mm_p(t)
-    elseif parallel & sparse
-        M = Array(mm_sparse_parallel(t))
-    elseif !parallel & sparse
-        M = mm_sparse(t)
-    elseif !parallel & !sparse
-        M = markovmatrix(t)
-    elseif discrete
-        M = mm_dd(t, n_randpts =  n_randpts, sample_randomly = !sample_uniformly)
+    if discrete
+        M = mm_dd2(t, n_randpts =  n_randpts, sample_randomly = !sample_uniformly)
+	else
+        if parallel & !sparse
+            M = mm_p(t)
+        elseif parallel & sparse
+            M = Array(mm_sparse_parallel(t))
+        elseif !parallel & sparse
+            M = mm_sparse(t)
+        elseif !parallel & !sparse
+            M = markovmatrix(t)
+        end
     end
 
     invdist = estimate_invdist(M)
@@ -117,7 +122,7 @@ function te_from_embedding(
     # Parallelise transfer entropy estimates over bin sizes. Add progress meter.
     TE = pmap(local_te_from_triang, Progress(length(binsizes)), binsizes)
 
-    return TEresult(embedding, te_lag, t, M, invdist,
+    return embedding, t, M, invdist, TEresult(embedding, te_lag, t, M, invdist,
                     binsizes, hcat(TE...).')
 
 end

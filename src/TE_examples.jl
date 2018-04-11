@@ -269,11 +269,11 @@ function te_correlated_gaussians(n_pts, covariance; tau = 1)
 
 	gaussian_embedding = InvariantDistribution.invariant_gaussian_embedding(
 		npts = n_pts,
-		covariance = covariance,
+		cov = covariance,
 		tau = tau
 	)
 
-	te_from_embedding(gaussian_embedding)
+	te_from_embedding(invariantize_embedding(gaussian_embedding))
 end
 
 
