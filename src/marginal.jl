@@ -1,8 +1,10 @@
+using GroupSlices
+
 """
-    marginaldists(unique_nonempty_bins::Array{Int, 2},
+    marginaldists(nonempty_bins::Array{Int, 2},
                   invmeasure::Vector{Float64})
 
-Compute margin distributions for a triangulation with an associated invariant
+Compute marginal distributions for a triangulation with an associated invariant
 measure (`invmeasure`).
 
 Computations are performed as follows:
@@ -14,56 +16,55 @@ beforehand, and is provided with the `nonempty_bins::Array{Int, 2}` argument.
 with the nonempty bins.
 
 """
-function marginaldists(unique_nonempty_bins::Array{Int, 2},
-                       invmeasure::Array{Float64, 1})
-    dim = size(unique_nonempty_bins, 2)
+function marginaldists(nonempty_bins::Array{Int, 2},
+                       invdist::Array{Float64, 1})
 
-    X2s = unique_nonempty_bins[:, 2] # Vector{Float64}
+    #unique_nonempty_bins = unique(nonempty_bins, 1)
+
+    dim = size(nonempty_bins, 2)
+
+
+    X2s = nonempty_bins[:, 2] # Vector{Float64}
     X2s = reshape(X2s, length(X2s), 1) # Reshape to Array{Float64, 2}
-    X1X2s = unique_nonempty_bins[:, 1:2]
-    X2X3s = unique_nonempty_bins[:, 2:3]
     unique_X2s = unique(X2s, 1)
-    unique_X1X2s = unique(X1X2s, 1)
-    unique_X2X3s = unique(X2X3s, 1)
-    JX2 = indexin_rows(X2s, unique_X2s)
-    JX1X2 = indexin_rows(X1X2s, unique_X1X2s)
-    JX2X3 = indexin_rows(X2X3s, unique_X2X3s)
+    J_X2 = indexin_rows(X2s, unique_X2s)
 
-    # X2
-    PX2 = zeros(Float64, size(unique_X2s, 1))
+
+    marginal_x2 = zeros(Float64, size(unique_X2s, 1))
+
     for i = 1:size(unique_X2s, 1)
-        inds = find(JX2 .== i)
-        PX2[i] = sum(invmeasure[inds])
+        multiplicity_i = find(J_X2 .== i)
+        marginal_x2[i] = sum(invdist[multiplicity_i])
     end
 
-    Px2 = zeros(Float64, size(X2s, 1))
-    for i = 1:size(X2s, 1)
-        Px2[i] = PX2[JX2[i]]
-    end
 
     # X1 and X2
-    PX1X2 = zeros(Float64, size(unique_X1X2s, 1))
-    for i = 1:size(unique_X1X2s, 1)
-        inds = find(JX1X2 .== i)
-        PX1X2[i] = sum(invmeasure[inds])
-    end
+    X1X2s = nonempty_bins[:, 1:2]
+    unique_X1X2s = unique(X1X2s, 1)
+    J_X1X2 = indexin_rows(X1X2s, unique_X1X2s)
 
-    Px1x2 = zeros(Float64, size(X1X2s, 1))
-    for i = 1:size(X1X2s, 1)
-        Px1x2[i] = PX1X2[JX1X2[i]]
+    marginal_x1x2 = zeros(Float64, size(unique_X1X2s, 1))
+    for i = 1:size(unique_X1X2s, 1)
+        multiplicity_i = J_X1X2 .== i
+        marginal_x1x2[i] = sum(invdist[multiplicity_i])
     end
 
     # X2 and X3
-    PX2X3 = zeros(Float64, size(unique_X2X3s, 1))
+    X2X3s = nonempty_bins[:, 2:3]
+    unique_X2X3s = unique(X2X3s, 1)
+    J_X2X3 = indexin_rows(X2X3s, unique_X2X3s)
+
+    marginal_x2x3 = zeros(Float64, size(unique_X2X3s, 1))
     for i = 1:size(unique_X2X3s, 1)
-        inds = find(JX2X3 .== i)
-        PX2X3[i] = sum(invmeasure[inds])
+        multiplicity_i = J_X2X3 .== i
+        marginal_x2x3[i] = sum(invdist[multiplicity_i])
     end
 
-    Px2x3 = zeros(Float64, size(X2X3s, 1))
-    for i = 1:size(X2X3s, 1)
-        Px2x3[i] = PX2X3[JX2X3[i]]
-    end
+    @assert sum(marginal_x2) ≈ 1
+    @assert sum(marginal_x1x2) ≈ 1
+    @assert sum(marginal_x2x3) ≈ 1
 
-    return Px2, Px1x2, Px2x3
+    return marginal_x2, marginal_x1x2, marginal_x2x3,
+            J_X2, J_X1X2, J_X2X3
+
 end
