@@ -36,7 +36,7 @@ Pkg.clone("https://github.com/kahaaga/TransferEntropy.jl")
 ```
 
 ## Usage 
-Using the estimator is easy. The workhorse is the `te_from_timeseries` function. In the future, this will take a `method` argument, but for now, `method` defaults to TOTE. 
+Using the estimator is easy. The workhorse is the `te_from_ts` function. In the future, this will take a `method` argument, but for now, `method` defaults to TOTE. 
 
 Imagine you have two time series `x` and `y`. To compute TE, run the following:
 
@@ -52,37 +52,47 @@ y = rand(n_pts)
 #= 
 Calculate transfer entropy with the default `te_lag = 1`. 
 
-The first argument is the assumed source (driver) and the second argument is the assumed response. `te_from_timeseries` returns a tuple of information produced during the run. This includes a state space reconstruction of the observations, a (possibly refined) triangulation of the state space, the estimated transfer operator (Markov matrix), the invariant distribution on the simplices of the triangulation and, finally, the transfer entropy estimate.
+The first argument is the assumed source (driver) and the second argument is the assumed response. `te_from_ts` returns a tuple of information produced during the run. This includes a state space reconstruction of the observations, a (possibly refined) triangulation of the state space, the estimated transfer operator (Markov matrix), the invariant distribution on the simplices of the triangulation and, finally, the transfer entropy estimate.
 =#
 
-te_result = te_from_timeseries(x, y)
+te_result = te_from_ts(x, y) 
+
 
 # Plot the results 
+TE = te_result[5]
 using Plots; plotlyjs() 
-plot(te_result.binsizes, mean(te_result, 2), label = "Mean TE")
+plot(TE.binsizes, TE.TE)
+plot(TE.binsizes, TE.TE, label = "Mean TE")
 
 ##############################
 # Specifying keyword arguments 
 ##############################
 
+#= 
+Changing the number of TE estimates (in how many ways do we substitute each simplex by a point representation?, 
+higher numbers give more accurate estimates).
+=#
+te_result = te_from_ts(x, y, n_reps = 1) 
+
 # Manually setting bin sizes
-te_result = te_from_timeseries(x, y, binsizes = 10:10:100)
+te_result = te_from_ts(x, y, binsizes = 10:10:100)
+te_result = te_from_ts(x, y, binsizes = [2, 30, 31, 47])
 
 # Adjusting the transfer entropy lag (method lag, not lag in underlying; default = 1)
-te_result = te_from_timeseries(x, y, te_lag = 2)
+te_result = te_from_ts(x, y, te_lag = 2)
 
 # Refine triangulation
-te_result = te_from_timeseries(x, y, refine = true)
+te_result = te_from_ts(x, y, refine = true)
 
 # Discrete approximation (discrete is fast, but has errors of ~5% if ~100 pts is used)
-te_result = te_from_timeseries(x, y, discrete = true, n_randpts::Int = 100, sample_uniformly = true)
+te_result = te_from_ts(x, y, discrete = true, n_randpts::Int = 100, sample_uniformly = true)
 
 # Exact approximation (much slower, but no bias introduced beyond what is present in data)
-te_result = te_from_timeseries(x, y, discrete = false) 
+te_result = te_from_ts(x, y, discrete = false) 
 
 # Exact approximation in parallel (start julia with `julia -p n_procs`, e.g. `julia -p 4`, or use `addprocs()`,
 # then load the library like this: `@everywhere using TransferEntropy`)
-te_result = te_from_timeseries(x, y, discrete = false, parallel = true) 
+te_result = te_from_ts(x, y, discrete = false, parallel = true) 
 ```
 
 ## Problems? Do you want to compute transfer entropy, but don't know how?  
