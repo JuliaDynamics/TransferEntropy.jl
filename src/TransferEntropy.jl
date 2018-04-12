@@ -3,7 +3,7 @@ __precompile__(true)
 module TransferEntropy
 
 using Distributions, Simplices, SimplexSplitting, InvariantDistribution, TransferEntropy,
-	ChaoticMaps, ProgressMeter, PmapProgressMeter
+	ChaoticMaps, ProgressMeter, PmapProgressMeter, GroupSlices
 
 @everywhere using Distributions
 @everywhere using Simplices
@@ -29,7 +29,7 @@ export indexin_rows,
 	get_nonempty_bins, get_nonempty_bins_abs,
         jointdist, marginaldists,
         te_from_embedding,
-        te_from_triang,
+        te_from_triang, te_from_triang_multiple_binsizes,
         te_from_ts,
         TEresult,
         Examples

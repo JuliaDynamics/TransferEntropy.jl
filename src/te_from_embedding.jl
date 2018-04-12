@@ -68,7 +68,7 @@ function te_from_embedding(
         end
     end
 
-    invdist = estimate_invdist(M)
+    invdist = left_eigenvector(M)
 
     """
         local_te_from_triang(n_bins::Int)
@@ -87,36 +87,37 @@ function te_from_embedding(
         TE_estimates = zeros(Float64, n_reps)
 
         for i = 1:n_reps
-            #=
-            # Represent each simplex as a single point. We can do this because
-            # within the region of the state space occupied by each simplex,
-            # points are indistinguishable from the point of view of the
-            # invariant measure. However, when we superimpose the grid, the
-            # position of the points we choose will influence the resulting
-            # marginal distributions. Therefore, we have to repeat this
-            # procedure several times to get an accurate transfer entropy
-            # estimate.
-            =#
+			# Represent each simplex as a single point. We can do this because
+            # within the region of the state space occupied by each simplex, points
+            # are indistinguishable from the point of view of the invariant measure.
+            # However, when we superimpose the grid, the position of the points
+            # we choose will influence the resulting marginal distributions.
+            # Therefore, we have to repeat this procedure several times to get an
+            # accurate transfer entropy estimate.
 
-            # Find the indices of the non-empty bins and compute their measure.
-            nonempty_bins, measure = get_nonempty_bins(
-				point_representatives(t)[invdist.nonzero_inds, :],
-				invdist.dist[invdist.nonzero_inds],
-				[n_bins, n_bins, n_bins]
+            positive_measure_inds = find(invdist.dist .> 1/10^12)
+
+            # Find non-empty bins and compute their measure.
+            nonempty_bins = get_nonempty_bins(
+                #t.centroids[positive_measure_inds, :],
+        		point_representatives(t)[positive_measure_inds, :],
+        		invdist.dist[positive_measure_inds],
+        		[n_bins, n_bins, n_bins]
             )
 
-            # Compute the joint and marginal distributions.
-            Pjoint = jointdist(nonempty_bins, measure)
-            Py, Pxy, Pyz = marginaldists(unique(nonempty_bins, 1), measure)
 
+            # Compute the joint and marginal distributions.
+            Pjoint = jointdist(nonempty_bins, invdist.dist[positive_measure_inds])
+            Py, Pxy, Pyz, Jy, Jxy, Jyz = marginaldists(nonempty_bins, invdist.dist[positive_measure_inds])
+            #Py, Pxy, Pyz,  Jy, Jxy, Jyz
             # Integrate
-            for j = 1:length(Pjoint)
-                TE_estimates[i] += Pjoint[j] * log( (Pjoint[j] * Py[j]) /
-                                                    (Pyz[j] * Pxy[j]) )
+            for k = 1:size(Pjoint, 1)
+                TE_estimates[i] += Pjoint[k] *
+                    log( (Pjoint[k] * Py[Jy[k]]) / (Pxy[Jxy[k]] * Pyz[Jyz[k]]) )
             end
         end
 
-        return TE_estimates
+        return TE_estimates / log(2)
     end
 
     # Parallelise transfer entropy estimates over bin sizes. Add progress meter.

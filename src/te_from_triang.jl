@@ -2,6 +2,7 @@ include("get_nonempty_bins.jl")
 include("joint.jl")
 include("marginal.jl")
 include("point_representatives.jl")
+include("rowindexin.jl")
 
 """
     te_from_triang(
@@ -52,23 +53,42 @@ function te_from_triang(
         # Therefore, we have to repeat this procedure several times to get an
         # accurate transfer entropy estimate.
 
+        positive_measure_inds = find(invdist.dist .> 1/10^12)
+
         # Find non-empty bins and compute their measure.
-        nonempty_bins, measure = get_nonempty_bins(
-    		point_representatives(t)[invdist.nonzero_inds, :],
-    		invdist.dist[invdist.nonzero_inds],
+        nonempty_bins = get_nonempty_bins(
+            #t.centroids[positive_measure_inds, :],
+    		point_representatives(t)[positive_measure_inds, :],
+    		invdist.dist[positive_measure_inds],
     		[n_bins, n_bins, n_bins]
         )
 
-        # Compute the joint and marginal distributions.
-        Pjoint = jointdist(nonempty_bins, measure)
-        Py, Pxy, Pyz = marginaldists(unique(nonempty_bins, 1), measure)
 
+        # Compute the joint and marginal distributions.
+        Pjoint = jointdist(nonempty_bins, invdist.dist[positive_measure_inds])
+        Py, Pxy, Pyz, Jy, Jxy, Jyz = marginaldists(nonempty_bins, invdist.dist[positive_measure_inds])
+        #Py, Pxy, Pyz,  Jy, Jxy, Jyz
         # Integrate
-        for j = 1:length(Pjoint)
-            TE_estimates[i] += Pjoint[j] * log( (Pjoint[j] * Py[j]) /
-                                                (Pyz[j] * Pxy[j]) )
+        for k = 1:size(Pjoint, 1)
+            TE_estimates[i] += Pjoint[k] *
+                log( (Pjoint[k] * Py[Jy[k]]) / (Pxy[Jxy[k]] * Pyz[Jyz[k]]) )
         end
     end
 
-    return TE_estimates
+    return TE_estimates / log(2)
+end
+
+
+function te_from_triang_multiple_binsizes(t::Triangulation,
+    invdist::InvariantDistribution.InvDist,
+    binsizes::Vector{Number},
+    n_reps::Int)
+
+    TE = SharedMatrix{Float64}(n_reps, length(binsizes))
+
+    @sync @parallel for i in 1:length(binsizes)
+        TE[:, i] = te_from_triang(t, invdist, binsizes[i], n_reps)
+    end
+
+    return Array(TE)
 end

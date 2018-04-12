@@ -13,34 +13,18 @@ beforehand, and is provided with the `nonempty_bins::Array{Int, 2}` argument.
 the nonempty bins.
 
 """
-function jointdist(nonempty_bins::Array{Int, 2}, invmeasure::Array{Float64, 1})
+function jointdist(nonempty_bins::Array{Int, 2}, invdist::Array{Float64, 1})
 
-    unique_bins = unique(nonempty_bins, 1)
-    Pjoint = Array{Float64}(size(unique_bins, 1))
-    Jjoint = indexin_rows(nonempty_bins, unique_bins)
-
-    for i = 1:size(unique_bins, 1)
-        filljoint!(Pjoint, Jjoint, invmeasure, i)
-    end
-
-    for i = 1:size(unique_bins, 1)
-        inds = find(Jjoint .== i)
-        Pjoint[i] .= sum(invmeasure[inds])
-    end
-
-    return Pjoint
-end
-
-function filljoint!(Pjoint, Jjoint, invmeasure, i)
-    inds = find(Jjoint .== i)
-    Pjoint[i] .= sum(invmeasure[inds])
-end
+    unique_nonempty_bins = unique(nonempty_bins, 1)
+    J = indexin_rows(nonempty_bins, unique_nonempty_bins)
 
 
-"""
-Given indices of non-empty bins and their corresponding measure
-"""
-function jdist(bininds::Array{Int, 2}, measure::Array{Float64, 1})
+    joint = zeros(Float64, size(unique_nonempty_bins, 1))
 
+        for i = 1:size(unique_nonempty_bins, 1)
+            multiplicity_i = find(J .== i)
+            joint[i] = sum(invdist[multiplicity_i])
+        end
 
+    return joint
 end

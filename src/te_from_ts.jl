@@ -1,11 +1,11 @@
 using ProgressMeter, PmapProgressMeter
 
-include("get_nonempty_bins.jl")
-include("joint.jl")
-include("marginal.jl")
-include("TEresult.jl")
-include("point_representatives.jl")
-include("rowindexin.jl")
+@everywhere include("get_nonempty_bins.jl")
+@everywhere include("joint.jl")
+@everywhere include("marginal.jl")
+@everywhere include("point_representatives.jl")
+@everywhere include("rowindexin.jl")
+@everywhere include("TEresult.jl")
 
 """
 te_from_ts(
@@ -45,9 +45,13 @@ function te_from_ts(
                     target[1:end-te_lag],
                     target[(1 + te_lag):end])
 
+    println("Invariantizing embedding")
+
     embedding = invariantize_embedding(embedding, max_point_remove = 10)
 
     # Triangulate
+    println("Triangulating")
+
     t = triang_from_embedding(Embedding(embedding))
 
     #=
@@ -55,14 +59,17 @@ function te_from_ts(
     `target_radius`
     =#
     if refine
+        println("Refining triangulation")
         max_r, mean_r = maximum(t.radii), maximum(t.radii)
         target_radius = max_r - (max_r - mean_r)/2
         SimplexSplitting.refine_variable_k!(t, target_radius)
     end
 
     if discrete
+        println("Transfer operator (discrete)")
         M = mm_dd2(t, n_randpts =  n_randpts, sample_randomly = !sample_uniformly)
 	else
+        println("Transfer operator (exact)")
         if parallel & !sparse
             M = mm_p(t)
         elseif parallel & sparse
@@ -74,14 +81,16 @@ function te_from_ts(
         end
     end
 
-    invdist = estimate_invdist(M)
+    println("Computing left eigenvector")
+
+    invdist = left_eigenvector(M)
 
     """
         local_te_from_triang(n_bins::Int)
 
     Internal version of `te_from_triang` from the file `te_from_triang.jl` which
     only takes the number of bins `n_bins::Int` as an input. This way, we can
-    easily apply the `pmap` function and parallelise transfer entropy estiamtion
+    easily apply the `pmap` function and parallelise transfer entropy estimation
     over bin sizes.
     """
     function local_te_from_triang(n_bins::Int)
@@ -93,37 +102,39 @@ function te_from_ts(
         TE_estimates = zeros(Float64, n_reps)
 
         for i = 1:n_reps
-            #=
             # Represent each simplex as a single point. We can do this because
-            # within the region of the state space occupied by each simplex,
-            # points are indistinguishable from the point of view of the
-            # invariant measure. However, when we superimpose the grid, the
-            # position of the points we choose will influence the resulting
-            # marginal distributions. Therefore, we have to repeat this
-            # procedure several times to get an accurate transfer entropy
-            # estimate.
-            =#
+            # within the region of the state space occupied by each simplex, points
+            # are indistinguishable from the point of view of the invariant measure.
+            # However, when we superimpose the grid, the position of the points
+            # we choose will influence the resulting marginal distributions.
+            # Therefore, we have to repeat this procedure several times to get an
+            # accurate transfer entropy estimate.
 
-            # Find the indices of the non-empty bins and compute their measure.
-            nonempty_bins, measure = get_nonempty_bins(
-                point_representatives(t)[invdist.nonzero_inds, :],
-                invdist.dist[invdist.nonzero_inds],
-                [n_bins, n_bins, n_bins]
+            positive_measure_inds = find(invdist.dist .> 1/10^12)
+
+            # Find non-empty bins and compute their measure.
+            nonempty_bins = get_nonempty_bins(
+                #t.centroids[positive_measure_inds, :],
+        		point_representatives(t)[positive_measure_inds, :],
+        		invdist.dist[positive_measure_inds],
+        		[n_bins, n_bins, n_bins]
             )
 
-            # Compute the joint and marginal distributions.
-            Pjoint = jointdist(nonempty_bins, measure)
-            Py, Pxy, Pyz = marginaldists(unique(nonempty_bins, 1), measure)
 
+            # Compute the joint and marginal distributions.
+            Pjoint = jointdist(nonempty_bins, invdist.dist[positive_measure_inds])
+            Py, Pxy, Pyz, Jy, Jxy, Jyz = marginaldists(nonempty_bins, invdist.dist[positive_measure_inds])
+            #Py, Pxy, Pyz,  Jy, Jxy, Jyz
             # Integrate
-            for j = 1:length(Pjoint)
-                TE_estimates[i] += Pjoint[j] * log( (Pjoint[j] * Py[j]) /
-                                                    (Pyz[j] * Pxy[j]) )
+            for k = 1:size(Pjoint, 1)
+                TE_estimates[i] += Pjoint[k] *
+                    log( (Pjoint[k] * Py[Jy[k]]) / (Pxy[Jxy[k]] * Pyz[Jyz[k]]) )
             end
         end
 
-        return TE_estimates
+        return TE_estimates / log(2)
     end
+    println("Transfer entropy")
 
     # Parallelise transfer entropy estimates over bin sizes. Add progress meter.
     TE = pmap(local_te_from_triang, Progress(length(binsizes)), binsizes)
