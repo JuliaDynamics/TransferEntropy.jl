@@ -36,7 +36,7 @@ Pkg.clone("https://github.com/kahaaga/TransferEntropy.jl")
 ```
 
 ## Usage 
-Using the estimator is easy. The workhorse is the `te_from_ts` function. In the future, this will take a `method` argument, but for now, `method` defaults to TOTE. 
+Using the estimator is easy. The workhorse is the `te_from_ts` function. 
 
 Imagine you have two time series `x` and `y`. To compute TE, run the following:
 
@@ -52,18 +52,30 @@ y = rand(n_pts)
 #= 
 Calculate transfer entropy with the default `te_lag = 1`. 
 
-The first argument is the assumed source (driver) and the second argument is the assumed response. `te_from_ts` returns a tuple of information produced during the run. This includes a state space reconstruction of the observations, a (possibly refined) triangulation of the state space, the estimated transfer operator (Markov matrix), the invariant distribution on the simplices of the triangulation and, finally, the transfer entropy estimate.
+The first argument is the assumed source (driver) and the second argument is the assumed response. `te_from_ts` returns a tuple of 
+information produced during the run. This tuple contains the following:
+[1] a state space reconstruction of the observations
+[2] a (possibly refined) triangulation of the state space
+[3] the estimated transfer operator (Markov matrix)
+[4] the invariant distribution on the simplices of the triangulation
+[5] a TEResult, containing the transfer entropy estimate.
 =#
 
 te_result = te_from_ts(x, y) 
 
+```
+### Plot the results 
 
-# Plot the results 
+```
 TE = te_result[5]
 using Plots; plotlyjs() 
-plot(TE.binsizes, TE.TE)
-plot(TE.binsizes, TE.TE, label = "Mean TE")
+plot(TE.binsizes, TE.TE) # All repetitions 
+plot!(TE.binsizes, mean(TE.TE, 2), label = "Mean TE", lw = 3) # Plot the mean
+```
 
+### Specifying keyword arguments
+
+```
 ##############################
 # Specifying keyword arguments 
 ##############################
