@@ -41,15 +41,11 @@ function te_from_ts(
     # the embedding invariant under the action of the forward-time map we apply
     # to estimate the transfer operator.
     =#
-
-    x = target[(1 + te_lag):end]
-    y = target[1:(end - te_lag)]
-    z = source[1:(end - te_lag)]
-    embedding = hcat(x, y, z)
+	Ε = embed_for_te(source, target, te_lag)
 
     println("Invariantizing embedding")
 
-    embedding = invariantize_embedding(embedding, max_point_remove = 10)
+    embedding = invariantize_embedding(Ε, max_point_remove = ceil(Int, size(Ε, 1)/2))
 
     # Triangulate
     println("Triangulating")
