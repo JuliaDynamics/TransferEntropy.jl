@@ -13,8 +13,10 @@ using Simplices, SimplexSplitting, InvariantDistribution, TransferEntropy
 	te2 = TransferEntropy.te_from_embedding(e_ex.embedding, 1, n_reps = nreps,
 								discrete = true, sample_uniformly = false,
 								n_randpts = 10)
-	@test typeof(te) == TEresult
-	@test size(te.TE, 2) == nreps
-	@test typeof(te2) == TEresult
-	@test size(te2.TE, 2) == nreps
+
+	
+	@test typeof(te[5]) == TEresult
+	@test size(te[5].TE, 2) == nreps
+	@test typeof(te2[5]) == TEresult
+	@test size(te2[5].TE, 2) == nreps
 end
