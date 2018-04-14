@@ -2,8 +2,12 @@ __precompile__(true)
 
 module TransferEntropy
 
-using Distributions, Simplices, SimplexSplitting, InvariantDistribution, TransferEntropy,
-	ChaoticMaps, ProgressMeter, PmapProgressMeter, GroupSlices
+using Distributions, ProgressMeter, PmapProgressMeter
+using Simplices
+using SimplexSplitting
+using InvariantDistribution
+using TransferEntropy
+using ChaoticMaps
 
 @everywhere using Distributions
 @everywhere using Simplices

@@ -41,9 +41,11 @@ function te_from_ts(
     # the embedding invariant under the action of the forward-time map we apply
     # to estimate the transfer operator.
     =#
-    embedding = hcat(source[1:end-te_lag],
-                    target[1:end-te_lag],
-                    target[(1 + te_lag):end])
+
+    x = target[(1 + te_lag):end]
+    y = target[1:(end - te_lag)]
+    z = source[1:(end - te_lag)]
+    embedding = hcat(x, y, z)
 
     println("Invariantizing embedding")
 
@@ -124,7 +126,7 @@ function te_from_ts(
             # Compute the joint and marginal distributions.
             Pjoint = jointdist(nonempty_bins, invdist.dist[positive_measure_inds])
             Py, Pxy, Pyz, Jy, Jxy, Jyz = marginaldists(nonempty_bins, invdist.dist[positive_measure_inds])
-            #Py, Pxy, Pyz,  Jy, Jxy, Jyz
+
             # Integrate
             for k = 1:size(Pjoint, 1)
                 TE_estimates[i] += Pjoint[k] *
