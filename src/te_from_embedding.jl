@@ -1,4 +1,4 @@
-using ProgressMeter, PmapProgressMeter
+using ProgressMeter, PmapProgressMeter, InvariantDistribution
 
 include("get_nonempty_bins.jl")
 include("joint.jl")
@@ -28,8 +28,7 @@ function te_from_embedding(
         n_reps::Int = 10,
         parallel = true,
         sparse = false,
-		discrete = false, sample_uniformly = true,
-		n_randpts = 100)
+		discrete = true, sample_uniformly = true, n_randpts = 100)
 
     #=
     # Embed the time series for transfer entropy estimation given the provided a
@@ -55,8 +54,10 @@ function te_from_embedding(
     SimplexSplitting.refine_variable_k!(t, target_radius)
 
     if discrete
+		println("Transfer operator (discrete)")
         M = mm_dd2(t, n_randpts =  n_randpts, sample_randomly = !sample_uniformly)
 	else
+		println("Transfer operator (exact)")
         if parallel & !sparse
             M = mm_p(t)
         elseif parallel & sparse
@@ -68,6 +69,7 @@ function te_from_embedding(
         end
     end
 
+	println("Computing left eigenvector")
     invdist = left_eigenvector(M)
 
     """
@@ -119,7 +121,7 @@ function te_from_embedding(
 
         return TE_estimates / log(2)
     end
-
+	println("Transfer entropy")
     # Parallelise transfer entropy estimates over bin sizes. Add progress meter.
     TE = pmap(local_te_from_triang, Progress(length(binsizes)), binsizes)
 
