@@ -23,6 +23,7 @@ using ChaoticMaps
 @everywhere include("get_nonempty_bins.jl")
 @everywhere include("joint.jl")
 @everywhere include("marginal.jl")
+include("embed_for_te.jl")
 include("TEresult.jl")
 include("te_from_embedding.jl")
 include("te_from_triang.jl")
@@ -30,6 +31,7 @@ include("te_from_ts.jl")
 include("TE_examples.jl")
 
 export indexin_rows,
+        embed_for_te,
 	get_nonempty_bins, get_nonempty_bins_abs,
         jointdist, marginaldists,
         te_from_embedding,
