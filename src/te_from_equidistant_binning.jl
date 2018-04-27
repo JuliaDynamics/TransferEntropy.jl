@@ -5,20 +5,14 @@ Returns a column vector with the same number of elements as there are unique
 rows in V. The value of the ith element is the row indices of rows in V
 matching the ith unique row.
 """
-function marginal_indices(V)
-    GroupSlices.groupinds(GroupSlices.groupslices(V, 1))
-end
-
+marginal_indices(V) = GroupSlices.groupinds(GroupSlices.groupslices(V, 1))
 
 """
 How many times does each unique row in V appear? Returns a column vector with the same
 number of elements as there are unique rows in V. The value of the ith element of the
 return vector is the number of times the ith unique row of V appears in V.
 """
-function marginal_multiplicity(V)
-   [length(x) for x in GroupSlices.groupinds(GroupSlices.groupslices(V, 1))]
-end
-
+marginal_multiplicity(V) = [length(x) for x in marginal_indices(V)]
 
 """
 Compute entropy of a probability distribution.
@@ -149,19 +143,15 @@ Compute the transfer entropy resulting only from the geometry of the reconstruct
 attractor. How? Assign uniformly distributed states on the volumes of the
 reconstructed state space with nonzero measure.
 """
-function shape_te(eqb::StateSpaceReconstruction.EquidistantBinning)
-   bins = eqb.inds_nonempty_bins
-   dim = size(bins, 2)
-   n_nonempty_bins = size(bins, 1)
+function shape_te(bins::Array{Int, 2})
+   dim, n_nonempty_bins = size(bins, 2), size(bins, 1)
 
-   n_Y = marginal_multiplicity(bins[:, 2])
    n_XY = marginal_multiplicity(bins[:, 1:2])
+   n_Y  = marginal_multiplicity(bins[:, 2])
    n_YZ = marginal_multiplicity(bins[:, 2:3])
 
-   p_Y = n_Y / n_nonempty_bins
-   p_XY = n_XY / n_nonempty_bins
-   p_YZ = n_YZ / n_nonempty_bins
-
    # Transfer entropy as the sum of the marginal entropies
-   ((nat_entropy(p_YZ) + nat_entropy(p_XY) - nat_entropy(p_Y)) / n_nonempty_bins) / log(2)
+   ((nat_entropy(n_YZ) + nat_entropy(n_XY) - nat_entropy(n_Y)) / n_nonempty_bins) / log(2)
 end
+
+shape_te(eqb::StateSpaceReconstruction.EquidistantBinning) = shape_te(eqb.positive_measure_bins)
