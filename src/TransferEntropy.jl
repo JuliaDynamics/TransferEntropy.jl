@@ -8,6 +8,11 @@ using SimplexSplitting
 using InvariantDistribution
 using TransferEntropy
 using ChaoticMaps
+using StateSpaceReconstruction
+using GroupSlices
+using PerronFrobenius
+
+@everywhere using StateSpaceReconstruction
 
 @everywhere using Distributions
 @everywhere using Simplices
@@ -29,6 +34,7 @@ include("te_from_embedding.jl")
 include("te_from_triang.jl")
 include("te_from_ts.jl")
 include("TE_examples.jl")
+include("te_from_equidistant_binning.jl")
 
 export indexin_rows,
         embed_for_te,
@@ -38,6 +44,10 @@ export indexin_rows,
         te_from_triang, te_from_triang_multiple_binsizes,
         te_from_ts,
         TEresult,
-        Examples
+        Examples,
+
+        # From equidistant binning
+        marginal, nat_entropy, marginal_multiplicity,
+        te, shape_te
 
 end # module

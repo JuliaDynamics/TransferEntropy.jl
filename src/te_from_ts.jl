@@ -50,7 +50,7 @@ function te_from_ts(
     # Triangulate
     println("Triangulating")
 
-    t = triang_from_embedding(Embedding(embedding))
+    t = SimplexSplitting.triang_from_embedding(SimplexSplitting.Embedding(embedding))
 
     #=
     # Refine triangulation until all simplices have radii less than
@@ -81,7 +81,7 @@ function te_from_ts(
 
     println("Computing left eigenvector")
 
-    invdist = left_eigenvector(M)
+    invdist = InvariantDistribution.left_eigenvector(M)
 
     """
         local_te_from_triang(n_bins::Int)

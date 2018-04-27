@@ -33,7 +33,7 @@ Repeating this procedure `n_reps` times, we obtain a distribution of
 TE estimates for this bin size.
 """
 function te_from_triang(
-        t::Triangulation,
+        t::SimplexSplitting.Triangulation,
         invdist::InvariantDistribution.InvDist,
         n_bins::Int,
         n_reps::Int
@@ -79,7 +79,7 @@ function te_from_triang(
 end
 
 
-function te_from_triang_multiple_binsizes(t::Triangulation,
+function te_from_triang_multiple_binsizes(t::SimplexSplitting.Triangulation,
     invdist::InvariantDistribution.InvDist,
     binsizes::Vector{Number},
     n_reps::Int)
