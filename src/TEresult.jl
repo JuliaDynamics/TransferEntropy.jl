@@ -3,7 +3,7 @@ using Parameters
 @with_kw struct TEresult
     embedding::Array{Float64, 2} = Array{Float64}()
     lag::Int
-    triangulation::Triangulation
+    triangulation::SimplexSplitting.Triangulation
     markovmatrix::Array{Float64, 2} = Array{Float64, 2}()
     invmeasure::InvariantDistribution.InvDist = InvariantDistribution.InvDist()
     binsizes::Vector{Float64} = Vector{Float64}()
