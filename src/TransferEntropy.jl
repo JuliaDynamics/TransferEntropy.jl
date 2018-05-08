@@ -48,6 +48,6 @@ export indexin_rows,
 
         # From equidistant binning
         marginal, nat_entropy, marginal_multiplicity,
-        te, shape_te
+        transferentropy, shape_transferentropy, TransferEntropyVariables
 
 end # module

@@ -1,10 +1,12 @@
 """
-    TransferEntropyParameters(from, to, conditioned_on)
+    TransferEntropyVariables(XY, YZ, Y, W)
+
 """
-struct TransferEntropyParameters
-    from::AbstractArray{Int, 1}
-    to::AbstractArray{Int, 1}
-    conditioned_on::AbstractArray{1}
+struct TransferEntropyVariables
+    XY::AbstractArray{Int, 1}
+    YZ::AbstractArray{Int, 1}
+    Y::AbstractArray{Int, 1}
+    W::AbstractArray{Int, 1}
 end
 
 """
@@ -69,21 +71,18 @@ function marginal(cols::Vector{Int},
     return marginal
 end
 
-
-
-function te(eqb::StateSpaceReconstruction.EquidistantBinning,
+"""
+Compute transfer entropy.
+"""
+function transferentropy(eqb::StateSpaceReconstruction.EquidistantBinning,
             iv::PerronFrobenius.InvariantDistribution,
-            YZ_inds::Vector{Int},
-            XY_inds::Vector{Int},
-            Y_inds::Vector{Int},
-            W_inds::Vector{Int})
-
+            inds::TransferEntropyVariables)
 
     positive_measure_bins = eqb.unique_nonempty_bins[iv.nonzero_inds, :]
 
-    p_Y = marginal([Y_inds; W_inds], positive_measure_bins, iv)
-    p_XY = marginal([XY_inds; W_inds], positive_measure_bins, iv)
-    p_YZ = marginal([YZ_inds; W_inds], positive_measure_bins, iv)
+    p_Y  = marginal([inds.Y;  inds.W], positive_measure_bins, iv)
+    p_XY = marginal([inds.XY; inds.W], positive_measure_bins, iv)
+    p_YZ = marginal([inds.YZ; inds.W], positive_measure_bins, iv)
 
     ((nat_entropy(p_YZ) +
         nat_entropy(p_XY) -
@@ -91,17 +90,17 @@ function te(eqb::StateSpaceReconstruction.EquidistantBinning,
         nat_entropy(iv.dist[iv.nonzero_inds])) / log(2)
 end
 
-function te(eqb::StateSpaceReconstruction.EquidistantBinning,
+"""
+Compute transfer entropy.
+"""
+function transferentropy(eqb::StateSpaceReconstruction.EquidistantBinning,
             iv::PerronFrobenius.InvariantDistribution,
-            YZ_inds::Vector{Int},
-            XY_inds::Vector{Int},
-            Y_inds::Vector{Int},
-            W_inds::Vector{Int})
+            inds::TransferEntropyVariables)
 
     positive_measure_bins = eqb.unique_nonempty_bins[iv.nonzero_inds, :]
-    p_Y = marginal([Y_inds; W_inds], positive_measure_bins, iv)
-    p_XY = marginal([XY_inds; W_inds], positive_measure_bins, iv)
-    p_YZ = marginal([YZ_inds; W_inds], positive_measure_bins, iv)
+    p_Y  = marginal([inds.Y;  inds.W], positive_measure_bins, iv)
+    p_XY = marginal([inds.XY; inds.W], positive_measure_bins, iv)
+    p_YZ = marginal([inds.YZ; inds.W], positive_measure_bins, iv)
 
     ((nat_entropy(p_YZ) +
         nat_entropy(p_XY) -
@@ -109,18 +108,17 @@ function te(eqb::StateSpaceReconstruction.EquidistantBinning,
         nat_entropy(iv.dist[iv.nonzero_inds])) / log(2)
 end
 
-function te(unique_nonempty_bins::Array{Int, 2},
+"""
+Compute transfer entropy.
+"""
+function transferentropy(unique_nonempty_bins::Array{Int, 2},
             iv::PerronFrobenius.InvariantDistribution,
-            YZ_inds::Vector{Int},
-            XY_inds::Vector{Int},
-            Y_inds::Vector{Int},
-            W_inds::Vector{Int})
+            inds::TransferEntropyVariables)
 
     positive_measure_bins = unique_nonempty_bins[iv.nonzero_inds, :]
-    p_Y = marginal([Y_inds; W_inds], positive_measure_bins, iv)
-    p_XY = marginal([XY_inds; W_inds], positive_measure_bins, iv)
-    p_YZ = marginal([YZ_inds; W_inds], positive_measure_bins, iv)
-
+    p_Y  = marginal([inds.Y;  inds.W], positive_measure_bins, iv)
+    p_XY = marginal([inds.XY; inds.W], positive_measure_bins, iv)
+    p_YZ = marginal([inds.YZ; inds.W], positive_measure_bins, iv)
 
     ((nat_entropy(p_YZ) +
         nat_entropy(p_XY) -
@@ -128,79 +126,77 @@ function te(unique_nonempty_bins::Array{Int, 2},
         nat_entropy(iv.dist[iv.nonzero_inds])) / log(2)
 end
 
-""" Estimate transfer entropy from an embedding. """
-function te(E::StateSpaceReconstruction.GenericEmbedding,
+"""
+Estimate transfer entropy from an embedding.
+"""
+function transferentropy(E::StateSpaceReconstruction.GenericEmbedding,
     binsizes::Vector{Int},
-    YZ_inds::Vector{Int},
-    XY_inds::Vector{Int},
-    Y_inds::Vector{Int},
-    W_inds::Vector{Int})
+    inds::TransferEntropyVariables)
 
     n = length(binsizes)
     binnings = Vector{StateSpaceReconstruction.EquidistantBinning}(n)
     transferoperators = Vector{PerronFrobenius.TransferOperator}(n)
-    invariantdistributions = Vector{PerronFrobenius.InvariantDistribution}(n)
+    invariantdists = Vector{PerronFrobenius.InvariantDistribution}(n)
     transferentropies = Vector{Float64}(n)
 
     for i = 1:n
         binnings[i] = bin_equidistant(E, binsizes[i])
         transferoperators[i] = transferoperator(binnings[i])
-        invariantdistributions[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
+        invariantdists[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
     end
 
     for i = 1:n
-        transferentropies[i] = te(binnings[i], invariantdistributions[i], YZ_inds, XY_inds, Y_inds, W_inds)
+        transferentropies[i] = transferentropy(binnings[i], invariantdists[i], inds)
     end
 
     return transferentropies
 end
 
-""" Estimate transfer entropy from a set of precomputed binnings. """
-function te(binnings::Vector{StateSpaceReconstruction.EquidistantBinning},
-    YZ_inds::Vector{Int},
-    XY_inds::Vector{Int},
-    Y_inds::Vector{Int},
-    W_inds::Vector{Int})
+"""
+Estimate transfer entropy from a set of precomputed binnings.
+"""
+function transferentropy(binnings::Vector{StateSpaceReconstruction.EquidistantBinning},
+                        inds::TransferEntropyVariables)
 
     n = length(binnings)
     transferoperators = Vector{PerronFrobenius.TransferOperator}(n)
-    invariantdistributions = Vector{PerronFrobenius.InvariantDistribution}(n)
+    invariantdists = Vector{PerronFrobenius.InvariantDistribution}(n)
     transferentropies = Vector{Float64}(n)
 
     for i = 1:n
         transferoperators[i] = transferoperator(binnings[i])
-        invariantdistributions[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
+        invariantdists[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
     end
 
     for i = 1:n
-        transferentropies[i] = te(binnings[i], invariantdistributions[i], YZ_inds, XY_inds, Y_inds, W_inds)
+        transferentropies[i] = transferentropy(binnings[i], invariantdists[i], inds)
     end
 
     return transferentropies
 end
 
-""" Compute transfer entropy from an embedding. """
-function te(E::StateSpaceReconstruction.GenericEmbedding, binsize::Int,
-    YZ_inds::Vector{Int},
-    XY_inds::Vector{Int},
-    Y_inds::Vector{Int},
-    W_inds::Vector{Int})
+"""
+Compute transfer entropy from an embedding.
+"""
+function transferentropy(E::StateSpaceReconstruction.GenericEmbedding,
+                        binsize::Int,
+                        inds::TransferEntropyVariables)
     b = bin_equidistant(E, binsize)
     transferoperator = PerronFrobenius.transferoperator(b)
     invariantdistribution = PerronFrobenius.left_eigenvector(transferoperator)
-    te(b, invariantdistribution, YZ_inds, XY_inds, Y_inds, W_inds)
+    transferentropy(b, invariantdistribution, inds)
 end
 
-""" Compute transfer entropy from a binning. """
-function te(b::StateSpaceReconstruction.EquidistantBinning,
-    YZ_inds::Vector{Int},
-    XY_inds::Vector{Int},
-    Y_inds::Vector{Int},
-    W_inds::Vector{Int})
+"""
+Compute transfer entropy from a binning.
+"""
+function transferentropy(b::StateSpaceReconstruction.EquidistantBinning,
+                        inds::TransferEntropyVariables)
     transferoperator = PerronFrobenius.transferoperator(b)
     invariantdistribution = PerronFrobenius.left_eigenvector(transferoperator)
-    te(b, invariantdistribution, YZ_inds, XY_inds, Y_inds, W_inds)
+    transferentropy(b, invariantdistribution, inds)
 end
+
 
 
 """
@@ -208,26 +204,19 @@ Compute the transfer entropy resulting only from the geometry of the reconstruct
 attractor. How? Assign uniformly distributed states on the volumes of the
 reconstructed state space with nonzero measure.
 """
-function shape_te(bins::Array{Int, 2},
-    YZ_inds::Vector{Int},
-    XY_inds::Vector{Int},
-    Y_inds::Vector{Int},
-    W_inds::Vector{Int})
+function shape_transferentropy(bins::Array{Int, 2}, inds::TransferEntropyVariables)
    dim, n_nonempty_bins = size(bins, 2), size(bins, 1)
 
-   n_XY = marginal_multiplicity(bins[:, [XY_inds; W_inds]])
-   n_Y  = marginal_multiplicity(bins[:, [Y_inds; W_inds]])
-   n_YZ = marginal_multiplicity(bins[:, [YZ_inds; W_inds]])
+   n_XY = marginal_multiplicity(bins[:, [inds.XY; inds.W]])
+   n_Y  = marginal_multiplicity(bins[:, [inds.Y;  inds.W]])
+   n_YZ = marginal_multiplicity(bins[:, [inds.YZ; inds.W]])
 
    # Transfer entropy as the sum of the marginal entropies
    ((nat_entropy(n_YZ) + nat_entropy(n_XY) - nat_entropy(n_Y)) / n_nonempty_bins) / log(2)
 end
 
-function shape_te(eqb::StateSpaceReconstruction.EquidistantBinning,
-    YZ_inds::Vector{Int},
-    XY_inds::Vector{Int},
-    Y_inds::Vector{Int},
-    W_inds::Vector{Int})
+function shape_transferentropy(eqb::StateSpaceReconstruction.EquidistantBinning,
+                               inds::TransferEntropyVariables)
 
-    shape_te(eqb.unique_nonempty_bins, YZ_inds, XY_inds, Y_inds, W_inds)
+    shape_transferentropy(eqb.unique_nonempty_bins, inds)
 end
