@@ -24,7 +24,7 @@ range of `binsizes`
 function te_from_embedding(
         embedding::AbstractArray{Float64, 2},
 		te_lag::Int = 1;
-		binsizes::AbstractVector{Int} = vcat(1:2:20, 25:5:200, 200:10:500),
+		binsizes::AbstractVector{Int} = vcat(1:2:20),
         n_reps::Int = 10,
         parallel = true,
         sparse = false,
@@ -86,7 +86,7 @@ function te_from_embedding(
         # bins are guaranteed to be nonnegative, transfer entropy is also
         # guaranteed to be nonnegative.
         =#
-        TE_estimates = zeros(Float64, n_reps)
+        TE_estimates = zeros{Float64}(n_reps)
 
         for i = 1:n_reps
 			# Represent each simplex as a single point. We can do this because
