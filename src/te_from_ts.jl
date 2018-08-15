@@ -24,7 +24,7 @@ range of `binsizes`
 function te_from_ts(
         source::AbstractVector{Float64},
         target::AbstractVector{Float64};
-        binsizes::AbstractVector{Int} = vcat(1:2:20, 25:5:200, 200:10:500),
+        binsizes::AbstractVector{Int} = vcat(1:2:20),
         n_reps::Int = 10,
         te_lag::Int = 1,
         discrete = true, n_randpts::Int = 100, sample_uniformly = true,
@@ -45,7 +45,7 @@ function te_from_ts(
 
     println("Invariantizing embedding")
 
-    embedding = invariantize_embedding(Ε, max_point_remove = ceil(Int, size(Ε, 1)/2))
+    embedding = StateSpaceReconstruction.invariantize(Ε, max_point_remove = ceil(Int, size(Ε, 1)/2))
 
     # Triangulate
     println("Triangulating")
@@ -81,7 +81,7 @@ function te_from_ts(
 
     println("Computing left eigenvector")
 
-    invdist = InvariantDistribution.left_eigenvector(M)
+    invdist = PerronFrobenius.left_eigenvector(M)
 
     """
         local_te_from_triang(n_bins::Int)
@@ -97,7 +97,7 @@ function te_from_ts(
         # bins are guaranteed to be nonnegative, transfer entropy is also
         # guaranteed to be nonnegative.
         =#
-        TE_estimates = zeros(Float64, n_reps)
+        TE_estimates = zeros{Float64}(n_reps)
 
         for i = 1:n_reps
             # Represent each simplex as a single point. We can do this because

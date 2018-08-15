@@ -34,7 +34,7 @@ TE estimates for this bin size.
 """
 function te_from_triang(
         t::SimplexSplitting.Triangulation,
-        invdist::InvariantDistribution.InvDist,
+        invdist::PerronFrobenius.InvariantDistribution,
         n_bins::Int,
         n_reps::Int
     )
@@ -42,7 +42,7 @@ function te_from_triang(
     # Initialise transfer entropy estimates to 0. Because the measure of the
     # bins are guaranteed to be nonnegative, transfer entropy is also guaranteed
     # to be nonnegative.
-    TE_estimates = zeros(Float64, n_reps)
+    TE_estimates = zeros{Float64}(n_reps)
 
     for i = 1:n_reps
         # Represent each simplex as a single point. We can do this because
@@ -80,7 +80,7 @@ end
 
 
 function te_from_triang_multiple_binsizes(t::SimplexSplitting.Triangulation,
-    invdist::InvariantDistribution.InvDist,
+    invdist::PerronFrobenius.InvariantDistribution,
     binsizes::Vector{Number},
     n_reps::Int)
 

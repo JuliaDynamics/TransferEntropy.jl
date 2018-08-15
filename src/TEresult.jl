@@ -1,13 +1,13 @@
 using Parameters
 
-@with_kw struct TEresult
-    embedding::Array{Float64, 2} = Array{Float64}()
+struct TEresult
+    embedding::Array{Float64, 2}
     lag::Int
     triangulation::SimplexSplitting.Triangulation
-    markovmatrix::Array{Float64, 2} = Array{Float64, 2}()
-    invmeasure::InvariantDistribution.InvDist = InvariantDistribution.InvDist()
-    binsizes::Vector{Float64} = Vector{Float64}()
-    TE::Array{Float64, 2} =  Array{Float64, 2}()
+    markovmatrix::Array{Float64, 2}
+    invmeasure::PerronFrobenius.InvariantDistribution
+    binsizes::Vector{Float64}
+    TE::Array{Float64, 2}
 end
 
 """
@@ -16,4 +16,4 @@ a dictionary.
 """
 todict(result::TEresult) = Dict([fn => getfield(result, fn) for fn = fieldnames(result)])
 
-export todict
+export todict, TEresult
