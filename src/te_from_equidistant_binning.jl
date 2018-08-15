@@ -3,10 +3,10 @@
 
 """
 struct TransferEntropyVariables
-    XY::AbstractArray{Int, 1}
-    YZ::AbstractArray{Int, 1}
-    Y::AbstractArray{Int, 1}
-    W::AbstractArray{Int, 1}
+    XY::AbstractArray{Int, 1} #
+    YZ::AbstractArray{Int, 1} #
+    Y::AbstractArray{Int, 1}  #
+    W::AbstractArray{Int, 1}  # extra variables
 end
 
 """
@@ -47,7 +47,7 @@ function marginal(cols::Vector{Int},
 
     # Loop over the positively measured bins.
     marginal_inds = marginal_indices(eqb.positive_measure_bins[iv.nonzero_inds, cols])
-    marginal = zeros{Float64}(size(marginal_inds, 1))
+    marginal = zeros(Float64, size(marginal_inds, 1))
 
     for i = 1:size(marginal_inds, 1)
         marginal[i] = sum(iv.dist[iv.nonzero_inds][marginal_inds[i]])
@@ -62,7 +62,7 @@ function marginal(cols::Vector{Int},
 
     # Loop over the positively measured bins.
     marginal_inds = marginal_indices(positive_measure_bins[:, cols])
-    marginal = zeros{Float64}(size(marginal_inds, 1))
+    marginal = zeros(Float64, size(marginal_inds, 1))
 
     for i = 1:size(marginal_inds, 1)
         marginal[i] = sum(iv.dist[iv.nonzero_inds][marginal_inds[i]])
