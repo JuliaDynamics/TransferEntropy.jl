@@ -21,7 +21,7 @@ te_from_ts(
 Compute transfer entropy between a `source` and a target time series over a
 range of `binsizes`
 """
-function te_from_ts(
+function transferentropy(
         source::AbstractVector{Float64},
         target::AbstractVector{Float64};
         binsizes::AbstractVector{Int} = vcat(1:2:20),

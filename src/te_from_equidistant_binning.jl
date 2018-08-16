@@ -41,7 +41,7 @@ Compute the marginal for a binning with an associated transfer operator. The
     marginal is computed for the columns `cols`.
 """
 function marginal(cols::Vector{Int},
-                    eqb::StateSpaceReconstruction.EquidistantBinning,
+                    eqb::StateSpaceReconstruction.RectangularBinning,
                     to::PerronFrobenius.EquidistantBinningTransferOperator,
                     iv::PerronFrobenius.InvariantDistribution)
 
@@ -74,7 +74,7 @@ end
 """
 Compute transfer entropy.
 """
-function transferentropy(eqb::StateSpaceReconstruction.EquidistantBinning,
+function transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
             iv::PerronFrobenius.InvariantDistribution,
             vars::TransferEntropyVariables)
 
@@ -111,12 +111,12 @@ end
 """
 Estimate transfer entropy from an embedding.
 """
-function transferentropy(E::StateSpaceReconstruction.GenericEmbedding,
+function transferentropy(E::StateSpaceReconstruction.Embedding,
     binsizes::Vector{Int},
     vars::TransferEntropyVariables)
 
     n = length(binsizes)
-    binnings = Vector{StateSpaceReconstruction.EquidistantBinning}(n)
+    binnings = Vector{StateSpaceReconstruction.RectangularBinning}(n)
     transferoperators = Vector{PerronFrobenius.TransferOperator}(n)
     invariantdists = Vector{PerronFrobenius.InvariantDistribution}(n)
     transferentropies = Vector{Float64}(n)
@@ -137,7 +137,7 @@ end
 """
 Estimate transfer entropy from a set of precomputed binnings.
 """
-function transferentropy(binnings::Vector{StateSpaceReconstruction.EquidistantBinning},
+function transferentropy(binnings::Vector{StateSpaceReconstruction.RectangularBinning},
                         vars::TransferEntropyVariables)
 
     n = length(binnings)
@@ -160,7 +160,7 @@ end
 """
 Compute transfer entropy from an embedding.
 """
-function transferentropy(E::StateSpaceReconstruction.GenericEmbedding,
+function transferentropy(E::StateSpaceReconstruction.Embedding,
                         binsize::Int,
                         vars::TransferEntropyVariables)
     b = bin_equidistant(E, binsize)
@@ -172,7 +172,7 @@ end
 """
 Compute transfer entropy from a binning.
 """
-function transferentropy(b::StateSpaceReconstruction.EquidistantBinning,
+function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
                         vars::TransferEntropyVariables)
     transferoperator = PerronFrobenius.transferoperator(b)
     invariantdistribution = PerronFrobenius.left_eigenvector(transferoperator)
@@ -197,7 +197,7 @@ function shape_transferentropy(bins::Array{Int, 2}, vars::TransferEntropyVariabl
    ((nat_entropy(n_YZ) + nat_entropy(n_XY) - nat_entropy(n_Y)) / n_nonempty_bins) / log(2)
 end
 
-function shape_transferentropy(eqb::StateSpaceReconstruction.EquidistantBinning,
+function shape_transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
                                vars::TransferEntropyVariables)
 
     shape_transferentropy(eqb.unique_nonempty_bins, vars)

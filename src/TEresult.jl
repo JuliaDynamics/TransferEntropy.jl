@@ -3,7 +3,7 @@ using Parameters
 struct TEresult
     embedding::Array{Float64, 2}
     lag::Int
-    triangulation::SimplexSplitting.Triangulation
+    triangulation::StateSpaceReconstruction.Partitioning.Triangulation
     markovmatrix::Array{Float64, 2}
     invmeasure::PerronFrobenius.InvariantDistribution
     binsizes::Vector{Float64}

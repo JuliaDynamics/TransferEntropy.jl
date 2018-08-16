@@ -32,8 +32,8 @@ relevant axes fixed, summing over the remaining axes.
 Repeating this procedure `n_reps` times, we obtain a distribution of
 TE estimates for this bin size.
 """
-function te_from_triang(
-        t::SimplexSplitting.Triangulation,
+function transferentropy(
+        t::StateSpaceReconstruction.Partitioning.Triangulation,
         invdist::PerronFrobenius.InvariantDistribution,
         n_bins::Int,
         n_reps::Int
@@ -42,7 +42,7 @@ function te_from_triang(
     # Initialise transfer entropy estimates to 0. Because the measure of the
     # bins are guaranteed to be nonnegative, transfer entropy is also guaranteed
     # to be nonnegative.
-    TE_estimates = zeros{Float64}(n_reps)
+    TE_estimates = zeros(Float64, n_reps)
 
     for i = 1:n_reps
         # Represent each simplex as a single point. We can do this because
@@ -79,15 +79,15 @@ function te_from_triang(
 end
 
 
-function te_from_triang_multiple_binsizes(t::SimplexSplitting.Triangulation,
+function transferentropy(t::T where {T <: StateSpaceReconstruction.Partitioning.Triangulation},
     invdist::PerronFrobenius.InvariantDistribution,
-    binsizes::Vector{Number},
-    n_reps::Int)
+    binsizes::Vector{T} where {T<:Signed},
+    n_reps::T where {T<:Signed})
 
     TE = SharedMatrix{Float64}(n_reps, length(binsizes))
 
     @sync @parallel for i in 1:length(binsizes)
-        TE[:, i] = te_from_triang(t, invdist, binsizes[i], n_reps)
+        TE[:, i] = transferentropy(t, invdist, binsizes[i], n_reps)
     end
 
     return Array(TE)

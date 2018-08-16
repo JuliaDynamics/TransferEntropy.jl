@@ -31,16 +31,14 @@ export indexin_rows,
         embed_for_te,
 	get_nonempty_bins, get_nonempty_bins_abs,
         jointdist, marginaldists,
-        te_from_embedding,
-        te_from_equidistant_binning,
-        te_from_triang, te_from_triang_multiple_binsizes,
-        te_from_ts,
         TEresult,
         Examples,
 
         # From equidistant binning
         marginal, nat_entropy, marginal_multiplicity,
-        transferentropy, shape_transferentropy,
+
+        # Transfer entropy function (works with many different inputs)
+        transferentropy,
 
         # Keeping track of which variables goes into which marginals
         TransferEntropyVariables

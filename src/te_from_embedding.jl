@@ -21,7 +21,7 @@ Compute transfer entropy given an embedding in which the relation between source
 and target time series have already been embedded with the specified `te_lag`.
 range of `binsizes`
 """
-function te_from_embedding(
+function transferentropy(
         embedding::AbstractArray{Float64, 2},
 		te_lag::Int = 1;
 		binsizes::AbstractVector{Int} = vcat(1:2:20),
