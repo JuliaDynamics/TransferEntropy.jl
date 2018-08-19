@@ -42,7 +42,7 @@ Compute the marginal for a binning with an associated transfer operator. The
 """
 function marginal(cols::Vector{Int},
                     eqb::StateSpaceReconstruction.RectangularBinning,
-                    to::PerronFrobenius.EquidistantBinningTransferOperator,
+                    to::PerronFrobenius.RectangularBinningTransferOperator,
                     iv::PerronFrobenius.InvariantDistribution)
 
     # Loop over the positively measured bins.
@@ -72,7 +72,7 @@ function marginal(cols::Vector{Int},
 end
 
 """
-Compute transfer entropy.
+Compute transfer entropy. This is the workhorse function.
 """
 function transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
             iv::PerronFrobenius.InvariantDistribution,
@@ -122,7 +122,7 @@ function transferentropy(E::StateSpaceReconstruction.Embedding,
     transferentropies = Vector{Float64}(n)
 
     for i = 1:n
-        binnings[i] = bin_equidistant(E, binsizes[i])
+        binnings[i] = bin_rectangular(E, binsizes[i])
         transferoperators[i] = transferoperator(binnings[i])
         invariantdists[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
     end
@@ -163,9 +163,9 @@ Compute transfer entropy from an embedding.
 function transferentropy(E::StateSpaceReconstruction.Embedding,
                         binsize::Int,
                         vars::TransferEntropyVariables)
-    b = bin_equidistant(E, binsize)
-    transferoperator = PerronFrobenius.transferoperator(b)
-    invariantdistribution = PerronFrobenius.left_eigenvector(transferoperator)
+    b = bin_rectangular(E, binsize)
+    to = PerronFrobenius.transferoperator(b)
+    invariantdistribution = PerronFrobenius.left_eigenvector(to)
     transferentropy(b, invariantdistribution, vars)
 end
 
@@ -174,12 +174,10 @@ Compute transfer entropy from a binning.
 """
 function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
                         vars::TransferEntropyVariables)
-    transferoperator = PerronFrobenius.transferoperator(b)
-    invariantdistribution = PerronFrobenius.left_eigenvector(transferoperator)
-    transferentropy(b, invariantdistribution, vars)
+    to = PerronFrobenius.transferoperator(b)
+    invdist = PerronFrobenius.left_eigenvector(to)
+    transferentropy(b, invdist, vars)
 end
-
-
 
 """
 Compute the transfer entropy resulting only from the geometry of the reconstructed
