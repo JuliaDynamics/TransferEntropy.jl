@@ -1,75 +1,34 @@
 """
     TransferEntropyVariables(XY, YZ, Y, W)
 
+
+X = future of target variable(s), times (t + τ₁, t + τ₂, ...) where τᵢ ≧ 0.
+Y = present and past of target variable(s), at times (t, t + η₁, t + η₂, ...) where ηᵢ ≦ 0.
+Z = source variable(s) at times (t, t + ζ₁, t + ζ₂, ...) where ζᵢ ≦ 0.
+W = conditioned variable(s) at times (t, t - π₁, t - π₂, ...) where πᵢ ≦ 0.
 """
 struct TransferEntropyVariables
-    XY::AbstractArray{Int, 1} #
-    YZ::AbstractArray{Int, 1} #
-    Y::AbstractArray{Int, 1}  #
-    W::AbstractArray{Int, 1}  # extra variables
+    XY::Vector{Int} #
+    YZ::Vector{Int} #
+    Y::Vector{Int} #
+    W::Vector{Int} #  # extra variables
 end
 
-"""
-Returns a column vector with the same number of elements as there are unique
-rows in V. The value of the ith element is the row indices of rows in V
-matching the ith unique row.
-"""
-marginal_indices(V) = GroupSlices.groupinds(GroupSlices.groupslices(V, 1))
-
-"""
-How many times does each unique row in V appear? Returns a column vector with the same
-number of elements as there are unique rows in V. The value of the ith element of the
-return vector is the number of times the ith unique row of V appears in V.
-"""
-marginal_multiplicity(V) = [length(x) for x in marginal_indices(V)]
 
 """
 Compute entropy of a probability distribution.
 """
-function nat_entropy(prob::Vector{T}) where T<:Number
+function nat_entropy(probdist::Vector{T}) where T<:Number
     te = 0.0
 
-    @inbounds for i = 1:size(prob, 1)
-        te -= prob[i] * log(prob[i])
+    @inbounds for i = 1:size(probdist, 1)
+        te -= probdist[i] * log(probdist[i])
     end
 
     return te
 end
 
-"""
-Compute the marginal for a binning with an associated transfer operator. The
-    marginal is computed for the columns `cols`.
-"""
-function marginal(cols::Vector{Int},
-                    eqb::StateSpaceReconstruction.RectangularBinning,
-                    to::PerronFrobenius.RectangularBinningTransferOperator,
-                    iv::PerronFrobenius.InvariantDistribution)
 
-    # Loop over the positively measured bins.
-    marginal_inds = marginal_indices(eqb.positive_measure_bins[iv.nonzero_inds, cols])
-    marginal = zeros(Float64, size(marginal_inds, 1))
-
-    for i = 1:size(marginal_inds, 1)
-        marginal[i] = sum(iv.dist[iv.nonzero_inds][marginal_inds[i]])
-    end
-
-    return marginal
-end
-
-function marginal(cols::Vector{Int},
-                    positive_measure_bins::Array{Int, 2},
-                    iv::PerronFrobenius.InvariantDistribution)
-
-    marginal_inds = marginal_indices(positive_measure_bins[:, cols])
-    # Find the nonzero elements of the invariant distribution, loop
-    # only over those.
-    nonzero_elements_of_dist = iv.dist[iv.nonzero_inds]
-    marginal = zeros(Float64, size(marginal_inds, 1))
-    @inbounds for i = 1:size(marginal_inds, 1)
-        marginal[i] = sum(nonzero_elements_of_dist[marginal_inds[i]])
-    end
-    return marginal
-end
 
 """
 transferentropy(b::StateSpaceReconstruction.RectangularBinning,
