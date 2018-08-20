@@ -26,7 +26,7 @@ marginal_multiplicity(V) = [length(x) for x in marginal_indices(V)]
 """
 Compute entropy of a probability distribution.
 """
-function nat_entropy(prob)
+function nat_entropy(prob::Vector{T}) where T<:Number
     te = 0.0
 
     @inbounds for i = 1:size(prob, 1)
