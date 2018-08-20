@@ -34,7 +34,7 @@ function get_nonempty_bins(pts::Array{Float64, 2},
     dim = size(pts, 2)
 
     # The number of grids specified must match the number of dimensions.
-    @assert dim == length(δ)
+    #@assert dim == length(δ)
 
     # Initialise matrix holding the non-zero entries of the joint distribution.
     # Each row contains the indices
@@ -91,7 +91,7 @@ function get_nonempty_bins_abs(pts::Array{Float64, 2},
     dim = size(pts, 2)
 
     # The number of grids specified must match the number of dimensions.
-    @assert dim == length(δ)
+    #@assert dim == length(δ)
 
     # Initialise matrix holding the non-zero entries of the joint distribution.
     # Each row contains the indices

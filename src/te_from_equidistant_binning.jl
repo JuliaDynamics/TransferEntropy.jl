@@ -96,14 +96,14 @@ function transferentropy(E::StateSpaceReconstruction.Embedding,
                         n_subdivisions::Vector{Int},
                         vars::TransferEntropyVariables)
 
-    n = length(binsizes)
+    n = length(n_subdivisions)
     binnings = Vector{StateSpaceReconstruction.RectangularBinning}(n)
-    transferoperators = Vector{PerronFrobenius.TransferOperator}(n)
+    transferoperators = Vector{PerronFrobenius.AbstractTransferOperator}(n)
     invariantdists = Vector{PerronFrobenius.InvariantDistribution}(n)
     transferentropies = Vector{Float64}(n)
 
     for i = 1:n
-        binnings[i] = bin_rectangular(E, binsizes[i])
+        binnings[i] = bin_rectangular(E, n_subdivisions[i])
         transferoperators[i] = transferoperator(binnings[i])
         invariantdists[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
     end
