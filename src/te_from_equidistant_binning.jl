@@ -60,14 +60,14 @@ function marginal(cols::Vector{Int},
                     positive_measure_bins::Array{Int, 2},
                     iv::PerronFrobenius.InvariantDistribution)
 
-    # Loop over the positively measured bins.
     marginal_inds = marginal_indices(positive_measure_bins[:, cols])
+    # Find the nonzero elements of the invariant distribution, loop
+    # only over those.
+    nonzero_elements_of_dist = iv.dist[iv.nonzero_inds]
     marginal = zeros(Float64, size(marginal_inds, 1))
-
-    for i = 1:size(marginal_inds, 1)
-        marginal[i] = sum(iv.dist[iv.nonzero_inds][marginal_inds[i]])
+    @inbounds for i = 1:size(marginal_inds, 1)
+        marginal[i] = sum(nonzero_elements_of_dist[marginal_inds[i]])
     end
-
     return marginal
 end
 
