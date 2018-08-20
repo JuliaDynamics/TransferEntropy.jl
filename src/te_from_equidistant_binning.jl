@@ -72,7 +72,15 @@ function marginal(cols::Vector{Int},
 end
 
 """
-Compute transfer entropy. This is the workhorse function.
+transferentropy(b::StateSpaceReconstruction.RectangularBinning,
+                invdist::PerronFrobenius.InvariantDistribution,
+                vars::TransferEntropyVariables) -> Float64
+
+The workhorse function for all transfer entropy estimators.
+
+Computes transfer entropy from a binning and an associated invariant probability
+distributionon the elements of the partition. This allows for using invariant distributions
+obtained by means other than the transfer operator.
 """
 function transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
             iv::PerronFrobenius.InvariantDistribution,
@@ -109,11 +117,25 @@ function transferentropy(unique_nonempty_bins::Array{Int, 2},
 end
 
 """
-Estimate transfer entropy from an embedding.
+    transferentropy(E::StateSpaceReconstruction.Embedding,
+                    n_subdivisions::Vector{Int},
+                    vars::TransferEntropyVariables) -> Vector{Float64}
+
+Estimate transfer entropy from an embedding over multiple binsizes. The bin sizes are
+given as a vector of integers `n_subdivisions`, where each element indicates how many
+equidistant intervals the axes of the embedding should be divided into.
+
+This results in `n_subdivisions` different partitionings of the embedding. For each of
+these partitionings, the transfer operator is estimated, and from the transfer operator
+the associated invariant distribution on the elements of the partition is estimated.
+Lastly, the transfer entropy is computed for each of the resulting invariant distributions.
+
+## Returns
+A vector of transfer entropy estimate, one for each partition.
 """
 function transferentropy(E::StateSpaceReconstruction.Embedding,
-    binsizes::Vector{Int},
-    vars::TransferEntropyVariables)
+                        n_subdivisions::Vector{Int},
+                        vars::TransferEntropyVariables)
 
     n = length(binsizes)
     binnings = Vector{StateSpaceReconstruction.RectangularBinning}(n)
@@ -135,7 +157,14 @@ function transferentropy(E::StateSpaceReconstruction.Embedding,
 end
 
 """
-Estimate transfer entropy from a set of precomputed binnings.
+    transferentropy(binnings::Vector{StateSpaceReconstruction.RectangularBinning},
+                    vars::TransferEntropyVariables) -> Vector{Float64}
+
+Estimate transfer entropy from a set of precomputed binnings. Behind the scenes, this
+function estimates the transfer operator and associated invariant measures over the
+elements of each of the partitions, then estimates transfer entropy from each of those
+probability distributions. Returns a vector of transfer entropy estimates, one for each
+of the binnings.
 """
 function transferentropy(binnings::Vector{StateSpaceReconstruction.RectangularBinning},
                         vars::TransferEntropyVariables)
@@ -158,19 +187,30 @@ function transferentropy(binnings::Vector{StateSpaceReconstruction.RectangularBi
 end
 
 """
-Compute transfer entropy from an embedding.
+    transferentropy(E::StateSpaceReconstruction.Embedding,
+                    nbins_eachaxis::Int,
+                    vars::TransferEntropyVariables) -> Float64
+
+Compute transfer entropy from an embedding, given a number of bins `nbins_eachaxis` along
+each axis of the embedding. Behind the scenes, this function overlays a rectangular grid
+on the embedding, estimates the transfer operator, and from it obtains an invariant
+probability distribution over the elements of the partition. These probabilities are
+then used to estimate the transfer entropy.
 """
 function transferentropy(E::StateSpaceReconstruction.Embedding,
-                        binsize::Int,
+                        nbins_eachaxis::Int,
                         vars::TransferEntropyVariables)
-    b = bin_rectangular(E, binsize)
+    b = bin_rectangular(E, nbins_eachaxis)
     to = PerronFrobenius.transferoperator(b)
     invariantdistribution = PerronFrobenius.left_eigenvector(to)
     transferentropy(b, invariantdistribution, vars)
 end
 
 """
-Compute transfer entropy from a binning.
+    transferentropy(b::StateSpaceReconstruction.RectangularBinning,
+                        vars::TransferEntropyVariables) -> Float64
+
+Compute transfer entropy from a rectangular binning.
 """
 function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
                         vars::TransferEntropyVariables)
@@ -178,6 +218,21 @@ function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
     invdist = PerronFrobenius.left_eigenvector(to)
     transferentropy(b, invdist, vars)
 end
+
+"""
+    transferentropy(b::StateSpaceReconstruction.RectangularBinning,
+                        to::PerronFrobenius.AbstractTransferOperator,
+                        vars::TransferEntropyVariables) -> Float64
+
+Compute transfer entropy from a binning and an associated transfer operator.
+"""
+function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
+                        to::PerronFrobenius.AbstractTransferOperator,
+                        vars::TransferEntropyVariables)
+    invdist = PerronFrobenius.left_eigenvector(to)
+    transferentropy(b, invdist, vars)
+end
+
 
 """
 Compute the transfer entropy resulting only from the geometry of the reconstructed
