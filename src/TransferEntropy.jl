@@ -55,20 +55,21 @@ include("te_from_equidistant_binning.jl")
 #@everywhere include("marginal.jl")
 
 export indexin_rows,
-        embed_for_te,
-	get_nonempty_bins, get_nonempty_bins_abs,
-        jointdist, marginaldists,
-        TEresult,
-        Examples,
-
-        # From equidistant binning
-        marginal, nat_entropy, marginal_multiplicity,
-
-        # Transfer entropy function (works with many different inputs)
+        # embed_for_te,
+	       # get_nonempty_bins, get_nonempty_bins_abs,
+        # jointdist, marginaldists,
+        # TEresult,
+        # Examples,
+        #
+        # # From equidistant binning
+        #marginal, nat_entropy, marginal_multiplicity,
+        nat_entropy,
+        #
+        # # Transfer entropy function (works with many different inputs)
         transferentropy,
-
-        # Keeping track of which variables goes into which marginals
-        TransferEntropyVariables
+        #
+        # # Keeping track of which variables goes into which marginals
+        TransferEntropyVariables,
         TEVars
 
 end # module
