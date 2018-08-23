@@ -214,3 +214,40 @@ function shape_transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
 
     shape_transferentropy(eqb.unique_nonempty_bins, vars)
 end
+
+
+
+######################################################
+# UPDATED TO use TEVars, do this for the rest also
+######################################################
+
+function transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
+            iv::PerronFrobenius.InvariantDistribution,
+            vars::TEVars)
+    v = vars
+
+    C = vars.conditioned_presentpast
+    XY = [v.target_future;      v.target_presentpast; C]
+    YZ = [v.target_presentpast; v.source_presentpast; C]
+    Y =  [v.target_presentpast;                       C]
+
+    positive_measure_bins = eqb.unique_nonempty_bins[iv.nonzero_inds, :]
+
+    p_Y  = marginal(Y, positive_measure_bins, iv)
+    p_XY = marginal(XY, positive_measure_bins, iv)
+    p_YZ = marginal(YZ, positive_measure_bins, iv)
+    ((nat_entropy(p_YZ) +
+        nat_entropy(p_XY) -
+        nat_entropy(p_Y)) -
+        nat_entropy(iv.dist[iv.nonzero_inds])) / log(2)
+end
+
+function transferentropy(E::StateSpaceReconstruction.AbstractEmbedding,
+                            binsize::Union{Int, Float64, Vector{Float64}},
+                            vars::TEVars)
+
+    b = bin_rectangular(E, binsize)
+    to = transferoperator(b)
+    iv = left_eigenvector(to)
+    transferentropy(b, iv, vars)
+end

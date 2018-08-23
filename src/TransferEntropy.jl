@@ -5,10 +5,30 @@ module TransferEntropy
 using PerronFrobenius
 using Distributions
 using GroupSlices
-using ProgressMeter, PmapProgressMeter
+#using ProgressMeter, PmapProgressMeter
 #using ChaoticMaps
 
 
+"""
+   TEVars(target_future::Vector{Int}
+           target_presentpast::Vector{Int}
+           source_presentpast::Vector{Int}
+           conditioned_presentpast::Vector{Int})
+
+Which axes of the state space correspond to the future of the target,
+the present/past of the target, the present/past of the source, and
+the present/past of any conditioned variables? Indices correspond
+to column indices of the embedding.points `Dataset`.
+
+This information used by `transferentropy` to compute correct marginal
+distributions.
+"""
+struct TEVars
+    target_future::Vector{Int}
+    target_presentpast::Vector{Int}
+    source_presentpast::Vector{Int}
+    conditioned_presentpast::Vector{Int}
+end
 #include("rowindexin.jl")
 #include("get_nonempty_bins.jl")
 #include("joint.jl")
@@ -49,5 +69,6 @@ export indexin_rows,
 
         # Keeping track of which variables goes into which marginals
         TransferEntropyVariables
+        TEVars
 
 end # module
