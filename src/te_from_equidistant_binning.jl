@@ -36,10 +36,10 @@ function transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
     p_XY = marginal([vars.XY; vars.W], positive_measure_bins, iv)
     p_YZ = marginal([vars.YZ; vars.W], positive_measure_bins, iv)
 
-    ((nat_entropy(p_YZ) +
-        nat_entropy(p_XY) -
-        nat_entropy(p_Y)) -
-        nat_entropy(iv.dist[iv.nonzero_inds])) / log(2)
+    ((entropy(p_YZ) +
+        entropy(p_XY) -
+        entropy(p_Y)) -
+        entropy(iv.dist[iv.nonzero_inds])) / log(2)
 end
 
 """
@@ -54,10 +54,10 @@ function transferentropy(unique_nonempty_bins::Array{Int, 2},
     p_XY = marginal([vars.XY; vars.W], positive_measure_bins, iv)
     p_YZ = marginal([vars.YZ; vars.W], positive_measure_bins, iv)
 
-    ((nat_entropy(p_YZ) +
-        nat_entropy(p_XY) -
-        nat_entropy(p_Y)) -
-        nat_entropy(iv.dist[iv.nonzero_inds])) / log(2)
+    ((entropy(p_YZ) +
+        entropy(p_XY) -
+        entropy(p_Y)) -
+        entropy(iv.dist[iv.nonzero_inds])) / log(2)
 end
 
 """
@@ -176,31 +176,6 @@ function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
     invdist = PerronFrobenius.left_eigenvector(to)
     transferentropy(b, invdist, vars)
 end
-
-
-"""
-Compute the transfer entropy resulting only from the geometry of the reconstructed
-attractor. How? Assign uniformly distributed states on the volumes of the
-reconstructed state space with nonzero measure.
-"""
-function shape_transferentropy(bins::Array{Int, 2}, vars::TransferEntropyVariables)
-   dim, n_nonempty_bins = size(bins, 2), size(bins, 1)
-
-   n_XY = marginal_multiplicity(bins[:, [vars.XY; vars.W]])
-   n_Y  = marginal_multiplicity(bins[:, [vars.Y;  vars.W]])
-   n_YZ = marginal_multiplicity(bins[:, [vars.YZ; vars.W]])
-
-   # Transfer entropy as the sum of the marginal entropies
-   ((nat_entropy(n_YZ) + nat_entropy(n_XY) - nat_entropy(n_Y)) / n_nonempty_bins) / log(2)
-end
-
-function shape_transferentropy(eqb::StateSpaceReconstruction.RectangularBinning,
-                               vars::TransferEntropyVariables)
-
-    shape_transferentropy(eqb.unique_nonempty_bins, vars)
-end
-
-
 
 ######################################################
 # UPDATED TO use TEVars, do this for the rest also

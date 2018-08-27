@@ -34,13 +34,13 @@ end
 
 include("entropy.jl")
 include("estimators/transferentropy_visitfreq.jl")
-#include("TEresult.jl")
+include("estimators/transferentropy_transferoperator.jl")
 
 
 export
 entropy,
 TEVars,
-#@everywhere using ChaoticMaps
+transferentropy_transferoperator,
 transferentropy_visitfreq
 #@everywhere include("get_nonempty_bins.jl")
 #@everywhere include("joint.jl")
