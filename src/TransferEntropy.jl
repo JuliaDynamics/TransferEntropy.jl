@@ -2,18 +2,20 @@ __precompile__(true)
 
 module TransferEntropy
 
-using PerronFrobenius
+using Reexport
+@reexport using PerronFrobenius
+@reexport using StateSpaceReconstruction
 using Distributions
 using GroupSlices
-#using ProgressMeter, PmapProgressMeter
-#using ChaoticMaps
 
 
 """
-   TEVars(target_future::Vector{Int}
-           target_presentpast::Vector{Int}
-           source_presentpast::Vector{Int}
-           conditioned_presentpast::Vector{Int})
+   TEVars(
+      target_future::Vector{Int}
+      target_presentpast::Vector{Int}
+      source_presentpast::Vector{Int}
+      conditioned_presentpast::Vector{Int}
+   )
 
 Which axes of the state space correspond to the future of the target,
 the present/past of the target, the present/past of the source, and
@@ -29,27 +31,17 @@ struct TEVars
     source_presentpast::Vector{Int}
     conditioned_presentpast::Vector{Int}
 end
-#include("rowindexin.jl")
-#include("get_nonempty_bins.jl")
-#include("joint.jl")
-include("entropy.jl")
-#include("embed_for_te.jl")
-#include("TEresult.jl")
-#include("te_from_embedding.jl")
-#include("te_from_triang.jl")
-#include("te_from_ts.jl")
-#include("TE_examples.jl")
-include("marginal.jl")
-include("te_from_equidistant_binning.jl")
 
-#@everywhere using Distributions
-#@everywhere using Simplices, SimplexSplitting, StateSpaceReconstruction
-#@everywhere using PerronFrobenius
+include("entropy.jl")
+include("estimators/transferentropy_visitfreq.jl")
+#include("TEresult.jl")
+
+
+export
+entropy,
+TEVars,
 #@everywhere using ChaoticMaps
-#@everywhere using ChaoticMaps.Logistic
-#@everywhere using ProgressMeter, PmapProgressMeter
-#
-#@everywhere include("rowindexin.jl")
+transferentropy_visitfreq
 #@everywhere include("get_nonempty_bins.jl")
 #@everywhere include("joint.jl")
 #@everywhere include("marginal.jl")
