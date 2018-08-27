@@ -16,21 +16,6 @@ end
 
 
 """
-Compute entropy of a probability distribution.
-"""
-function nat_entropy(probdist::Vector{T}) where T<:Number
-    te = 0.0
-
-    @inbounds for i = 1:size(probdist, 1)
-        te -= probdist[i] * log(probdist[i])
-    end
-
-    return te
-end
-
-
-
-"""
 transferentropy(b::StateSpaceReconstruction.RectangularBinning,
                 invdist::PerronFrobenius.InvariantDistribution,
                 vars::TransferEntropyVariables) -> Float64

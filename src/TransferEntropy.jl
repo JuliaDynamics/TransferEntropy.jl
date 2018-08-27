@@ -32,7 +32,7 @@ end
 #include("rowindexin.jl")
 #include("get_nonempty_bins.jl")
 #include("joint.jl")
-#include("marginal.jl")
+include("entropy.jl")
 #include("embed_for_te.jl")
 #include("TEresult.jl")
 #include("te_from_embedding.jl")
