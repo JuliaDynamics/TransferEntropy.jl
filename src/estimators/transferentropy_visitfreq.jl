@@ -16,7 +16,7 @@ insert these into the transfer entropy expression.
 
 function transferentropy_visitfreq(
                     E::AbstractEmbedding,
-                    ϵ::Union{Int, Float64, Vector{Float64}},
+                    ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
                     v::TransferEntropy.TEVars)
 
     all_inds = unique(vcat(v.target_future,
