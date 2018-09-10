@@ -1,5 +1,7 @@
 using TransferEntropy
 using Base.Test
 
-# write your own tests here
-#include("random_centroids.jl")
+@testset "Estimators" begin
+	@time include("test_transferentropy_transferoperator.jl")
+	@time include("test_transferentropy_visitfreq.jl")
+end
