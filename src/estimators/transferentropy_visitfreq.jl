@@ -51,3 +51,13 @@ function transferentropy_visitfreq(
                     entropy(P_joint)) / log(2)
     te_estimate
 end
+
+
+""" Compute transfer entropy over a range of bin sizes. """
+function transferentropy_visitfreq(E::AbstractEmbedding,
+        ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
+        v::TEVars)
+    map(ϵᵢ -> transferentropy_visitfreq(E, ϵᵢ, v), ϵ)
+end
+
+tefreq = transferentropy_visitfreq
