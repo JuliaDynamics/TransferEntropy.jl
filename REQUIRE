@@ -4,3 +4,6 @@ Cubature
 Reexport
 Distributions
 GroupSlices
+Distances
+NearestNeighbors
+SpecialFunctions

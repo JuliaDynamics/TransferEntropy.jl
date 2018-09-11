@@ -7,6 +7,9 @@ using Reexport
 @reexport using StateSpaceReconstruction
 using Distributions
 using GroupSlices
+using Distances
+using SpecialFunctions
+using NearestNeighbors
 import Simplices.childpoint
 
 """
@@ -37,6 +40,7 @@ TEVars(target_future::Vector{Int},
 
 include("area_under_curve.jl")
 include("entropy.jl")
+include("estimators/transferentropy_kraskov.jl")
 include("estimators/transferentropy_visitfreq.jl")
 include("estimators/transferentropy_transferoperator.jl")
 include("estimators/transferentropy_triangulation.jl")
@@ -45,6 +49,7 @@ export
 entropy,
 TEVars,
 te_integral, ∫te,
+transferentropy_kraskov, tekraskov,
 transferentropy_transferoperator_visitfreq, tetofreq,
 transferentropy_visitfreq, tefreq,
 transferentropy_transferoperator_triang, tetotri
