@@ -111,7 +111,6 @@ consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
 """
-
 function transferentropy_transferoperator_visitfreq(
                     E::AbstractEmbedding,
                     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
@@ -169,4 +168,26 @@ function transferentropy_transferoperator_visitfreq(E::AbstractEmbedding,
     map(ϵᵢ -> transferentropy_transferoperator_visitfreq(E, ϵᵢ, v), ϵ)
 end
 
+# Shorter alias
 tetofreq = transferentropy_transferoperator_visitfreq
+
+#############################################################################
+# One should be able to just provide some points that has been pre-embedded too
+#############################################################################
+"""
+    transferentropy_transferoperator_visitfreq(pts::AbstractArray{T, 2},
+        ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
+        v::TransferEntropy.TEVars)
+
+Using the transfer operator to calculate probability distributions,
+calculate transfer entropy from the points `pts`,
+given a discretization scheme controlled by `ϵ` and
+information `v::TEVars` about which columns of the embedding to
+consider for each of the marginal distributions. From these
+marginal distributions, we calculate marginal entropies and
+insert these into the transfer entropy expression.
+The points will be embedded behind the scenes.
+"""
+transferentropy_transferoperator_visitfreq(pts::AbstractArray{T, 2},
+    ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
+    v::TransferEntropy.TEVars) where T = tetofreq(embed(pts), ϵ, v)
