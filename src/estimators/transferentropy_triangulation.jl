@@ -357,19 +357,15 @@ function transferentropy_transferoperator_triang(
         # Compute the joint and marginal distributions.
         Pjoint = jointdist(nonempty_bins, invdist.dist[positive_measure_inds])
         Py, Pxy, Pyz, Jy, Jxy, Jyz = marginaldists(nonempty_bins, invdist.dist[positive_measure_inds])
-        @show Pjoint
-        @show Py
-        @show Pxy
-        @show Pyz
-        #Jy, Jxy, Jyz
-        # Integrate
+
+        # Use base 2 for the logarithm, so that we get transfer entropy in bits
         for k = 1:size(Pjoint, 1)
             TE_estimates[i] += Pjoint[k] *
-                log( (Pjoint[k] * Py[Jy[k]]) / (Pxy[Jxy[k]] * Pyz[Jyz[k]]) )
+                log(2, (Pjoint[k] * Py[Jy[k]]) / (Pxy[Jxy[k]] * Pyz[Jyz[k]]) )
         end
     end
 
-    return TE_estimates / log(2)
+    return TE_estimates
 end
 
 tetotri = transferentropy_transferoperator_triang

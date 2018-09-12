@@ -110,12 +110,32 @@ function install_dependencies()
     - julia -e 'Pkg.add("PyCall")'
     - julia -e 'ENV["PYTHON"] = ""; Pkg.build("PyCall")'
     - julia -e 'using Conda; Conda.add("scipy")'
-    Pkg.clone("https://github.com/kahaaga/Simplices.jl")
-    Pkg.build("Simplices")
-    Pkg.clone("https://github.com/kahaaga/StateSpaceReconstruction.jl")
-    Pkg.build("StateSpaceReconstruction")
-    Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl")
-    Pkg.build("PerronFrobenius")
+    ks = keys(Pkg.installed())
+
+    if !("PyCall" ∈ ks)
+        Pkg.add("PyCall")
+        ENV["PYTHON"] = ""
+        Pkg.build("PyCall")
+    end
+    if !("Conda" ∈ ks)
+        Pkg.add("Conda")
+        using Conda
+        Conda.add("scipy")
+    end
+    if !("Simplices" ∈ ks)
+        Pkg.clone("https://github.com/kahaaga/Simplices.jl")
+        Pkg.build("Simplices")
+    end
+
+    if !("StateSpaceReconstruction" ∈ ks)
+        Pkg.clone("https://github.com/kahaaga/StateSpaceReconstruction.jl")
+        Pkg.build("StateSpaceReconstruction")
+    end
+
+    if !("PerronFrobenius" ∈ ks)
+        Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl")
+        Pkg.build("PerronFrobenius")
+    end
 end
 
 export

@@ -90,10 +90,11 @@ function transferentropy_transferoperator_visitfreq(
     p_XY = marginal([XY; C], positive_measure_bins, iv)
     p_YZ = marginal([YZ; C], positive_measure_bins, iv)
 
-    ((entropy(p_YZ) +
-        entropy(p_XY) -
-        entropy(p_Y)) -
-        entropy(iv.dist[iv.nonzero_inds])) / log(2)
+    # Use base 2 for the entropy, so that we get transfer entropy in bits
+    ((entropy(p_YZ, base = 2) +
+        entropy(p_XY, base = 2) -
+        entropy(p_Y, base = 2)) -
+        entropy(iv.dist[iv.nonzero_inds], , base = 2))
 end
 
 

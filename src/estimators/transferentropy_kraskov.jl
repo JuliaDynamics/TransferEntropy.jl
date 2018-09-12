@@ -93,8 +93,11 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
     NXY_Y   = marginal_NN(pts_Y,  ϵ_XY_Y)
 
     # Transfer entropy
-    sum(digamma.(NXY_X) + digamma.(NXY_Y) -
+    te = sum(digamma.(NXY_X) + digamma.(NXY_Y) -
         digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
+
+    # Convert to bits so that the value is compatible with the other estimators
+    te / log(2)
 end
 
 

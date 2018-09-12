@@ -45,11 +45,12 @@ function transferentropy_visitfreq(
     p_XY = marginal_visitation_freq([XY; C], visited_bin_inds, n_visited_bins)
     p_YZ = marginal_visitation_freq([YZ; C], visited_bin_inds, n_visited_bins)
     P_joint = marginal_visitation_freq(all_inds, visited_bin_inds, n_visited_bins)
-    te_estimate = ((entropy(p_YZ) +
-                    entropy(p_XY) -
-                    entropy(p_Y)) -
-                    entropy(P_joint)) / log(2)
-    te_estimate
+
+	# Use base 2 for the entropy, so that we get transfer entropy in bits
+	te = ((entropy(p_YZ, base = 2) +
+                    entropy(p_XY, base = 2) -
+                    entropy(p_Y), base = 2) -
+                    entropy(P_joint, base = 2))
 end
 
 
