@@ -99,7 +99,27 @@ include("estimators/transferentropy_visitfreq.jl")
 include("estimators/transferentropy_transferoperator.jl")
 include("estimators/transferentropy_triangulation.jl")
 
+
+"""
+    install_dependencies()
+
+Clone packages `TransferEntropy.jl` depends on manually from GitHub. This is
+a temporary solution until the packages are registered on METADATA.
+"""
+function install_dependencies()
+    - julia -e 'Pkg.add("PyCall")'
+    - julia -e 'ENV["PYTHON"] = ""; Pkg.build("PyCall")'
+    - julia -e 'using Conda; Conda.add("scipy")'
+    Pkg.clone("https://github.com/kahaaga/Simplices.jl")
+    Pkg.build("Simplices")
+    Pkg.clone("https://github.com/kahaaga/StateSpaceReconstruction.jl")
+    Pkg.build("StateSpaceReconstruction")
+    Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl")
+    Pkg.build("PerronFrobenius")
+end
+
 export
+install_dependencies,
 entropy,
 TEVars,
 te_integral, ∫te,
