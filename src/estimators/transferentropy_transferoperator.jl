@@ -94,7 +94,7 @@ function transferentropy_transferoperator_visitfreq(
     ((entropy(p_YZ, base = 2) +
         entropy(p_XY, base = 2) -
         entropy(p_Y, base = 2)) -
-        entropy(iv.dist[iv.nonzero_inds], , base = 2))
+        entropy(iv.dist[iv.nonzero_inds], base = 2))
 end
 
 
