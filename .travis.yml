@@ -27,6 +27,9 @@ git:
 
 ## uncomment the following lines to override the default test script
 script:
+  - julia -e 'Pkg.clone("https://github.com/kahaaga/Simplices.jl"); Pkg.build("Simplices")'
+  - julia -e 'Pkg.clone("https://github.com/kahaaga/StateSpaceReconstruction.jl"); Pkg.build("StateSpaceReconstruction")'
+  - julia -e 'Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl"); Pkg.build("PerronFrobenius")'
   - julia -e 'Pkg.clone(pwd()); Pkg.build("TransferEntropy"); Pkg.test("TransferEntropy"; coverage=true)'
 after_success:
   # push coverage results to Coveralls
