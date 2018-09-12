@@ -12,6 +12,8 @@ using SpecialFunctions
 using NearestNeighbors
 import Simplices.childpoint
 
+include("build.jl")
+
 """
     TEVars(target_future::Vector{Int}
         target_presentpast::Vector{Int}
@@ -107,9 +109,7 @@ Clone packages `TransferEntropy.jl` depends on manually from GitHub. This is
 a temporary solution until the packages are registered on METADATA.
 """
 function install_dependencies()
-    - julia -e 'Pkg.add("PyCall")'
-    - julia -e 'ENV["PYTHON"] = ""; Pkg.build("PyCall")'
-    - julia -e 'using Conda; Conda.add("scipy")'
+
     ks = keys(Pkg.installed())
 
     if !("PyCall" ∈ ks)
@@ -117,11 +117,7 @@ function install_dependencies()
         ENV["PYTHON"] = ""
         Pkg.build("PyCall")
     end
-    if !("Conda" ∈ ks)
-        Pkg.add("Conda")
-        using Conda
-        Conda.add("scipy")
-    end
+
     if !("Simplices" ∈ ks)
         Pkg.clone("https://github.com/kahaaga/Simplices.jl")
         Pkg.build("Simplices")
