@@ -149,7 +149,9 @@ function transferentropy_transferoperator_visitfreq(
     binvisits = organize_bin_labels(bins_visited_by_orbit)
 
     # Use that information to estimate transfer operator
-    TO = PerronFrobenius.transferoperator(binvisits)
+    TO = PerronFrobenius.transferoperator(binvisits, 1.0, :exclude)
+
+    # Calculate the invariant distribution over the bins.
     invdist = left_eigenvector(TO)
 
     transferentropy_transferoperator_visitfreq(bins_visited_by_orbit, invdist, v)
@@ -189,6 +191,9 @@ marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
 The points will be embedded behind the scenes.
 """
-transferentropy_transferoperator_visitfreq(pts::AbstractArray{T, 2},
+function transferentropy_transferoperator_visitfreq(pts::AbstractArray{T, 2},
     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-    v::TransferEntropy.TEVars) where T = tetofreq(embed(pts), ϵ, v)
+    v::TransferEntropy.TEVars) where T
+
+    tetofreq(embed(pts), ϵ, v)
+end
