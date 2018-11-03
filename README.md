@@ -1,5 +1,7 @@
 # TransferEntropy.jl
 
+[![Build Status](https://travis-ci.org/kahaaga/TransferEntropy.jl.svg?branch=master)](https://travis-ci.org/kahaaga/TransferEntropy.jl)
+
 Julia package for computing transfer entropy (TE), which is part of the   [`CausalityTools.jl`](https://github.com/kahaaga/CausalityTools.jl) package
  for the detection of causal relationships and the computation of invariant
  measures from time series.
