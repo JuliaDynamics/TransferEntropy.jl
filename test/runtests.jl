@@ -1,26 +1,15 @@
 using TransferEntropy
 using Base.Test
+using Distances
 
-# write your own tests here
-#include("random_centroids.jl")
-
-
-
-@testset "Transfer entropy" begin
-
-	x = rand(50)
-	y = rand(50)
-	embedding1 = embed_for_te(x, y, 1)
-	embedding2 = embed_for_te(x, y, -1)
-
-	@test !isempty(embedding1)
-	@test !isempty(embedding2)
-
-	te = te_from_ts(x, y, n_reps = 1)
-	@test length(te) == 5
-
-
+@testset "Visitation frequency estimator" begin
+	include("test_transferentropy_visitfreq.jl")
 end
 
+@testset "kNN (Kraskov) estimator" begin
+	include("test_transferentropy_kraskov.jl")
+end
 
-include("te_from_embedding.jl")
+@testset "Transfer operator, grid approach estimator" begin
+	include("test_transferentropy_transferoperator.jl")
+end
