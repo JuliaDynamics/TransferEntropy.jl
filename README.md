@@ -14,10 +14,9 @@ space reconstruction.
 
 ## Installation
 `TransferEntropy.jl` relies on the `PerronFrobenius.jl` package, which is not
-yet on METADATA. You may install both packages by running the following
-lines in the Julia console
+yet on METADATA. You may install the package by running the following
+line in the Julia console
 
 ```julia
-Pkg.clone("https://github.com/kahaaga/TransferEntropy.jl")
 Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl")
 ```
