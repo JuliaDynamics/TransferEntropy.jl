@@ -149,7 +149,7 @@ function transferentropy_transferoperator_visitfreq(
     binvisits = organize_bin_labels(bins_visited_by_orbit)
 
     # Use that information to estimate transfer operator
-    TO = PerronFrobenius.transferoperator(binvisits, 1.0, :exclude)
+    TO = PerronFrobenius.transferoperator(binvisits, 1.0)
 
     # Calculate the invariant distribution over the bins.
     invdist = left_eigenvector(TO)

@@ -30,8 +30,6 @@ script:
   - julia -e 'Pkg.add("PyCall")'
   - julia -e 'ENV["PYTHON"] = ""; Pkg.build("PyCall")'
   - julia -e 'using Conda; Conda.add("scipy")'
-  - julia -e 'Pkg.clone("https://github.com/kahaaga/Simplices.jl"); Pkg.build("Simplices")'
-  - julia -e 'Pkg.clone("https://github.com/kahaaga/StateSpaceReconstruction.jl"); Pkg.build("StateSpaceReconstruction")'
   - julia -e 'Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl"); Pkg.build("PerronFrobenius")'
   - julia -e 'Pkg.clone(pwd()); Pkg.build("TransferEntropy"); Pkg.test("TransferEntropy"; coverage=true)'
 after_success:
@@ -40,7 +38,7 @@ after_success:
   # push coverage results to Codecov
   - julia -e 'cd(Pkg.dir("TransferEntropy")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
   # create docs (release-0.19 needed for Julia 0.6)
-  - julia -e 'Pkg.add("Documenter")'
-  - julia -e 'Pkg.checkout("Documenter")'
-  - julia -e 'Pkg.checkout("Documenter", "release-0.19")'
-  - julia -e 'cd(Pkg.dir("TransferEntropy")); include("docs/make.jl")'
+  #- julia -e 'Pkg.add("Documenter")'
+  #- julia -e 'Pkg.checkout("Documenter")'
+  #- julia -e 'Pkg.checkout("Documenter", "release-0.19")'
+  #- julia -e 'cd(Pkg.dir("TransferEntropy")); include("docs/make.jl")'

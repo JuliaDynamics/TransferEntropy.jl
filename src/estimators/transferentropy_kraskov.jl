@@ -327,3 +327,4 @@ function transferentropy_kraskov(E::AbstractEmbedding{D, T}, k1::Int, k2::Int,
 end
 
 tekraskov = transferentropy_kraskov
+tekNN = transferentropy_kraskov
