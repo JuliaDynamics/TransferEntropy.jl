@@ -3,10 +3,11 @@ __precompile__(true)
 module TransferEntropy
 
 using Reexport
-@reexport using PerronFrobenius
 @reexport using StateSpaceReconstruction
+@reexport using PerronFrobenius
+using StateSpaceReconstruction: GroupSlices
+
 using Distributions
-using GroupSlices
 using Distances
 using SpecialFunctions
 using NearestNeighbors
@@ -93,7 +94,7 @@ TEVars(;target_future::Vector{Int} = Int[],
     	source_presentpast::Vector{Int} = Int[]) =
 	TEVars(target_future, target_presentpast, source_presentpast, Int[])
 
-include("area_under_curve.jl")
+#include("area_under_curve.jl") # Cubature.jl not available in Julia 1.0
 include("entropy.jl")
 include("estimators/transferentropy_kraskov.jl")
 include("estimators/transferentropy_visitfreq.jl")

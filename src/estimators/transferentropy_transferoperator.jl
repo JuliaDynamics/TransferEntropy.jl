@@ -5,7 +5,7 @@ Returns a column vector with the same number of elements as there are unique
 rows in A. The value of the ith element is the row indices of rows in A
 matching the ith unique row.
 """
-marginal_indices(A) = GroupSlices.groupinds(GroupSlices.groupslices(A, 1))
+marginal_indices(A) = groupinds(groupslices(A, 1))
 
 """
     marginal(along_which_axes::Union{Vector{Int}, UnitRange{Int}},
@@ -35,7 +35,8 @@ end
 """
     transferentropy(bins_visited_by_orbit::Array{Int, 2},
                     iv::PerronFrobenius.InvariantDistribution,
-                    vars::TEVars)
+                    vars::TEVars,
+                    normalise_to_tPP = false)
 
 Using the invariant probability distribution obtained from the
 transfer operator to the visited bins of the partitioned state
@@ -49,11 +50,14 @@ consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
 
+If `normalise_to_tPP = true`, then the TE estimate is normalised to
+the entropy rate of the target variable, `H(target_future | target_presentpast)`.
+
 """
 function transferentropy_transferoperator_visitfreq(
             bins_visited_by_orbit::Array{Int, 2},
             iv::PerronFrobenius.InvariantDistribution,
-            v::TEVars)
+            v::TEVars, normalise_to_tPP = false)
 
     # Verify that the number of dynamical variables in
     # the embedding agrees with the number of dynamical
@@ -78,7 +82,7 @@ function transferentropy_transferoperator_visitfreq(
             """)
     end
 
-    unique_visited_bins = transpose(unique(bins_visited_by_orbit, 2))
+    unique_visited_bins = transpose(unique(bins_visited_by_orbit, dims = 2))
     positive_measure_bins = unique_visited_bins[iv.nonzero_inds, :]
 
     C = v.conditioned_presentpast
@@ -86,23 +90,40 @@ function transferentropy_transferoperator_visitfreq(
     YZ = [v.target_presentpast; v.source_presentpast; C]
     Y =  [v.target_presentpast;                       C]
 
-    p_Y  = marginal([Y;  C], positive_measure_bins, iv)
-    p_XY = marginal([XY; C], positive_measure_bins, iv)
-    p_YZ = marginal([YZ; C], positive_measure_bins, iv)
+    p_Y  = marginal(Y, positive_measure_bins, iv)
+    p_XY = marginal(XY, positive_measure_bins, iv)
+    p_YZ = marginal(YZ, positive_measure_bins, iv)
 
     # Use base 2 for the entropy, so that we get transfer entropy in bits
-    te = entropy(p_YZ, b = 2) +
-        entropy(p_XY, b = 2) -
-        entropy(p_Y, b = 2) -
-        entropy(iv.dist[iv.nonzero_inds], b = 2)
+    if normalise_to_tPP
+        te = entropy(p_YZ, b = 2) +
+            entropy(p_XY, b = 2) -
+            entropy(p_Y, b = 2) -
+            entropy(iv.dist[iv.nonzero_inds], b = 2)
+
+		# Compute the transfer entropy from the target variable to itself
+		# TE(Tpresent -> Tfuture | Tpast)
+		#XY = [v.target_future; ]
+        #te_target_on_itself =
+
+        #te = te / (entropy(P_tF_tPP, b = 2) - entropy(P_tPP, b = 2))
+    else
+        te = entropy(p_YZ, b = 2) +
+            entropy(p_XY, b = 2) -
+            entropy(p_Y, b = 2) -
+            entropy(iv.dist[iv.nonzero_inds], b = 2)
+    end
+
+    return te
 end
 
 
 """
-    transferentropy_transferoperator(
+    transferentropy_transferoperator_visitfreq(
         E::AbstractEmbedding,
         ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-        v::TransferEntropy.TEVars) -> Float64
+        v::TransferEntropy.TEVars,
+        normalise_to_tPP = false) -> Float64
 
 Using the transfer operator to calculate probability
 distributions,  calculate transfer entropy from the embedding
@@ -111,11 +132,15 @@ information `v::TEVars` about which columns of the embedding to
 consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
+
+If `normalise_to_tPP = true`, then the TE estimate is normalised to
+the entropy rate of the target variable `H(target_future | target_presentpast)`.
 """
 function transferentropy_transferoperator_visitfreq(
-                    E::AbstractEmbedding,
+                    E::Embeddings.AbstractEmbedding,
                     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-                    v::TransferEntropy.TEVars)
+                    v::TransferEntropy.TEVars,
+                    normalise_to_tPP = false)
 
     # Verify that the number of dynamical variables in
     # the embedding agrees with the number of dynamical
@@ -154,21 +179,34 @@ function transferentropy_transferoperator_visitfreq(
     # Calculate the invariant distribution over the bins.
     invdist = left_eigenvector(TO)
 
-    transferentropy_transferoperator_visitfreq(bins_visited_by_orbit, invdist, v)
+    transferentropy_transferoperator_visitfreq(bins_visited_by_orbit, invdist, v,
+        normalise_to_tPP)
 end
 
 
 """
     transferentropy_transferoperator(E::AbstractEmbedding,
                 ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
-                v::TEVars)
+                v::TEVars,
+                normalise_to_tPP = false)
 
 Compute transfer entropy over a range of bin sizes.
+
+Using the transfer operator to calculate probability
+distributions,  calculate transfer entropy from the embedding
+`E`, given a discretization scheme controlled by the `ϵ`s and
+information `v::TEVars` about which columns of the embedding to
+consider for each of the marginal distributions. From these
+marginal distributions, we calculate marginal entropies and
+insert these into the transfer entropy expression.
+
+If `normalise_to_tPP = true`, then the TE estimate is normalised to
+the entropy rate of the target variable, `H(target_future | target_presentpast)`.
 """
-function transferentropy_transferoperator_visitfreq(E::AbstractEmbedding,
+function transferentropy_transferoperator_visitfreq(E::Embeddings.AbstractEmbedding,
         ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
-        v::TEVars)
-    map(ϵᵢ -> transferentropy_transferoperator_visitfreq(E, ϵᵢ, v), ϵ)
+        v::TEVars, normalise_to_tPP = false)
+    map(ϵᵢ -> transferentropy_transferoperator_visitfreq(E, ϵᵢ, v, normalise_to_tPP), ϵ)
 end
 
 # Shorter alias
@@ -193,7 +231,13 @@ The points will be embedded behind the scenes.
 """
 function transferentropy_transferoperator_visitfreq(pts::AbstractArray{T, 2},
     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-    v::TransferEntropy.TEVars) where T
+    v::TransferEntropy.TEVars, normalise_to_tPP = false) where T
 
-    tetofreq(embed(pts), ϵ, v)
+    tetofreq(embed(pts), ϵ, v, normalise_to_tPP)
 end
+
+
+transferentropy_transferoperator_grid = transferentropy_transferoperator_visitfreq
+tetogrid = transferentropy_transferoperator_grid
+
+export transferentropy_transferoperator_grid, tetogrid

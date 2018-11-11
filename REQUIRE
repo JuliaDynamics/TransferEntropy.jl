@@ -1,12 +1,12 @@
-julia 0.6 0.7-
+julia 0.7
+Conda
+PyCall
 Interpolations
-Cubature
 Reexport
 Distributions
-GroupSlices
 Distances
 NearestNeighbors
 SpecialFunctions
-Simplices
-StateSpaceReconstruction
-PerronFrobenius
+Simplices 0.2.1
+StateSpaceReconstruction 0.2.1
+PerronFrobenius 0.1.1

@@ -1,44 +1,15 @@
-## Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
 os:
   - linux
-#  - osx
 julia:
-  - 0.6
-#  - nightly
-notifications:
-  email: false
-git:
-  depth: 99999999
+  - nightly
+  - 1.0
+matrix:
+allow_failures:
+- julia: nightly
 
-## uncomment the following lines to allow failures on nightly julia
-## (tests will run but not make your overall status red)
-#matrix:
-#  allow_failures:
-#  - julia: nightly
-
-## uncomment and modify the following lines to manually install system packages
-#addons:
-#  apt: # apt-get for linux
-#    packages:
-#    - gfortran
-#before_script: # homebrew for mac
-#  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
-
-## uncomment the following lines to override the default test script
 script:
-  - julia -e 'Pkg.add("PyCall")'
-  - julia -e 'ENV["PYTHON"] = ""; Pkg.build("PyCall")'
+  - julia -e 'using Pkg; Pkg.build(); Pkg.add("PyCall")'
+  - julia -e 'ENV["PYTHON"] = ""; using Pkg; Pkg.build("PyCall")'
   - julia -e 'using Conda; Conda.add("scipy")'
-#  - julia -e 'Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl"); Pkg.build("PerronFrobenius")'
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("TransferEntropy"); Pkg.test("TransferEntropy"; coverage=true)'
-after_success:
-  # push coverage results to Coveralls
-  - julia -e 'cd(Pkg.dir("TransferEntropy")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
-  # push coverage results to Codecov
-  - julia -e 'cd(Pkg.dir("TransferEntropy")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
-  # create docs (release-0.19 needed for Julia 0.6)
-  #- julia -e 'Pkg.add("Documenter")'
-  #- julia -e 'Pkg.checkout("Documenter")'
-  #- julia -e 'Pkg.checkout("Documenter", "release-0.19")'
-  #- julia -e 'cd(Pkg.dir("TransferEntropy")); include("docs/make.jl")'
+  - julia -e 'using Pkg; Pkg.test()'
