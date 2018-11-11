@@ -43,7 +43,7 @@ using an adapted version of the Kraskov estimator for mutual information [1].
     mutual information." Physical review E 69.6 (2004): 066138.
 """
 function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
-        v::TEVars; metric = Chebyshev()) where T
+        v::TEVars; metric = Chebyshev(), normalise = false) where T
 
     # Make sure that the array contains points as columns.
     if size(points, 1) > size(points, 2)
@@ -92,9 +92,21 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
     NXY_X   = marginal_NN(pts_X,  ϵ_XY_X)
     NXY_Y   = marginal_NN(pts_Y,  ϵ_XY_Y)
 
-    # Transfer entropy
-    te = sum(digamma.(NXY_X) + digamma.(NXY_Y) -
-        digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
+    if normalise
+        warn("Normalisation not properly tested yet")
+        te = sum(digamma.(NXY_X) + digamma.(NXY_Y) -
+            digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
+
+        # Distiances between points in the XY space and their k-th nearest beighbour, along
+        # both marginals (so, effectively, the joint distribution)
+        ϵ_XY_XY = colwise(metric, pts_XY, pts_XY[:, kth_NN_idx_XY])
+        NXY_XY   = marginal_NN(pts_XY,  ϵ_XY_XY)
+
+        te = te / (sum(digamma.(NXY_XY) - digamma.(NXY_Y)) / N)
+    else
+        te = sum(digamma.(NXY_X) + digamma.(NXY_Y) -
+            digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
+    end
 
     # Convert to bits so that the value is compatible with the other estimators
     te / log(2)
@@ -253,7 +265,7 @@ Arguments:
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
 mutual information." Physical review E 69.6 (2004): 066138.
 """
-function transferentropy_kraskov(E::StateSpaceReconstruction.AbstractEmbedding{D, T},
+function transferentropy_kraskov(E::Embeddings.AbstractEmbedding{D, T},
             k1::Int, k2::Int, v::TEVars; metric = Chebyshev()) where {D, T}
 
     # Make sure that the array contains points as columns.
@@ -307,7 +319,7 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
     mutual information." Physical review E 69.6 (2004): 066138.
 """
-function transferentropy_kraskov(E::AbstractEmbedding{D, T}, k1::Int, k2::Int,
+function transferentropy_kraskov(E::Embeddings.AbstractEmbedding{D, T}, k1::Int, k2::Int,
         target_future::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         target_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         source_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},

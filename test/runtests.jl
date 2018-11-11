@@ -1,6 +1,13 @@
+if lowercase(get(ENV, "CI", "false")) == "true"
+    include("install_dependencies.jl")
+end
+
 using TransferEntropy
-using Base.Test
+using Test
 using Distances
+
+
+n_realizations = 50
 
 @testset "Visitation frequency estimator" begin
 	include("test_transferentropy_visitfreq.jl")
@@ -10,6 +17,6 @@ end
 	include("test_transferentropy_kraskov.jl")
 end
 
-@testset "Transfer operator, grid approach estimator" begin
-	include("test_transferentropy_transferoperator.jl")
+@testset "Transfer operator grid estimator" begin
+	include("test_transferentropy_transferoperator_grid.jl")
 end
