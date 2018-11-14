@@ -138,7 +138,6 @@ export
 install_dependencies,
 entropy,
 TEVars,
-te_integral, ∫te,
 transferentropy_kraskov, tekraskov, tekNN,
 transferentropy_transferoperator_visitfreq, tetofreq,
 transferentropy_visitfreq, tefreq,

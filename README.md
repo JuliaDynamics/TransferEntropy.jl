@@ -2,23 +2,24 @@
 
 [![Build Status](https://travis-ci.org/kahaaga/TransferEntropy.jl.svg?branch=master)](https://travis-ci.org/kahaaga/TransferEntropy.jl)
 
-Julia package for computing transfer entropy (TE), which is part of the   [`CausalityTools.jl`](https://github.com/kahaaga/CausalityTools.jl) package
- for the detection of causal relationships and the computation of invariant
- measures from time series.
+Julia package for computing transfer entropy (TE), conditional mutual information (CMI) or any other information theoretic functional.
 
-Three estimators are currently estimated.
+This package provides essential algorithms for the [`CausalityTools.jl`](https://github.com/kahaaga/CausalityTools.jl) package, which provides methods to detect causal relationship from time series, and tools for computating the transfer operator and invariant measures from time series.
 
-1. A k nearest neighbours (kNN) estimator (`transferentropy_kraskov`, or the alias `tekraskov`). This estimator uses the Kraskov estimator for mutual information to compute TE.
-2. A visitation frequency based estimator (`transferentropy_visitfreq`, or the alias `tefreq`). This estimator is based on state space discretization, and computes a probability distribution over the bins as frequency at which the orbit of the system visits the bins.
-3. A transfer operator based estimator (`transferentropy_transferoperator_visitfreq`, or the alias `tetofreq`). This is a new estimator from an upcoming paper by Diego, Haaga and Hannisdal. It is also binning based, but estimates TE from the invariant
-distribution arising from an approximation of the transfer operator on the state
-space reconstruction.
+## Transfer entropy estimators
+Currently, the following three estimators are implemented and tested. For details on
+
+| Estimator (and aliases) | Accepts  | Details | Reference  |
+|---|---|---|---|
+| `transferentropy_transferoperator_grid` (`tetogrid`) | `AbstractArray`, `AbstractEmbedding`  | A new estimator that computes tranfer entropy from an invariant measure of an approximation to the transfer operator. The transfer operator is approximated using the  `transferoperator_grid` estimator from [PerronFrobenius.jl](https://github.com/kahaaga/PerronFrobenius.jl)| [Diego et al. (2018)](https://arxiv.org/abs/1811.01677) |
+| `transferentropy_visitfreq` (`tefreq`)   | `AbstractArray`, `AbstractEmbedding` | A classic, naive binning-based transfer entropy estimator. Obtains the probability distribution from the frequencies at which the orbit visits the different regions of the reconstructed attractor  | [Diego et al. (2018)](https://arxiv.org/abs/1811.01677)|
+| `transferentropy_kraskov` (`tekraskov`, `tekNN`) | `AbstractArray`, `AbstractEmbedding`  | A k Nearest Neigbours (kNN) transfer entropy estimator. Computes the transfer entropy as the sum of two mutual information (MI) terms, which are computed using the Kraskov MI estimator | [Diego et al. (2018)](https://arxiv.org/abs/1811.01677), [Kraskov et al. (2004)](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.69.066138) |
+
 
 ## Installation
-`TransferEntropy.jl` relies on the `PerronFrobenius.jl` package, which is not
-yet on METADATA. You may install the package by running the following
-line in the Julia console
+Run the following lines in the Julia console to install the package.
 
 ```julia
-Pkg.clone("https://github.com/kahaaga/PerronFrobenius.jl")
+using Pkg
+Pkg.add("TransferEntropy")
 ```
