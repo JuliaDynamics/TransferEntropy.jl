@@ -33,10 +33,10 @@ end
 
 
 """
-    transferentropy(bins_visited_by_orbit::Array{Int, 2},
-                    iv::PerronFrobenius.InvariantDistribution,
-                    vars::TEVars,
-                    normalise_to_tPP = false)
+    transferentropy_transferoperator_grid(
+            bins_visited_by_orbit::Array{Int, 2},
+            iv::PerronFrobenius.InvariantDistribution,
+            v::TEVars, normalise_to_tPP = false)
 
 Using the invariant probability distribution obtained from the
 transfer operator to the visited bins of the partitioned state
@@ -54,7 +54,7 @@ If `normalise_to_tPP = true`, then the TE estimate is normalised to
 the entropy rate of the target variable, `H(target_future | target_presentpast)`.
 
 """
-function transferentropy_transferoperator_visitfreq(
+function transferentropy_transferoperator_grid(
             bins_visited_by_orbit::Array{Int, 2},
             iv::PerronFrobenius.InvariantDistribution,
             v::TEVars, normalise_to_tPP = false)
@@ -119,11 +119,11 @@ end
 
 
 """
-    transferentropy_transferoperator_visitfreq(
-        E::AbstractEmbedding,
-        ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-        v::TransferEntropy.TEVars,
-        normalise_to_tPP = false) -> Float64
+transferentropy_transferoperator_grid(
+                    E::Embeddings.AbstractEmbedding,
+                    ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
+                    v::TransferEntropy.TEVars,
+                    normalise_to_tPP = false) -> Float64
 
 Using the transfer operator to calculate probability
 distributions,  calculate transfer entropy from the embedding
@@ -136,7 +136,7 @@ insert these into the transfer entropy expression.
 If `normalise_to_tPP = true`, then the TE estimate is normalised to
 the entropy rate of the target variable `H(target_future | target_presentpast)`.
 """
-function transferentropy_transferoperator_visitfreq(
+function transferentropy_transferoperator_grid(
                     E::Embeddings.AbstractEmbedding,
                     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
                     v::TransferEntropy.TEVars,
@@ -185,10 +185,9 @@ end
 
 
 """
-    transferentropy_transferoperator(E::AbstractEmbedding,
-                ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
-                v::TEVars,
-                normalise_to_tPP = false)
+    transferentropy_transferoperator_grid(E::Embeddings.AbstractEmbedding,
+        ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
+        v::TEVars, normalise_to_tPP = false)
 
 Compute transfer entropy over a range of bin sizes.
 
@@ -203,14 +202,14 @@ insert these into the transfer entropy expression.
 If `normalise_to_tPP = true`, then the TE estimate is normalised to
 the entropy rate of the target variable, `H(target_future | target_presentpast)`.
 """
-function transferentropy_transferoperator_visitfreq(E::Embeddings.AbstractEmbedding,
+function transferentropy_transferoperator_grid(E::Embeddings.AbstractEmbedding,
         ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
         v::TEVars, normalise_to_tPP = false)
-    map(ϵᵢ -> transferentropy_transferoperator_visitfreq(E, ϵᵢ, v, normalise_to_tPP), ϵ)
+    map(ϵᵢ -> transferentropy_transferoperator_grid(E, ϵᵢ, v, normalise_to_tPP), ϵ)
 end
 
 # Shorter alias
-tetofreq = transferentropy_transferoperator_visitfreq
+tetogrid = transferentropy_transferoperator_grid
 
 #############################################################################
 # One should be able to just provide some points that has been pre-embedded too
@@ -229,15 +228,14 @@ marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
 The points will be embedded behind the scenes.
 """
-function transferentropy_transferoperator_visitfreq(pts::AbstractArray{T, 2},
+function transferentropy_transferoperator_grid(pts::AbstractArray{T, 2},
     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
     v::TransferEntropy.TEVars, normalise_to_tPP = false) where T
 
-    tetofreq(embed(pts), ϵ, v, normalise_to_tPP)
+    tetogrid(embed(pts), ϵ, v, normalise_to_tPP)
 end
 
 
-transferentropy_transferoperator_grid = transferentropy_transferoperator_visitfreq
 tetogrid = transferentropy_transferoperator_grid
 
 export transferentropy_transferoperator_grid, tetogrid
