@@ -20,7 +20,7 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Arguments
 - `points`: The set of points representing the embedding for which to compute
-    transfer entropy. Must be provided as an array of size `dim`-by-`npoints.
+    transfer entropy. Must be provided as an array of size `dim`-by-`n` points.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
     information estimate. To minimize bias, choose ``k_1 < k_2`` if
     ``min(k_1, k_2) < 10`` (see fig. 16 in [1]). Beyond dimension 5, choosing
@@ -126,7 +126,7 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Arguments
 - `points`: The set of points representing the embedding for which to compute
-    transfer entropy. Must be provided as an array of size `dim`-by-`npoints.
+    transfer entropy. Must be provided as an array of size `dim`-by-`n` points.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
     information estimate. To minimize bias, choose ``k_1 < k_2`` if
     ``min(k_1, k_2) < 10`` (see fig. 16 in [1]). Beyond dimension 5, choosing
@@ -189,7 +189,7 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Arguments
 - `points`: The set of points representing the embedding for which to compute
-    transfer entropy. Must be provided as an array of size `dim`-by-`npoints.
+    transfer entropy. Must be provided as an array of size `dim`-by-`n` points.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
     information estimate. To minimize bias, choose ``k_1 < k_2`` if
     ``min(k_1, k_2) < 10`` (see fig. 16 in [1]). Beyond dimension 5, choosing
@@ -289,7 +289,7 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Arguments
 - `points`: The set of points representing the embedding for which to compute
-    transfer entropy. Must be provided as an array of size `dim`-by-`npoints.
+    transfer entropy. Must be provided as an array of size `dim`-by-`n` points.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
     information estimate. To minimize bias, choose ``k_1 < k_2`` if
     ``min(k_1, k_2) < 10`` (see fig. 16 in [1]). Beyond dimension 5, choosing
