@@ -17,14 +17,14 @@ estimates_3D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	# Test by doing all the dirty work and providing the raw input to the estimator
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
 	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = transferoperator(bininfo)
+	TO = transferoperator_binvisits(bininfo)
 	iv = left_eigenvector(TO)
 	v = TEVars([1], [2], [3], Int[])
 
 	estimates_3D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_3D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_3D_wrapper_norm[i] = tetogrid(E, ϵ, v, true)
-	estimates_3D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v, true)
+	estimates_3D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
+	estimates_3D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
 	@test estimates_3D_wrapper[i] >= 0
 	@test estimates_3D_allsteps[i] >= 0
 	@test estimates_3D_wrapper_norm[i] >= 0
@@ -42,13 +42,13 @@ estimates_4D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	ϵ = 0.3
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
 	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = transferoperator(bininfo)
+	TO = transferoperator_binvisits(bininfo)
 	iv = left_eigenvector(TO)
 	v = TEVars([1], [2], [3, 4], Int[])
 	estimates_4D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_4D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_4D_wrapper_norm[i] = tetogrid(E, ϵ, v, true)
-	estimates_4D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v, true)
+	estimates_4D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
+	estimates_4D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
 	@test estimates_4D_wrapper[i] >= 0
 	@test estimates_4D_allsteps[i] >= 0
 	@test estimates_4D_wrapper_norm[i] >= 0
@@ -67,13 +67,13 @@ estimates_5D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
 	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = transferoperator(bininfo)
+	TO = transferoperator_binvisits(bininfo)
 	iv = left_eigenvector(TO)
 	v = TEVars([1], [2], [3, 4], [5])
 	estimates_5D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_5D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_5D_wrapper_norm[i] = tetogrid(E, ϵ, v, true)
-	estimates_5D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v, true)
+	estimates_5D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
+	estimates_5D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
 	@test estimates_5D_wrapper[i] >= 0
 	@test estimates_5D_allsteps[i] >= 0
 	@test estimates_5D_wrapper_norm[i] >= 0
