@@ -10,13 +10,13 @@ using Distances
 n_realizations = 50
 
 @testset "Visitation frequency estimator" begin
-	include("test_transferentropy_visitfreq.jl")
+	include("transferentropy/test_transferentropy_visitfreq.jl")
 end
 
 @testset "kNN (Kraskov) estimator" begin
-	include("test_transferentropy_kraskov.jl")
+	include("transferentropy/test_transferentropy_kraskov.jl")
 end
 
 @testset "Transfer operator grid estimator" begin
-	include("test_transferentropy_transferoperator_grid.jl")
+	include("transferentropy/test_transferentropy_transferoperator_grid.jl")
 end
