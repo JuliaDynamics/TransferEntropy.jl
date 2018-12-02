@@ -8,5 +8,5 @@ Distances
 NearestNeighbors
 SpecialFunctions
 Simplices 0.2.1
-StateSpaceReconstruction 0.3.0
+StateSpaceReconstruction 0.3.0 0.3.2
 PerronFrobenius 0.2.0
