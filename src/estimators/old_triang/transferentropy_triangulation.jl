@@ -1,3 +1,5 @@
+import Simplices.childpoint
+
 """
 	point_representatives(t::AbstractTriangulation)
 

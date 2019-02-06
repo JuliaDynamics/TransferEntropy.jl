@@ -81,7 +81,7 @@ function transferentropy(
 
     println("Computing left eigenvector")
 
-    invdist = PerronFrobenius.left_eigenvector(M)
+    invdist = PerronFrobenius.invariantmeasure(M)
 
     """
         local_te_from_triang(n_bins::Int)

@@ -1,3 +1,13 @@
+import StateSpaceReconstruction:
+	customembed,
+	assign_bin_labels
+
+import PerronFrobenius:
+	organize_bin_labels,
+	TransferOperatorEstimatorRectangularBinVisits
+
+
+
 # Estimate transfer entropy from scratch from a random
 # set of points `n_realizations` times. If everything
 # works as expected, there should be no negative transfer
@@ -7,7 +17,7 @@ estimates_3D = Vector{Float64}(undef, n_realizations)
 estimates_3D_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "3D #$i" for i in 1:n_realizations
-	E = embed([diff(rand(ts_length)) for i = 1:3])
+	E = customembed([diff(rand(ts_length)) for i = 1:3])
 	ϵ = [2, 4, 5]
 	v = TEVars([1], [2], [3], Int[])
 	estimates_3D[i] = transferentropy_visitfreq(E, ϵ, v)
@@ -20,7 +30,7 @@ estimates_4D = Vector{Float64}(undef, n_realizations)
 estimates_4D_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "4D #$i" for i in 1:n_realizations
-	E = embed([diff(rand(ts_length)) for i = 1:4])
+	E = customembed([diff(rand(ts_length)) for i = 1:4])
 	ϵ = 3
 	v = TEVars([1], [2], [3, 4], Int[])
 	estimates_4D[i] = transferentropy_visitfreq(E, ϵ, v)
@@ -33,7 +43,7 @@ estimates_5D = Vector{Float64}(undef, n_realizations)
 estimates_5D_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "5D #$i" for i in 1:n_realizations
-	E = embed([diff(rand(ts_length)) for i = 1:5])
+	E = customembed([diff(rand(ts_length)) for i = 1:5])
 	ϵ = 0.3
 	v = TEVars([1], [2], [3, 4], [5])
 	estimates_5D[i] = transferentropy_visitfreq(E, ϵ, v)

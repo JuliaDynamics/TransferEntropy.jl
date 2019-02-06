@@ -1,3 +1,14 @@
+import StateSpaceReconstruction:
+    customembed,
+    assign_bin_labels,
+    groupslices, groupinds
+
+import PerronFrobenius:
+        InvariantDistribution,
+        organize_bin_labels,
+        TransferOperatorEstimatorRectangularBinVisits,
+        invariantmeasure
+
 """
 	marginal_indices(A)
 
@@ -17,7 +28,7 @@ into account the invariant distribution over the bins.
 """
 function marginal(along_which_axes::Union{Vector{Int}, UnitRange{Int}},
                 visited_bin_labels::Array{Int, 2},
-                iv::PerronFrobenius.InvariantDistribution)
+                iv::InvariantDistribution)
 
     marginal_inds::Vector{Vector{Int}} =
         marginal_indices(visited_bin_labels[:, along_which_axes])
@@ -56,7 +67,7 @@ the entropy rate of the target variable, `H(target_future | target_presentpast)
 """
 function transferentropy_transferoperator_grid(
             bins_visited_by_orbit::Array{Int, 2},
-            iv::PerronFrobenius.InvariantDistribution,
+            iv::InvariantDistribution,
             v::TEVars; normalise_to_tPP = false)
 
     # Verify that the number of dynamical variables in
@@ -119,12 +130,12 @@ end
 
 
 """
-transferentropy_transferoperator_grid(
-                    E::Embeddings.AbstractEmbedding,
-                    ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-                    v::TransferEntropy.TEVars;
-                    normalise_to_tPP = false
-                    allocate_frac = 1) -> Float64
+	transferentropy_transferoperator_grid(
+        E::Embeddings.AbstractEmbedding,
+        ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
+        v::TransferEntropy.TEVars;
+        normalise_to_tPP = false
+        allocate_frac = 1) -> Float64
 
 Using the transfer operator to calculate probability
 distributions,  calculate transfer entropy from the embedding
@@ -140,7 +151,7 @@ the entropy rate of the target variable `H(target_future | target_presentpast)`
 function transferentropy_transferoperator_grid(
                     E::Embeddings.AbstractEmbedding,
                     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-                    v::TransferEntropy.TEVars;
+                    v::TEVars;
                     normalise_to_tPP = false,
                     allocate_frac = 1.0)
 
@@ -176,11 +187,11 @@ function transferentropy_transferoperator_grid(
     binvisits = organize_bin_labels(bins_visited_by_orbit)
 
     # Use that information to estimate transfer operator
-    TO = PerronFrobenius.transferoperator_binvisits(binvisits,
+    TO = TransferOperatorEstimatorRectangularBinVisits(binvisits,
                         allocate_frac = allocate_frac)
 
     # Calculate the invariant distribution over the bins.
-    invdist = left_eigenvector(TO)
+    invdist = invariantmeasure(TO)
 
     transferentropy_transferoperator_grid(
         bins_visited_by_orbit, invdist, v,
@@ -237,11 +248,11 @@ The points will be embedded behind the scenes.
 """
 function transferentropy_transferoperator_grid(pts::AbstractArray{T, 2},
     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-    v::TransferEntropy.TEVars;
+    v::TEVars;
     normalise_to_tPP = normalise_to_tPP,
     allocate_frac = allocate_frac) where T
 
-    tetogrid(embed(pts), ϵ, v;
+    tetogrid(customembed(pts), ϵ, v;
         normalise_to_tPP = normalise_to_tPP,
         allocate_frac = allocate_frac)
 end
@@ -249,4 +260,6 @@ end
 
 tetogrid = transferentropy_transferoperator_grid
 
-export transferentropy_transferoperator_grid, tetogrid
+export
+transferentropy_transferoperator_grid,
+tetogrid

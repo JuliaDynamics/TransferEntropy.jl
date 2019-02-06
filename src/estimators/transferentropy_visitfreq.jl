@@ -1,3 +1,12 @@
+import StateSpaceReconstruction:
+    customembed,
+    assign_bin_labels,
+    groupslices, groupinds,
+    marginal_visitation_freq
+
+import PerronFrobenius:
+        InvariantDistribution
+
 """
     transferentropy_visitfreq(
         E::AbstractEmbedding,
@@ -22,7 +31,7 @@ the entropy rate of the target variable, `H(target_future | target_presentpast)
 function transferentropy_visitfreq(
                     E::Embeddings.AbstractEmbedding,
                     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-                    v::TransferEntropy.TEVars,
+                    v::TEVars,
                     normalise_to_tPP = false)
 
     all_inds = unique(vcat(v.target_future,
@@ -105,3 +114,8 @@ function transferentropy_visitfreq(E::Embeddings.AbstractEmbedding,
 end
 
 tefreq = transferentropy_visitfreq
+
+
+export
+transferentropy_visitfreq,
+tefreq

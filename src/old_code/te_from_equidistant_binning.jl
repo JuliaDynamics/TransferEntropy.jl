@@ -90,7 +90,7 @@ function transferentropy(E::StateSpaceReconstruction.Embedding,
     for i = 1:n
         binnings[i] = bin_rectangular(E, n_subdivisions[i])
         transferoperators[i] = transferoperator(binnings[i])
-        invariantdists[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
+        invariantdists[i] = PerronFrobenius.invariantmeasure(transferoperators[i])
     end
 
     for i = 1:n
@@ -120,7 +120,7 @@ function transferentropy(binnings::Vector{StateSpaceReconstruction.RectangularBi
 
     for i = 1:n
         transferoperators[i] = transferoperator(binnings[i])
-        invariantdists[i] = PerronFrobenius.left_eigenvector(transferoperators[i])
+        invariantdists[i] = PerronFrobenius.invariantmeasure(transferoperators[i])
     end
 
     for i = 1:n
@@ -146,7 +146,7 @@ function transferentropy(E::StateSpaceReconstruction.Embedding,
                         vars::TransferEntropyVariables)
     b = bin_rectangular(E, nbins_eachaxis)
     to = PerronFrobenius.transferoperator(b)
-    invariantdistribution = PerronFrobenius.left_eigenvector(to)
+    invariantdistribution = PerronFrobenius.invariantmeasure(to)
     transferentropy(b, invariantdistribution, vars)
 end
 
@@ -159,7 +159,7 @@ Compute transfer entropy from a rectangular binning.
 function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
                         vars::TransferEntropyVariables)
     to = PerronFrobenius.transferoperator(b)
-    invdist = PerronFrobenius.left_eigenvector(to)
+    invdist = PerronFrobenius.invariantmeasure(to)
     transferentropy(b, invdist, vars)
 end
 
@@ -173,7 +173,7 @@ Compute transfer entropy from a binning and an associated transfer operator.
 function transferentropy(b::StateSpaceReconstruction.RectangularBinning,
                         to::PerronFrobenius.AbstractTransferOperator,
                         vars::TransferEntropyVariables)
-    invdist = PerronFrobenius.left_eigenvector(to)
+    invdist = PerronFrobenius.invariantmeasure(to)
     transferentropy(b, invdist, vars)
 end
 
@@ -208,6 +208,6 @@ function transferentropy(E::StateSpaceReconstruction.AbstractEmbedding,
 
     b = bin_rectangular(E, binsize)
     to = transferoperator(b)
-    iv = left_eigenvector(to)
+    iv = invariantmeasure(to)
     transferentropy(b, iv, vars)
 end

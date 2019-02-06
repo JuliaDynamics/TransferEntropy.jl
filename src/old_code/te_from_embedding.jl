@@ -70,7 +70,7 @@ function transferentropy(
     end
 
 	println("Computing left eigenvector")
-    invdist = InvariantDistribution.left_eigenvector(M)
+    invdist = InvariantDistribution.invariantmeasure(M)
 
     """
         local_te_from_triang(n_bins::Int)

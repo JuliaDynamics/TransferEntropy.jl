@@ -3,6 +3,7 @@ uuid = "ea221983-52f3-5440-99c7-13ea201cd633"
 repo = "https://github.com/kahaaga/TransferEntropy.jl.git"
 
 [deps]
+CausalityToolsBase = "1d2b4f6e-f63c-11e8-22f7-97940fddd364"
 Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
