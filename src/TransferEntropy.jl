@@ -8,7 +8,8 @@ using Distributions
 using Distances
 using SpecialFunctions
 using NearestNeighbors
-
+using CausalityToolsBase
+using StatsBase
 
 include("TEVars.jl")
 

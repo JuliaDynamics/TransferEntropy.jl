@@ -1,5 +1,5 @@
 import StateSpaceReconstruction:
-    customembed,
+    cembed,
     assign_bin_labels,
     groupslices, groupinds
 
@@ -252,7 +252,7 @@ function transferentropy_transferoperator_grid(pts::AbstractArray{T, 2},
     normalise_to_tPP = normalise_to_tPP,
     allocate_frac = allocate_frac) where T
 
-    tetogrid(customembed(pts), ϵ, v;
+    tetogrid(cembed(pts), ϵ, v;
         normalise_to_tPP = normalise_to_tPP,
         allocate_frac = allocate_frac)
 end

@@ -22,7 +22,7 @@ estimates_3D_wrapper_norm = Vector{Float64}(undef, n_realizations)
 estimates_3D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "3D #$i" for i in 1:n_realizations
-	E = customembed([diff(rand(ts_length)) for i = 1:3])
+	E = cembed([diff(rand(ts_length)) for i = 1:3])
 	ϵ = 3
 	# Test by doing all the dirty work and providing the raw input to the estimator
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
@@ -48,7 +48,7 @@ estimates_4D_wrapper_norm = Vector{Float64}(undef, n_realizations)
 estimates_4D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "4D #$i" for i in 1:n_realizations
-	E = customembed([diff(rand(ts_length)) for i = 1:4])
+	E = cembed([diff(rand(ts_length)) for i = 1:4])
 	ϵ = 0.3
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
 	bininfo = organize_bin_labels(bins_visited_by_orbit)
@@ -72,7 +72,7 @@ estimates_5D_wrapper_norm = Vector{Float64}(undef, n_realizations)
 estimates_5D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "5D #$i" for i in 1:n_realizations
-	E = customembed([diff(rand(ts_length)) for i = 1:5])
+	E = cembed([diff(rand(ts_length)) for i = 1:5])
 	ϵ = [0.2, 0.2, 0.1, 0.2, 0.3]
 
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)

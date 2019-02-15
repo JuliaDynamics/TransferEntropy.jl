@@ -1,11 +1,11 @@
 using Distances
 using NearestNeighbors
-import StateSpaceReconstruction: customembed
+import StateSpaceReconstruction: cembed
 
 @testset "Kraskov (kNN) 3D $i" for i in 1:n_realizations
     # Some random points that we embed
     pts = rand(3, 100)
-    E = customembed(pts)
+    E = cembed(pts)
 
     # How many neighbors to consider?
     k1 = 2
@@ -54,7 +54,7 @@ end
 @testset "Kraskov (kNN) 4D $i" for i in 1:n_realizations
     # Some random points that we embed
     pts = rand(4, 200)
-    E = customembed(pts)
+    E = cembed(pts)
 
     # How many neighbors to consider?
     k1 = 2
