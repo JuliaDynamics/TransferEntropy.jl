@@ -10,7 +10,7 @@ struct TransferOperatorGrid <: TransferEntropyEstimator end
 struct VisitationFrequency <: TransferEntropyEstimator end
 
 
-export transferentropy 
+export transferentropy, TransferEntropyEstimator, TransferOperatorGrid, VisitationFrequency
 
 """
     transferentropy(pts, binning_scheme::RectangularBinning, 
