@@ -253,7 +253,6 @@ function transferentropy_transferoperator_grid(pts::AbstractArray{T, 2},
     allocate_frac = allocate_frac) where T
 
     tetogrid(cembed(pts), ϵ, v;
-        normalise_to_tPP = normalise_to_tPP,
         allocate_frac = allocate_frac)
 end
 

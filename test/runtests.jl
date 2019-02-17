@@ -3,20 +3,24 @@ if lowercase(get(ENV, "CI", "false")) == "true"
 end
 
 using TransferEntropy
+using CausalityToolsBase
 using Test
 using Distances
-
+using DelayEmbeddings
+using StaticArrays
 
 n_realizations = 50
 
 @testset "Visitation frequency estimator" begin
-	include("transferentropy/test_transferentropy_visitfreq.jl")
+	include("estimators/test_transferentropy_visitfreq.jl")
 end
 
 @testset "kNN (Kraskov) estimator" begin
-	include("transferentropy/test_transferentropy_kraskov.jl")
+	include("estimators/test_transferentropy_kraskov.jl")
 end
 
 @testset "Transfer operator grid estimator" begin
-	include("transferentropy/test_transferentropy_transferoperator_grid.jl")
+	include("estimators/test_transferentropy_transferoperator_grid.jl")
 end
+
+include("estimators/test_common_interface.jl")

@@ -1,5 +1,5 @@
 julia 1.0
-CausalityToolsBase
+CausalityToolsBase 0.3.2
 Conda
 PyCall
 Interpolations
@@ -9,5 +9,6 @@ Distances
 NearestNeighbors
 SpecialFunctions
 Simplices 0.2.1
-StateSpaceReconstruction 0.3.0 0.3.2
-PerronFrobenius 0.2.0 0.2.4
+StateSpaceReconstruction 0.4.1
+PerronFrobenius 0.4.0
+StaticArrays

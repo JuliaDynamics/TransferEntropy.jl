@@ -18,9 +18,10 @@ estimates_3D_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "3D #$i" for i in 1:n_realizations
 	E = cembed([diff(rand(ts_length)) for i = 1:3])
+	pts = [rand(3) for i = 1:ts_length]
 	ϵ = [2, 4, 5]
 	v = TEVars([1], [2], [3], Int[])
-	@test transferentropy_visitfreq(E, RectangularBinning(ϵ), v, b = 2) >= 0
+	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
 	estimates_3D[i] = transferentropy_visitfreq(E, ϵ, v)
 	estimates_3D_norm[i] = transferentropy_visitfreq(E, ϵ, v, true)
 	@test estimates_3D[i] >= 0
@@ -32,8 +33,11 @@ estimates_4D_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "4D #$i" for i in 1:n_realizations
 	E = cembed([diff(rand(ts_length)) for i = 1:4])
+	pts = [rand(4) for i = 1:ts_length]
+
 	ϵ = 3
 	v = TEVars([1], [2], [3, 4], Int[])
+	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
 	estimates_4D[i] = transferentropy_visitfreq(E, ϵ, v)
 	estimates_4D_norm[i] = transferentropy_visitfreq(E, ϵ, v, true)
 	@test estimates_4D[i] >= 0

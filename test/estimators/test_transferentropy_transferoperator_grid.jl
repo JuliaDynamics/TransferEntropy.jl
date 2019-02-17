@@ -1,5 +1,5 @@
 import StateSpaceReconstruction:
-	embed,
+	cembed,
 	assign_bin_labels
 
 import PerronFrobenius:
