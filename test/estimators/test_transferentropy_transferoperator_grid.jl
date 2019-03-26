@@ -3,9 +3,10 @@ import StateSpaceReconstruction:
 	assign_bin_labels
 
 import PerronFrobenius:
-	organize_bin_labels,
-	TransferOperatorEstimatorRectangularBinVisits,
+	get_binvisits,
+	estimate_transferoperator_from_binvisits,
 	invariantmeasure
+import CausalityToolsBase: encode, RectangularBinning, get_minima_and_edgelengths
 
 
 # Estimate transfer entropy from scratch from a random
@@ -26,15 +27,15 @@ estimates_3D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	ϵ = 3
 	# Test by doing all the dirty work and providing the raw input to the estimator
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = TransferOperatorEstimatorRectangularBinVisits(bininfo)
+	bininfo = get_binvisits(bins_visited_by_orbit)
+	TO = estimate_transferoperator_from_binvisits(bininfo)
 	iv = invariantmeasure(TO)
 	v = TEVars([1], [2], [3], Int[])
 
 	estimates_3D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_3D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_3D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
-	estimates_3D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
+	estimates_3D_wrapper_norm[i] = tetogrid(E, ϵ, v)
+	estimates_3D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v)
 	@test estimates_3D_wrapper[i] >= 0
 	@test estimates_3D_allsteps[i] >= 0
 	@test estimates_3D_wrapper_norm[i] >= 0
@@ -51,14 +52,14 @@ estimates_4D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	E = cembed([diff(rand(ts_length)) for i = 1:4])
 	ϵ = 0.3
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = TransferOperatorEstimatorRectangularBinVisits(bininfo)
+	bininfo = get_binvisits(bins_visited_by_orbit)
+	TO = estimate_transferoperator_from_binvisits(bininfo)
 	iv = invariantmeasure(TO)
 	v = TEVars([1], [2], [3, 4], Int[])
 	estimates_4D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_4D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_4D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
-	estimates_4D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
+	estimates_4D_wrapper_norm[i] = tetogrid(E, ϵ, v)
+	estimates_4D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v)
 	@test estimates_4D_wrapper[i] >= 0
 	@test estimates_4D_allsteps[i] >= 0
 	@test estimates_4D_wrapper_norm[i] >= 0
@@ -76,57 +77,80 @@ estimates_5D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	ϵ = [0.2, 0.2, 0.1, 0.2, 0.3]
 
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = TransferOperatorEstimatorRectangularBinVisits(bininfo)
+	bininfo = get_binvisits(bins_visited_by_orbit)
+	TO = estimate_transferoperator_from_binvisits(bininfo)
 	iv = invariantmeasure(TO)
 	v = TEVars([1], [2], [3, 4], [5])
 	estimates_5D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_5D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_5D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
-	estimates_5D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
+	estimates_5D_wrapper_norm[i] = tetogrid(E, ϵ, v)
+	estimates_5D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v)
 	@test estimates_5D_wrapper[i] >= 0
 	@test estimates_5D_allsteps[i] >= 0
 	@test estimates_5D_wrapper_norm[i] >= 0
 	@test estimates_5D_allsteps_norm[i] >= 0
 end
 
-# # If everything  works as expected, there should be no negative
-# # transfer entropy values.
-#@show estimates_3D_wrapper
-#@show estimates_4D_wrapper
-#@show estimates_5D_wrapper
-#show estimates_3D_allsteps
-#@show estimates_4D_allsteps
-#@show estimates_5D_allsteps
 
-#@test all(estimates_3D_wrapper .>= 0)
-#@test all(estimates_4D_wrapper .>= 0)
-#@test all(estimates_5D_wrapper .>= 0)
-#@test all(estimates_3D_allsteps .>= 0)
-#@test all(estimates_4D_allsteps .>= 0)
-#@test all(estimates_5D_allsteps .>= 0)
 
-#@show estimates_3D_wrapper_norm
-#@show estimates_4D_wrapper_norm
-#@show estimates_5D_wrapper_norm
-#@show estimates_3D_allsteps_norm
-#@show estimates_4D_allsteps_norm
-#@show estimates_5D_allsteps_norm
 
-#@test all(estimates_3D_wrapper_norm .>= 0)
-#@test all(estimates_4D_wrapper_norm .>= 0)
-#@test all(estimates_5D_wrapper_norm .>= 0)
-#@test all(estimates_3D_allsteps_norm .>= 0)
-#@test all(estimates_4D_allsteps_norm .>= 0)
-#@test all(estimates_5D_allsteps_norm .>= 0)
 
-# The invariant distribution is estimated independently in the calls
-# to the different transfer entropy estimators. The distribution is
-# estimated by repeated application of the transfer operator on a
-# randomly initialised distribution until convergence is achieved.
-# Because a different initial distribution is used for each function
-# call, the estimated transfer entropy will be slightly different.
-# However, we do not expect the differences to be very large.
-#@test all(abs.(estimates_3D_wrapper .- estimates_3D_allsteps) .< 1e-2)
-#@test all(abs.(estimates_4D_wrapper .- estimates_4D_allsteps) .< 1e-2)
-#@test all(abs.(estimates_5D_wrapper .- estimates_5D_allsteps) .< 1e-2)
+
+
+
+
+
+
+
+
+using StaticArrays
+using DelayEmbeddings
+PTS = [[rand(3) for i = 1:50] for k = 1:n_realizations]
+
+@testset "3D #$i" for i in 1:n_realizations
+	pts = PTS[i]
+	spts = [SVector{3, Float64}(pt) for pt in PTS[i]]
+	mpts = [MVector{3, Float64}(pt) for pt in PTS[i]]
+	D = Dataset(pts)
+
+	ϵ = 3
+	# Test by doing all the dirty work and providing the raw input to the estimator
+	mini, edgelengths = get_minima_and_edgelengths(pts, ϵ)
+	encoded_pts = hcat(encode(pts, mini, edgelengths)...,)
+	encoded_spts = hcat(encode(spts, mini, edgelengths)...,)
+	encoded_mpts = hcat(encode(mpts, mini, edgelengths)...,)
+	encoded_D = hcat(encode(D, mini, edgelengths)...,)
+
+	binvisits_pts = get_binvisits(encoded_pts)
+	binvisits_spts = get_binvisits(encoded_spts)
+	binvisits_mpts = get_binvisits(encoded_mpts)
+	binvisits_D = get_binvisits(encoded_D)
+
+	# Approximate the transfer operator
+	TO_pts = estimate_transferoperator_from_binvisits(binvisits_pts)
+	TO_spts = estimate_transferoperator_from_binvisits(binvisits_spts)
+	TO_mpts = estimate_transferoperator_from_binvisits(binvisits_mpts)
+	TO_D = estimate_transferoperator_from_binvisits(binvisits_D)
+
+	# Get the invariant measure from the transfer operator
+	iv_pts = invariantmeasure(TO_pts)
+	iv_spts = invariantmeasure(TO_spts)
+	iv_mpts = invariantmeasure(TO_mpts)
+	iv_D = invariantmeasure(TO_D)
+
+	v = TEVars([1], [2], [3], Int[])
+
+	@test tetogrid(encoded_pts, iv_pts, v) >= 0
+	@show tetogrid(encoded_spts, iv_spts, v) >= 0
+	@show tetogrid(encoded_mpts, iv_mpts, v) >= 0
+	@show tetogrid(encoded_D, iv_D, v) >= 0
+
+	#estimates_3D_wrapper[i] = tetogrid(E, ϵ, v)
+	#estimates_3D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
+	#estimates_3D_wrapper_norm[i] = tetogrid(E, ϵ, v)
+	#estimates_3D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v)
+	#@test estimates_3D_wrapper[i] >= 0
+	#@test estimates_3D_allsteps[i] >= 0
+	#@test estimates_3D_wrapper_norm[i] >= 0
+	#@test estimates_3D_allsteps_norm[i] >= 0
+end

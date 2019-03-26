@@ -3,8 +3,8 @@ import StateSpaceReconstruction:
 	assign_bin_labels
 
 import PerronFrobenius:
-	organize_bin_labels,
-	TransferOperatorEstimatorRectangularBinVisits
+	get_binvisits,
+	estimate_transferoperator_from_binvisits
 
 
 
@@ -23,7 +23,7 @@ estimates_3D_norm = Vector{Float64}(undef, n_realizations)
 	v = TEVars([1], [2], [3], Int[])
 	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
 	estimates_3D[i] = transferentropy_visitfreq(E, ϵ, v)
-	estimates_3D_norm[i] = transferentropy_visitfreq(E, ϵ, v, true)
+	estimates_3D_norm[i] = transferentropy_visitfreq(E, ϵ, v)
 	@test estimates_3D[i] >= 0
 	@test estimates_3D_norm[i] >= 0
 end
@@ -39,7 +39,7 @@ estimates_4D_norm = Vector{Float64}(undef, n_realizations)
 	v = TEVars([1], [2], [3, 4], Int[])
 	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
 	estimates_4D[i] = transferentropy_visitfreq(E, ϵ, v)
-	estimates_4D_norm[i] = transferentropy_visitfreq(E, ϵ, v, true)
+	estimates_4D_norm[i] = transferentropy_visitfreq(E, ϵ, v)
 	@test estimates_4D[i] >= 0
 	@test estimates_4D_norm[i] >= 0
 
@@ -58,7 +58,7 @@ estimates_5D_norm = Vector{Float64}(undef, n_realizations)
 	ϵ = 0.3
 	v = TEVars([1], [2], [3, 4], [5])
 	estimates_5D[i] = transferentropy_visitfreq(E, ϵ, v)
-	estimates_5D_norm[i] = transferentropy_visitfreq(E, ϵ, v, true)
+	estimates_5D_norm[i] = transferentropy_visitfreq(E, ϵ, v)
 	@test estimates_5D[i] >= 0
 	@test estimates_5D_norm[i] >= 0
 

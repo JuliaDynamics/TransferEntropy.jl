@@ -1,16 +1,8 @@
-import PerronFrobenius: AbstractTriangulationInvariantMeasure
 import CausalityToolsBase: RectangularBinning
-import StateSpaceReconstruction: Simplex, generate_interior_points
-import StaticArrays: SVector
+import Distances: Metric, Chebyshev
 
 
-abstract type TransferEntropyEstimator end 
-
-struct TransferOperatorGrid <: TransferEntropyEstimator end
-struct VisitationFrequency <: TransferEntropyEstimator end
-
-
-export transferentropy, TransferEntropyEstimator, TransferOperatorGrid, VisitationFrequency
+export transferentropy
 
 """
     transferentropy(pts, binning_scheme::RectangularBinning, 
@@ -48,7 +40,11 @@ during transfer entropy computation. Check the documentation of
 
 - Visitation frequency estimator. The symbols `:visitfreq`, `:vf` 
     and `:visitation_frequency` will work.
-
+- Transfer operator grid estimator. The symbols `:transferoperator_grid`, 
+    `:transferoperatorgrid`, `:to_grid`, `:to_grid` will work.
+- k nearest neighbours estimator. The symbols `:nn`, `:NN`, 
+    `:nearestneighbors`, `:nearestneighbours`, `:nearest_neighbors`, 
+    `:nearest_neighbours` will work.
 
 ### Example 
 
@@ -124,172 +120,20 @@ map(ϵ -> transferentropy(pts, RectangularBinning(ϵ), vars, :visitfreq))
 ```
 """
 function transferentropy(pts, binning_scheme::RectangularBinning, 
-        vars::TEVars, estimator::Symbol = :visitfreq)
-    if estimator ∈ [:visitfreq, :vf, :visitation_frequency]
-        transferentropy_visitfreq(pts, binning_scheme, vars)
+        vars::TEVars, estimator::Symbol = :visitfreq; 
+        k1::Int = 2, k2::Int = 3, metric::Metric = Chebyshev(), kwargs...)
+    if estimator ∈ [:visitfreq, :visit_freq, :vf, :visitation_frequency, :visitationfrequency]
+        transferentropy(pts, binning_scheme, vars, VisitationFrequency(); kwargs...)
+    elseif estimator ∈ [:transferoperator_grid, :transferoperatorgrid, :to_grid, :to_grid]
+        transferentropy(pts, binning_scheme, vars, TransferOperatorGrid(); kwargs...)
+    elseif estimator ∈ [:nn, :NN, :nearestneighbors, :nearestneighbours, 
+        :nearest_neighbors, :nearest_neighbours]
+        transferentropy(pts, binning_scheme, vars, NNEstimator(), 
+            k1 = k2, k2 = k2, metric = metric, kwargs...)
     end
 end
 
-"""
-    transferentropy(μ::AbstractTriangulationInvariantMeasure, 
-        binning_scheme::RectangularBinning, vars::TEVars; n::Int = 10000)
-
-#### Transfer entropy using a precomputed invariant measure over a triangulated partition
-
-Estimate transfer entropy from an invariant measure over a triangulation
-that has been precomputed either as 
-
-1. `μ = invariantmeasure(pts, TriangulationBinning(), ApproximateIntersection())`, or
-2. `μ = invariantmeasure(pts, TriangulationBinning(), ExactIntersection())` 
-
-where the first method uses approximate simplex intersections (faster) and 
-the second method uses exact simplex intersections (slow). `μ` contains 
-all the information needed to compute transfer entropy. 
-
-Note: `pts` must be a vector of states, not a vector of 
-variables/(time series). Wrap your time series in a `Dataset`
-first if the latter is the case.
-
-#### Computing transfer entropy (triangulation -> rectangular partition)
-
-Because we need to compute marginals, we need a rectangular grid. To do so,
-transfer entropy is computed by sampling the simplices of the 
-triangulation according to their measure with a total of approximately 
-`n` points. Introducing multiple points as representatives for the partition
-elements does not introduce any bias, because we in computing the 
-invariant measure, we use no more information than what is encoded in the 
-dynamics of the original data points. However, from the invariant measure,
-we can get a practically infinite amount of points to estimate transfer 
-entropy from.
-
-Then, transfer entropy is estimated using the visitation 
-frequency estimator on those points (see docs for `transferentropy_visitfreq` 
-for more information), on a rectangular grid specified by `binning_scheme`.
-
-#### Common use case
-
-This method is good to use if you want to explore the sensitivity 
-of transfer entropy to the bin size in the final rectangular grid, 
-when you have few observations in the time series. The invariant 
-measure, which encodes the dynamical information, is slow to compute over 
-the triangulation, but only needs to be computed once.
-After that, transfer entropy may be estimated at multiple scales very quickly.
-
-### Example 
-
-```julia
-# Compute invariant measure over a triangulation using approximate 
-# simplex intersections. This is relatively slow.
-μ = invariantmeasure(pts, TriangulationBinning(), ApproximateIntersection())
-
-# Compute transfer entropy from the invariant measure over multiple 
-# bin sizes. This is fast, because the measure has been precomputed.
-tes = map(ϵ -> transferentropy(μ, RectangularBinning(ϵ), TEVars([1], [2], [3])), 2:50)
-```
-"""
-function transferentropy(μ::AbstractTriangulationInvariantMeasure, 
-        binning_scheme::RectangularBinning, vars::TEVars; n::Int = 10000)
-    dim = length(μ.points[1])
-    triang = μ.triangulation.simplexindices
-    n_simplices = length(triang)
-    
-    simplices = [Simplex(μ.points[triang[i]]) for i = 1:n_simplices]
-    
-    # Find a number of points to fill each simplex with so that we 
-    # obey the measure over the simplices of the triangulation.
-    # The total number of points will be roughly `n`, but slightly 
-    # higher because we need integer numbers of points and use `ceil`
-    # for this.
-    n_fillpts_persimplex = ceil.(Int, μ.measure.dist .* n)
-    
-    # Array to store the points filling the simplices
-    fillpts = Vector{SVector{dim, Float64}}(undef, length(n_fillpts_persimplex))
-
-    for i = 1:n_simplices
-        sᵢ = simplices[i]
-        if n_fillpts_persimplex[i] > 0
-            pts = generate_interior_points(sᵢ, n_fillpts_persimplex[i])
-            append!(fillpts, [SVector{dim, Float64}(pt) for pt in pts])
-        end
-    end
-    
-    transferentropy_visitfreq(fillpts, binning_scheme, vars)
-end
 
 
 
-"""
-    transferentropy(pts, ϵ, vars::TEVars, estimator::VisitationFrequency; b = 2)
 
-Compute transfer entropy for a set of ordered points representing
-an appropriate embedding of some time series. See documentation for 
-`TEVars` for info on how to specify the marginals (i.e. which variables 
-of the embedding are treated as what). 
-
-`b` sets the base of the logarithm (e.g `b = 2` gives the transfer 
-entropy in bits). 
-"""
-function transferentropy(pts, ϵ, vars::TEVars, estimator::VisitationFrequency; b = 2)
-    
-    # Collect variables for the marginals 
-    C = vars.conditioned_presentpast
-    XY = [vars.target_future;      vars.target_presentpast; C]
-    YZ = [vars.target_presentpast; vars.source_presentpast; C]
-    Y =  [vars.target_presentpast;                          C]
-    
-    # Find the bins visited by the joint system (and then get 
-    # the marginal visits from that, so we don't have to encode 
-    # bins multiple times). 
-    joint_bin_visits = joint_visits(pts, ϵ)
-
-    # Compute visitation frequencies for nonempty bi
-    p_Y = non0hist(marginal_visits(joint_bin_visits, Y))
-    p_XY = non0hist(marginal_visits(joint_bin_visits, XY))
-    p_YZ = non0hist(marginal_visits(joint_bin_visits, YZ))
-    p_joint = non0hist(joint_bin_visits)
-    
-    te = StatsBase.entropy(p_YZ, b) +
-            StatsBase.entropy(p_XY, b) -
-            StatsBase.entropy(p_Y, b) -
-            StatsBase.entropy(p_joint, b)
-end
-
-
-"""
-    transferentropy(pts, ϵ, vars::TEVars, estimator::TransferOperatorGrid; b = 2)
-
-Compute transfer entropy for a set of ordered points representing
-an appropriate embedding of some time series. See documentation for 
-`TEVars` for info on how to specify the marginals (i.e. which variables 
-of the embedding are treated as what). 
-
-`b` sets the base of the logarithm (e.g `b = 2` gives the transfer 
-entropy in bits). 
-"""
-function transferentropy(pts::Vector{T}, ϵ, vars::TEVars, estimator::TransferOperatorGrid; 
-        b = 2) where {T <: Vector, SVector, MVector}
-    
-
-    # Calculate the invariant distribution over the bins.
-    μ = invariantmeasure(pts, ϵ)
-    
-    # Find the unique visited bins, then find the subset of those bins 
-    # with nonzero measure.
-    # Make a version of marginal that takes columns 
-    positive_measure_bins = transpose(unique(μ.visited_bins_inds, dims = 2))[μ.measure.nonzero_inds, :]
-    
-        # Collect variables for the marginals 
-    C = vars.conditioned_presentpast
-    XY = [vars.target_future;      vars.target_presentpast; C]
-    YZ = [vars.target_presentpast; vars.source_presentpast; C]
-    Y =  [vars.target_presentpast;                          C]
-
-    p_Y  = marginal(Y, positive_measure_bins, μ.measure)
-    p_XY = marginal(XY, positive_measure_bins, μ.measure)
-    p_YZ = marginal(YZ, positive_measure_bins, μ.measure)
-    
-    te = StatsBase.entropy(p_YZ, b) +
-            StatsBase.entropy(p_XY, b) -
-            StatsBase.entropy(p_Y, b) -
-            StatsBase.entropy(μ.measure.dist[μ.measure.nonzero_inds], b)
-end

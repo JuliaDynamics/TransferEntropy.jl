@@ -23,5 +23,24 @@ vars = TEVars([1], [2], [3])
 @test transferentropy(μapprox, RectangularBinning(0.2), vars) >= 0
 @test transferentropy(μexact, RectangularBinning(0.2), vars) >= 0
 
-@test transferentropy_transferoperator_grid(E, 0.3, vars) .≈ transferentropy(pts, RectangularBinning(0.3), vars, TransferOperatorGrid())
-@test transferentropy_visitfreq(E, 0.3, vars) .≈ transferentropy(pts, RectangularBinning(0.3), vars, VisitationFrequency())
+E = cembed(hcat(pts...,))
+
+te_grid_ll = transferentropy_transferoperator_grid(E, 0.3, vars)
+te_grid_hl = transferentropy(pts, RectangularBinning(0.3), vars, TransferOperatorGrid())
+
+te_vf_ll = transferentropy_visitfreq(E, 0.3, vars)
+te_vf_hl = transferentropy(pts, RectangularBinning(0.3), vars, VisitationFrequency())
+
+@show te_grid_ll, te_grid_hl
+@show te_vf_ll, te_vf_hl
+
+# We don't expect the estimates to be identical because the initial distribution over
+# which the transfer operator is computed is 
+@test te_grid_ll >= 0 
+@test te_grid_hl >= 0
+
+# The visitation frequency estimates must, however, be identical, because there is no
+# randomisation involved in the estimation of the TE.
+@test te_vf_ll >= 0 
+@test te_vf_hl >= 0
+@test te_vf_ll ≈ te_vf_hl

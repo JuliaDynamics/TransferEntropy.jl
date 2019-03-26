@@ -11,21 +11,34 @@ using NearestNeighbors
 using CausalityToolsBase
 using StatsBase
 
+export 
+TransferEntropyEstimator, 
+TransferOperatorGrid, 
+VisitationFrequency, 
+NNEstimator,
+TEVars,
+transferentropy
+
+abstract type TransferEntropyEstimator end 
+
+struct TransferOperatorGrid <: TransferEntropyEstimator end
+struct VisitationFrequency <: TransferEntropyEstimator end
+struct NNEstimator <: TransferEntropyEstimator end
+
+
 include("TEVars.jl")
 
-include("entropy.jl")
+# keep old estimators for backwards compatibility
+include("compat/compat_transferentropy_kraskov.jl")
+include("compat/compat_transferentropy_visitfreq.jl")
+include("compat/compat_transferentropy_transferoperator.jl")
 
-include("estimators/transferentropy_kraskov.jl")
+# New interface
 include("estimators/transferentropy_visitfreq.jl")
-include("estimators/transferentropy_transferoperator.jl")
+include("estimators/transferentropy_transferoperator_grid.jl")
+include("estimators/transferentropy_transferoperator_triang.jl")
+include("estimators/transferentropy_nearestneighbour.jl")
+
 include("estimators/common_interface.jl")
-#include("estimators/transferentropy_triangulation.jl")
-
-
-export
-install_dependencies,
-entropy,
-TEVars
-#transferentropy_transferoperator_triang, tetotri
 
 end # module
