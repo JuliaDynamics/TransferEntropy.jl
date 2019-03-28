@@ -5,8 +5,8 @@ import StateSpaceReconstruction:
 
 import PerronFrobenius:
         InvariantDistribution,
-        organize_bin_labels,
-        TransferOperatorEstimatorRectangularBinVisits,
+        get_binvisits,
+        estimate_transferoperator_from_binvisits,
         invariantmeasure
 
 """
@@ -184,10 +184,10 @@ function transferentropy_transferoperator_grid(
 
     # Which are the visited bins, which points
     # visits which bin, repetitions, etc...
-    binvisits = organize_bin_labels(bins_visited_by_orbit)
+    binvisits = get_binvisits(bins_visited_by_orbit)
 
     # Use that information to estimate transfer operator
-    TO = TransferOperatorEstimatorRectangularBinVisits(binvisits,
+    TO = estimate_transferoperator_from_binvisits(binvisits,
                         allocate_frac = allocate_frac)
 
     # Calculate the invariant distribution over the bins.

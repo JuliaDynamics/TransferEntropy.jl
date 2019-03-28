@@ -3,8 +3,8 @@ import StateSpaceReconstruction:
 	assign_bin_labels
 
 import PerronFrobenius:
-	organize_bin_labels,
-	TransferOperatorEstimatorRectangularBinVisits
+	get_binvisits,
+	estimate_transferoperator_from_binvisits
 
 
 

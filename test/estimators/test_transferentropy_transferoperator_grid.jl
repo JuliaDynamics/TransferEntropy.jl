@@ -3,8 +3,8 @@ import StateSpaceReconstruction:
 	assign_bin_labels
 
 import PerronFrobenius:
-	organize_bin_labels,
-	TransferOperatorEstimatorRectangularBinVisits,
+	get_binvisits,
+	estimate_transferoperator_from_binvisits,
 	invariantmeasure
 
 
@@ -26,8 +26,8 @@ estimates_3D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	ϵ = 3
 	# Test by doing all the dirty work and providing the raw input to the estimator
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = TransferOperatorEstimatorRectangularBinVisits(bininfo)
+	bininfo = get_binvisits(bins_visited_by_orbit)
+	TO = estimate_transferoperator_from_binvisits(bininfo)
 	iv = invariantmeasure(TO)
 	v = TEVars([1], [2], [3], Int[])
 
@@ -51,8 +51,8 @@ estimates_4D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	E = cembed([diff(rand(ts_length)) for i = 1:4])
 	ϵ = 0.3
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = TransferOperatorEstimatorRectangularBinVisits(bininfo)
+	bininfo = get_binvisits(bins_visited_by_orbit)
+	TO = estimate_transferoperator_from_binvisits(bininfo)
 	iv = invariantmeasure(TO)
 	v = TEVars([1], [2], [3, 4], Int[])
 	estimates_4D_wrapper[i] = tetogrid(E, ϵ, v)
@@ -76,8 +76,8 @@ estimates_5D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	ϵ = [0.2, 0.2, 0.1, 0.2, 0.3]
 
 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = organize_bin_labels(bins_visited_by_orbit)
-	TO = TransferOperatorEstimatorRectangularBinVisits(bininfo)
+	bininfo = get_binvisits(bins_visited_by_orbit)
+	TO = estimate_transferoperator_from_binvisits(bininfo)
 	iv = invariantmeasure(TO)
 	v = TEVars([1], [2], [3, 4], [5])
 	estimates_5D_wrapper[i] = tetogrid(E, ϵ, v)
