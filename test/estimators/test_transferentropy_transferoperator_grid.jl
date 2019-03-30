@@ -18,8 +18,6 @@ ts_length = 100
 # result.
 estimates_3D_wrapper = Vector{Float64}(undef, n_realizations)
 estimates_3D_allsteps = Vector{Float64}(undef, n_realizations)
-estimates_3D_wrapper_norm = Vector{Float64}(undef, n_realizations)
-estimates_3D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "3D #$i" for i in 1:n_realizations
 	E = cembed([diff(rand(ts_length)) for i = 1:3])
@@ -33,19 +31,13 @@ estimates_3D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 	estimates_3D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_3D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_3D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
-	estimates_3D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
 	@test estimates_3D_wrapper[i] >= 0
 	@test estimates_3D_allsteps[i] >= 0
-	@test estimates_3D_wrapper_norm[i] >= 0
-	@test estimates_3D_allsteps_norm[i] >= 0
 end
 
 ts_length = 200
 estimates_4D_wrapper = Vector{Float64}(undef, n_realizations)
 estimates_4D_allsteps = Vector{Float64}(undef, n_realizations)
-estimates_4D_wrapper_norm = Vector{Float64}(undef, n_realizations)
-estimates_4D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "4D #$i" for i in 1:n_realizations
 	E = cembed([diff(rand(ts_length)) for i = 1:4])
@@ -57,19 +49,13 @@ estimates_4D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	v = TEVars([1], [2], [3, 4], Int[])
 	estimates_4D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_4D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_4D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
-	estimates_4D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
 	@test estimates_4D_wrapper[i] >= 0
 	@test estimates_4D_allsteps[i] >= 0
-	@test estimates_4D_wrapper_norm[i] >= 0
-	@test estimates_4D_allsteps_norm[i] >= 0
 end
 
 ts_length = 300
 estimates_5D_wrapper = Vector{Float64}(undef, n_realizations)
 estimates_5D_allsteps = Vector{Float64}(undef, n_realizations)
-estimates_5D_wrapper_norm = Vector{Float64}(undef, n_realizations)
-estimates_5D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 
 @testset "5D #$i" for i in 1:n_realizations
 	E = cembed([diff(rand(ts_length)) for i = 1:5])
@@ -82,12 +68,8 @@ estimates_5D_allsteps_norm = Vector{Float64}(undef, n_realizations)
 	v = TEVars([1], [2], [3, 4], [5])
 	estimates_5D_wrapper[i] = tetogrid(E, ϵ, v)
 	estimates_5D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	estimates_5D_wrapper_norm[i] = tetogrid(E, ϵ, v; normalise_to_tPP = true)
-	estimates_5D_allsteps_norm[i] = tetogrid(bins_visited_by_orbit, iv, v; normalise_to_tPP = true)
 	@test estimates_5D_wrapper[i] >= 0
 	@test estimates_5D_allsteps[i] >= 0
-	@test estimates_5D_wrapper_norm[i] >= 0
-	@test estimates_5D_allsteps_norm[i] >= 0
 end
 
 # # If everything  works as expected, there should be no negative
@@ -106,19 +88,6 @@ end
 #@test all(estimates_4D_allsteps .>= 0)
 #@test all(estimates_5D_allsteps .>= 0)
 
-#@show estimates_3D_wrapper_norm
-#@show estimates_4D_wrapper_norm
-#@show estimates_5D_wrapper_norm
-#@show estimates_3D_allsteps_norm
-#@show estimates_4D_allsteps_norm
-#@show estimates_5D_allsteps_norm
-
-#@test all(estimates_3D_wrapper_norm .>= 0)
-#@test all(estimates_4D_wrapper_norm .>= 0)
-#@test all(estimates_5D_wrapper_norm .>= 0)
-#@test all(estimates_3D_allsteps_norm .>= 0)
-#@test all(estimates_4D_allsteps_norm .>= 0)
-#@test all(estimates_5D_allsteps_norm .>= 0)
 
 # The invariant distribution is estimated independently in the calls
 # to the different transfer entropy estimators. The distribution is

@@ -1,7 +1,7 @@
 import StateSpaceReconstruction: Embeddings
 
 function marginal_NN(points, dists_to_kth)
-    D = pairwise(Chebyshev(), points)
+    D = pairwise(Chebyshev(), points, dims = 2)
 
     npts = size(points, 2)
     N = zeros(Int, npts)

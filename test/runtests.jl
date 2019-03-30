@@ -9,7 +9,7 @@ using Distances
 using DelayEmbeddings
 using StaticArrays
 
-n_realizations = 50
+n_realizations = 5
 
 @testset "Visitation frequency estimator" begin
 	include("estimators/test_transferentropy_visitfreq.jl")

@@ -12,9 +12,7 @@ using CausalityToolsBase
 using StatsBase
 
 include("TEVars.jl")
-
-include("entropy.jl")
-
+#include("entropy.jl")
 include("estimators/transferentropy_kraskov.jl")
 include("estimators/transferentropy_visitfreq.jl")
 include("estimators/transferentropy_transferoperator.jl")

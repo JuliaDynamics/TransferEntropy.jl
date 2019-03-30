@@ -9,6 +9,9 @@ import PerronFrobenius:
         estimate_transferoperator_from_binvisits,
         invariantmeasure
 
+import StaticArrays:
+    SVector, MVector
+
 """
 	marginal_indices(A)
 
@@ -91,7 +94,7 @@ function transferentropy_transferoperator_grid(
 
     unique_visited_bins = transpose(unique(bins_visited_by_orbit, dims = 2))
     positive_measure_bins = unique_visited_bins[iv.nonzero_inds, :]
-
+    
     C = v.conditioned_presentpast
     XY = [v.target_future;      v.target_presentpast; C]
     YZ = [v.target_presentpast; v.source_presentpast; C]
@@ -100,18 +103,22 @@ function transferentropy_transferoperator_grid(
     p_Y  = marginal(Y, positive_measure_bins, iv)
     p_XY = marginal(XY, positive_measure_bins, iv)
     p_YZ = marginal(YZ, positive_measure_bins, iv)
-
-    # Use base 2 for the entropy, so that we get transfer entropy in bits
     
-    te = entropy(p_YZ, b = b) +
-            entropy(p_XY, b = b) -
-            entropy(p_Y, b = b) -
-            entropy(iv.dist[iv.nonzero_inds], b = b)
+    te = StatsBase.entropy(p_YZ, b) +
+        StatsBase.entropy(p_XY, b) -
+        StatsBase.entropy(p_Y, b) -
+        StatsBase.entropy(iv.dist[iv.nonzero_inds], b)
 
     return te
 end
 
 function transferentropy_transferoperator_grid(
+                    pts::Vector{T},
+                    ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
+                    v::TEVars;
+                    allocate_frac = 1.0, b = 2) where {T <: Union{Vector, SVector, MVector}}
+    transferentropy_transferoperator_grid(hcat(pts...,), ϵ, v,
+        allocate_frac = allocate_frac, b = b)
 end
 
 
