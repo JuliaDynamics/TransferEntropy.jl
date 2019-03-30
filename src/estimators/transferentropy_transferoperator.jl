@@ -1,3 +1,17 @@
+import StateSpaceReconstruction:
+    cembed,
+    assign_bin_labels,
+    groupslices, groupinds
+
+import PerronFrobenius:
+        InvariantDistribution,
+        get_binvisits,
+        estimate_transferoperator_from_binvisits,
+        invariantmeasure
+
+import StaticArrays:
+    SVector, MVector
+
 """
 	marginal_indices(A)
 
@@ -17,7 +31,7 @@ into account the invariant distribution over the bins.
 """
 function marginal(along_which_axes::Union{Vector{Int}, UnitRange{Int}},
                 visited_bin_labels::Array{Int, 2},
-                iv::PerronFrobenius.InvariantDistribution)
+                iv::InvariantDistribution)
 
     marginal_inds::Vector{Vector{Int}} =
         marginal_indices(visited_bin_labels[:, along_which_axes])
@@ -36,7 +50,7 @@ end
     transferentropy_transferoperator_grid(
             bins_visited_by_orbit::Array{Int, 2},
             iv::PerronFrobenius.InvariantDistribution,
-            v::TEVars, normalise_to_tPP = false)
+            v::TEVars)
 
 Using the invariant probability distribution obtained from the
 transfer operator to the visited bins of the partitioned state
@@ -49,15 +63,11 @@ information `v::TEVars` about which columns of the embedding to
 consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
-
-If `normalise_to_tPP = true`, then the TE estimate is normalised to
-the entropy rate of the target variable, `H(target_future | target_presentpast)`.
-
 """
 function transferentropy_transferoperator_grid(
             bins_visited_by_orbit::Array{Int, 2},
-            iv::PerronFrobenius.InvariantDistribution,
-            v::TEVars; normalise_to_tPP = false)
+            iv::InvariantDistribution,
+            v::TEVars; b = 2)
 
     # Verify that the number of dynamical variables in
     # the embedding agrees with the number of dynamical
@@ -84,7 +94,7 @@ function transferentropy_transferoperator_grid(
 
     unique_visited_bins = transpose(unique(bins_visited_by_orbit, dims = 2))
     positive_measure_bins = unique_visited_bins[iv.nonzero_inds, :]
-
+    
     C = v.conditioned_presentpast
     XY = [v.target_future;      v.target_presentpast; C]
     YZ = [v.target_presentpast; v.source_presentpast; C]
@@ -93,38 +103,31 @@ function transferentropy_transferoperator_grid(
     p_Y  = marginal(Y, positive_measure_bins, iv)
     p_XY = marginal(XY, positive_measure_bins, iv)
     p_YZ = marginal(YZ, positive_measure_bins, iv)
-
-    # Use base 2 for the entropy, so that we get transfer entropy in bits
-    if normalise_to_tPP
-        te = entropy(p_YZ, b = 2) +
-            entropy(p_XY, b = 2) -
-            entropy(p_Y, b = 2) -
-            entropy(iv.dist[iv.nonzero_inds], b = 2)
-
-		# Compute the transfer entropy from the target variable to itself
-		# TE(Tpresent -> Tfuture | Tpast)
-		#XY = [v.target_future; ]
-        #te_target_on_itself =
-
-        #te = te / (entropy(P_tF_tPP, b = 2) - entropy(P_tPP, b = 2))
-    else
-        te = entropy(p_YZ, b = 2) +
-            entropy(p_XY, b = 2) -
-            entropy(p_Y, b = 2) -
-            entropy(iv.dist[iv.nonzero_inds], b = 2)
-    end
+    
+    te = StatsBase.entropy(p_YZ, b) +
+        StatsBase.entropy(p_XY, b) -
+        StatsBase.entropy(p_Y, b) -
+        StatsBase.entropy(iv.dist[iv.nonzero_inds], b)
 
     return te
 end
 
+function transferentropy_transferoperator_grid(
+                    pts::Vector{T},
+                    ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
+                    v::TEVars;
+                    allocate_frac = 1.0, b = 2) where {T <: Union{Vector, SVector, MVector}}
+    transferentropy_transferoperator_grid(hcat(pts...,), ϵ, v,
+        allocate_frac = allocate_frac, b = b)
+end
+
 
 """
-transferentropy_transferoperator_grid(
-                    E::Embeddings.AbstractEmbedding,
-                    ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-                    v::TransferEntropy.TEVars;
-                    normalise_to_tPP = false
-                    allocate_frac = 1) -> Float64
+	transferentropy_transferoperator_grid(
+        E::Embeddings.AbstractEmbedding,
+        ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
+        v::TransferEntropy.TEVars;
+        allocate_frac = 1, b = 2) -> Float64
 
 Using the transfer operator to calculate probability
 distributions,  calculate transfer entropy from the embedding
@@ -133,16 +136,12 @@ information `v::TEVars` about which columns of the embedding to
 consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
-
-If `normalise_to_tPP = true`, then the TE estimate is normalised to
-the entropy rate of the target variable `H(target_future | target_presentpast)`.
 """
 function transferentropy_transferoperator_grid(
                     E::Embeddings.AbstractEmbedding,
                     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-                    v::TransferEntropy.TEVars;
-                    normalise_to_tPP = false,
-                    allocate_frac = 1.0)
+                    v::TEVars;
+                    allocate_frac = 1.0, b = 2)
 
     # Verify that the number of dynamical variables in
     # the embedding agrees with the number of dynamical
@@ -173,25 +172,24 @@ function transferentropy_transferoperator_grid(
 
     # Which are the visited bins, which points
     # visits which bin, repetitions, etc...
-    binvisits = organize_bin_labels(bins_visited_by_orbit)
+    binvisits = get_binvisits(bins_visited_by_orbit)
 
     # Use that information to estimate transfer operator
-    TO = PerronFrobenius.transferoperator_binvisits(binvisits,
+    TO = estimate_transferoperator_from_binvisits(binvisits,
                         allocate_frac = allocate_frac)
 
     # Calculate the invariant distribution over the bins.
-    invdist = left_eigenvector(TO)
+    invdist = invariantmeasure(TO)
 
     transferentropy_transferoperator_grid(
-        bins_visited_by_orbit, invdist, v,
-        normalise_to_tPP = normalise_to_tPP)
+        bins_visited_by_orbit, invdist, v, b = b)
 end
 
 
 """
     transferentropy_transferoperator_grid(E::Embeddings.AbstractEmbedding,
         ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
-        v::TEVars, normalise_to_tPP = false)
+        v::TEVars; allocate_frac = 1.0, b = 2)
 
 Compute transfer entropy over a range of bin sizes.
 
@@ -202,16 +200,12 @@ information `v::TEVars` about which columns of the embedding to
 consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
-
-If `normalise_to_tPP = true`, then the TE estimate is normalised to
-the entropy rate of the target variable, `H(target_future | target_presentpast)`.
 """
 function transferentropy_transferoperator_grid(E::Embeddings.AbstractEmbedding,
         ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
-        v::TEVars; normalise_to_tPP = false, allocate_frac = 1.0)
+        v::TEVars; allocate_frac = 1.0, b = 2)
     map(ϵᵢ -> transferentropy_transferoperator_grid(
         E, ϵᵢ, v;
-        normalise_to_tPP = normalise_to_tPP,
         allocate_frac = allocate_frac), ϵ)
 end
 
@@ -237,16 +231,16 @@ The points will be embedded behind the scenes.
 """
 function transferentropy_transferoperator_grid(pts::AbstractArray{T, 2},
     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
-    v::TransferEntropy.TEVars;
-    normalise_to_tPP = normalise_to_tPP,
-    allocate_frac = allocate_frac) where T
+    v::TEVars;
+    allocate_frac = allocate_frac, b = 2) where T
 
-    tetogrid(embed(pts), ϵ, v;
-        normalise_to_tPP = normalise_to_tPP,
-        allocate_frac = allocate_frac)
+    tetogrid(cembed(pts), ϵ, v;
+        allocate_frac = allocate_frac, b = b)
 end
 
 
 tetogrid = transferentropy_transferoperator_grid
 
-export transferentropy_transferoperator_grid, tetogrid
+export
+transferentropy_transferoperator_grid,
+tetogrid
