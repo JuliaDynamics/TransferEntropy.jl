@@ -47,7 +47,7 @@ end
     transferentropy_transferoperator_grid(
             bins_visited_by_orbit::Array{Int, 2},
             iv::PerronFrobenius.InvariantDistribution,
-            v::TEVars, normalise_to_tPP = false)
+            v::TEVars)
 
 Using the invariant probability distribution obtained from the
 transfer operator to the visited bins of the partitioned state
@@ -60,15 +60,11 @@ information `v::TEVars` about which columns of the embedding to
 consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
-
-If `normalise_to_tPP = true`, then the TE estimate is normalised to
-the entropy rate of the target variable, `H(target_future | target_presentpast)`.
-
 """
 function transferentropy_transferoperator_grid(
             bins_visited_by_orbit::Array{Int, 2},
             iv::InvariantDistribution,
-            v::TEVars; normalise_to_tPP = false)
+            v::TEVars; b = 2)
 
     # Verify that the number of dynamical variables in
     # the embedding agrees with the number of dynamical
@@ -106,26 +102,16 @@ function transferentropy_transferoperator_grid(
     p_YZ = marginal(YZ, positive_measure_bins, iv)
 
     # Use base 2 for the entropy, so that we get transfer entropy in bits
-    if normalise_to_tPP
-        te = entropy(p_YZ, b = 2) +
-            entropy(p_XY, b = 2) -
-            entropy(p_Y, b = 2) -
-            entropy(iv.dist[iv.nonzero_inds], b = 2)
-
-		# Compute the transfer entropy from the target variable to itself
-		# TE(Tpresent -> Tfuture | Tpast)
-		#XY = [v.target_future; ]
-        #te_target_on_itself =
-
-        #te = te / (entropy(P_tF_tPP, b = 2) - entropy(P_tPP, b = 2))
-    else
-        te = entropy(p_YZ, b = 2) +
-            entropy(p_XY, b = 2) -
-            entropy(p_Y, b = 2) -
-            entropy(iv.dist[iv.nonzero_inds], b = 2)
-    end
+    
+    te = entropy(p_YZ, b = b) +
+            entropy(p_XY, b = b) -
+            entropy(p_Y, b = b) -
+            entropy(iv.dist[iv.nonzero_inds], b = b)
 
     return te
+end
+
+function transferentropy_transferoperator_grid(
 end
 
 
@@ -134,8 +120,7 @@ end
         E::Embeddings.AbstractEmbedding,
         ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
         v::TransferEntropy.TEVars;
-        normalise_to_tPP = false
-        allocate_frac = 1) -> Float64
+        allocate_frac = 1, b = 2) -> Float64
 
 Using the transfer operator to calculate probability
 distributions,  calculate transfer entropy from the embedding
@@ -144,16 +129,12 @@ information `v::TEVars` about which columns of the embedding to
 consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
-
-If `normalise_to_tPP = true`, then the TE estimate is normalised to
-the entropy rate of the target variable `H(target_future | target_presentpast)`.
 """
 function transferentropy_transferoperator_grid(
                     E::Embeddings.AbstractEmbedding,
                     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
                     v::TEVars;
-                    normalise_to_tPP = false,
-                    allocate_frac = 1.0)
+                    allocate_frac = 1.0, b = 2)
 
     # Verify that the number of dynamical variables in
     # the embedding agrees with the number of dynamical
@@ -194,15 +175,14 @@ function transferentropy_transferoperator_grid(
     invdist = invariantmeasure(TO)
 
     transferentropy_transferoperator_grid(
-        bins_visited_by_orbit, invdist, v,
-        normalise_to_tPP = normalise_to_tPP)
+        bins_visited_by_orbit, invdist, v, b = b)
 end
 
 
 """
     transferentropy_transferoperator_grid(E::Embeddings.AbstractEmbedding,
         ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
-        v::TEVars, normalise_to_tPP = false)
+        v::TEVars; allocate_frac = 1.0, b = 2)
 
 Compute transfer entropy over a range of bin sizes.
 
@@ -213,16 +193,12 @@ information `v::TEVars` about which columns of the embedding to
 consider for each of the marginal distributions. From these
 marginal distributions, we calculate marginal entropies and
 insert these into the transfer entropy expression.
-
-If `normalise_to_tPP = true`, then the TE estimate is normalised to
-the entropy rate of the target variable, `H(target_future | target_presentpast)`.
 """
 function transferentropy_transferoperator_grid(E::Embeddings.AbstractEmbedding,
         ϵ::Vector{Union{Int, Float64, Vector{Float64}, Vector{Int}}},
-        v::TEVars; normalise_to_tPP = false, allocate_frac = 1.0)
+        v::TEVars; allocate_frac = 1.0, b = 2)
     map(ϵᵢ -> transferentropy_transferoperator_grid(
         E, ϵᵢ, v;
-        normalise_to_tPP = normalise_to_tPP,
         allocate_frac = allocate_frac), ϵ)
 end
 
@@ -249,11 +225,10 @@ The points will be embedded behind the scenes.
 function transferentropy_transferoperator_grid(pts::AbstractArray{T, 2},
     ϵ::Union{Int, Float64, Vector{Float64}, Vector{Int}},
     v::TEVars;
-    normalise_to_tPP = normalise_to_tPP,
-    allocate_frac = allocate_frac) where T
+    allocate_frac = allocate_frac, b = 2) where T
 
     tetogrid(cembed(pts), ϵ, v;
-        allocate_frac = allocate_frac)
+        allocate_frac = allocate_frac, b = b)
 end
 
 
