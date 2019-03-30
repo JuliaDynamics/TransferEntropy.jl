@@ -5,6 +5,7 @@ Distances
 Distributions
 NearestNeighbors
 PerronFrobenius 0.5.3
+PyCall
 Reexport
 Simplices 0.4.1
 SpecialFunctions
