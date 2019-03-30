@@ -37,5 +37,5 @@ D = Dataset(pts)
 @test transferentropy(μapprox, vars, RectangularBinning(0.2)) >= 0
 @test transferentropy(μexact, vars, RectangularBinning(0.2)) >= 0
 
-@show transferentropy_transferoperator_grid(pts, 0.3, vars), transferentropy(pts,  vars, RectangularBinning(0.3),TransferOperatorGrid())
-@show transferentropy_visitfreq(pts, 0.3, vars), transferentropy(pts, vars, RectangularBinning(0.3), VisitationFrequency())
+#@test transferentropy_transferoperator_grid(pts, 0.3, vars), transferentropy(pts,  vars, RectangularBinning(0.3),TransferOperatorGrid())
+#@test transferentropy_visitfreq(pts, 0.3, vars), transferentropy(pts, vars, RectangularBinning(0.3), VisitationFrequency())
