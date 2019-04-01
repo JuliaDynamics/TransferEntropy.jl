@@ -393,9 +393,9 @@ version = "0.10.3"
 
 [[PerronFrobenius]]
 deps = ["CausalityToolsBase", "Conda", "DelayEmbeddings", "Distributed", "InplaceOps", "IntervalArithmetic", "LaTeXStrings", "LinearAlgebra", "Parameters", "Printf", "PyCall", "RecipesBase", "Reexport", "SharedArrays", "Simplices", "SparseArrays", "StateSpaceReconstruction", "StaticArrays", "Statistics", "Test"]
-git-tree-sha1 = "5ed63930d35c8f5b97445e2710188ecbc78c646a"
+git-tree-sha1 = "5b2041d102b26c2ef06f89f45a1bfe5b9ff30e79"
 uuid = "260eed61-d0e8-5f1e-b040-a9756a401c97"
-version = "0.5.3"
+version = "0.6.0"
 
 [[Pkg]]
 deps = ["Dates", "LibGit2", "Markdown", "Printf", "REPL", "Random", "SHA", "UUIDs"]
