@@ -1,3 +1,10 @@
+
+# Release v0.4.1
+
+- Update documentation with more examples.
+- Fix bug in triangulation estimator where multiple points at the origin was used to sample 
+        simplices. This bug only affected the new methods with updates syntax from v`0.4.0`.
+
 # Release v0.4.0
 
 New syntax for the different estimators.

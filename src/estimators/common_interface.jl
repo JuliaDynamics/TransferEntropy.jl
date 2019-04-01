@@ -15,7 +15,8 @@ export transferentropy, TransferEntropyEstimator, TransferOperatorGrid, Visitati
 
 """
     transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
-        binning_scheme::RectangularBinning; n::Int = 10000)
+        binning_scheme::RectangularBinning; 
+        estimator = VisitationFrequency(), n::Int = 10000, b = 2)
 
 #### Transfer entropy using a precomputed invariant measure over a triangulated partition
 
@@ -61,17 +62,25 @@ After that, transfer entropy may be estimated at multiple scales very quickly.
 ### Example 
 
 ```julia
+# Assume these points are an appropriate delay embedding {(x(t), y(t), y(t+1))} and 
+# that we're measure transfer entropy from x -> y. 
+pts = invariantize([rand(3) for i = 1:30])
+
+v = TEVars(Tf = [3], Tpp = [2], Spp = [1])
+
 # Compute invariant measure over a triangulation using approximate 
 # simplex intersections. This is relatively slow.
 μ = invariantmeasure(pts, TriangulationBinning(), ApproximateIntersection())
 
 # Compute transfer entropy from the invariant measure over multiple 
 # bin sizes. This is fast, because the measure has been precomputed.
-tes = map(ϵ -> transferentropy(μ, TEVars([1], [2], [3]), RectangularBinning(ϵ)), 2:50)
+tes = map(ϵ -> transferentropy(μ, v, RectangularBinning(ϵ)), 2:50)
 ```
 """
 function transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
-        binning_scheme::RectangularBinning; n::Int = 10000)
+        binning_scheme::RectangularBinning; 
+        estimator = VisitationFrequency(), n::Int = 20000, b = 2)
+    
     dim = length(μ.points[1])
     triang = μ.triangulation.simplexindices
     n_simplices = length(triang)
@@ -84,19 +93,23 @@ function transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars
     # higher because we need integer numbers of points and use `ceil`
     # for this.
     n_fillpts_persimplex = ceil.(Int, μ.measure.dist .* n)
-    
+
     # Array to store the points filling the simplices
-    fillpts = Vector{SVector{dim, Float64}}(undef, length(n_fillpts_persimplex))
+    fillpts = Vector{SVector{dim, Float64}}()
+    sizehint!(fillpts, sum(n_fillpts_persimplex))
 
     for i = 1:n_simplices
         sᵢ = simplices[i]
+        
         if n_fillpts_persimplex[i] > 0
             pts = generate_interior_points(sᵢ, n_fillpts_persimplex[i])
             append!(fillpts, [SVector{dim, Float64}(pt) for pt in pts])
         end
     end
-    
-    transferentropy_visitfreq(fillpts, binning_scheme, vars)
+
+    sizehint!(fillpts, length(fillpts))
+
+    transferentropy(fillpts, vars, binning_scheme, estimator, b = b)
 end
 
 
@@ -204,6 +217,13 @@ Note: `pts` must be a vector of states, not a vector of
 variables/(time series). Wrap your time series in a `Dataset`
 first if the latter is the case.
 
+
+#### Estimators (and their acronyms)
+
+- Visitation frequency estimator: `VisitationFrequency`; an instance must be provided.
+- Transfer operator grid estimator: `TransferOperatorGrid`; an instance must be provided.
+
+
 #### Relationship between `pts` and `vars`
 
 `pts` should be an embedding of the form 
@@ -220,11 +240,6 @@ of the embedding space will be ``k + l + m + n``.
 variables of the embedding will be treated as part of which marginals
 during transfer entropy computation. Check the documentation of 
 `TEVars` for more details.
-
-#### Estimators (and their acronyms)
-
-- Visitation frequency estimator: `VisitationFrequency`; an instance must be provided.
-- Transfer operator grid estimator: `TransferOperatorGrid`; an instance must be provided.
 
 
 ### Example 
