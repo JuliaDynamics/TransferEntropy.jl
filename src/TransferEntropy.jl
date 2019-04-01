@@ -8,7 +8,10 @@ using Distributions
 using Distances
 using SpecialFunctions
 using NearestNeighbors
-using CausalityToolsBase
+@reexport using CausalityToolsBase
+@reexport using PerronFrobenius
+using StateSpaceReconstruction; export invariantize
+
 using StatsBase
 
 include("TEVars.jl")
