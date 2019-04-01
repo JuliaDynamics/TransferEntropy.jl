@@ -1,73 +1,42 @@
-import StateSpaceReconstruction:
-	cembed,
-	assign_bin_labels
-
-import PerronFrobenius:
-	get_binvisits,
-	estimate_transferoperator_from_binvisits
-
-
+using DelayEmbeddings
+using TransferEntropy
 
 # Estimate transfer entropy from scratch from a random
 # set of points `n_realizations` times. If everything
 # works as expected, there should be no negative transfer
 # entropy values.
 ts_length = 100
-estimates_3D = Vector{Float64}(undef, n_realizations)
 
 @testset "3D #$i" for i in 1:n_realizations
-	E = cembed([diff(rand(ts_length)) for i = 1:3])
-	pts = [rand(3) for i = 1:ts_length]
-	ϵ = [2, 4, 5]
-	v = TEVars([1], [2], [3], Int[])
-	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
-	estimates_3D[i] = transferentropy_visitfreq(E, ϵ, v)
-	@test estimates_3D[i] >= 0
-end
+	x = rand(100)
+	y = rand(100)
+	D = Dataset(x, y)
+	pts = customembed(D, Positions(2, 2, 1), Lags(1, 0, 0))
+	v = TEVars(Tf = [1], Tpp = [2], Spp = [3])
+	binning_scheme = RectangularBinning([2, 4, 5])
 
-estimates_4D = Vector{Float64}(undef, n_realizations)
+	@test transferentropy_visitfreq(pts, binning_scheme, v, b = 2) >= 0
+end
 
 @testset "4D #$i" for i in 1:n_realizations
-	E = cembed([diff(rand(ts_length)) for i = 1:4])
-	pts = [rand(4) for i = 1:ts_length]
-
-	ϵ = 3
-	v = TEVars([1], [2], [3, 4], Int[])
-	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
-	estimates_4D[i] = transferentropy_visitfreq(E, ϵ, v)
-	@test estimates_4D[i] >= 0
-
-	pts = [E.points[:, i] for i = 1:size(E.points, 2)]
-	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
-	@test transferentropy_visitfreq(pts, ϵ, v, b = 2) >= 0
-
+	x = rand(100)
+	y = rand(100)
+	D = Dataset(x, y)
+	pts = customembed(D, Positions(2, 2, 2, 1), Lags(1, 0, -2, 0))
+	v = TEVars(Tf = [1], Tpp = [2, 3], Spp = [4])
+	binning_scheme = RectangularBinning([2, 4, 5, 5])
+	
+	@test transferentropy_visitfreq(pts, binning_scheme, v, b = 2) >= 0
 end
 
-estimates_5D = Vector{Float64}(undef, n_realizations)
 
 @testset "5D #$i" for i in 1:n_realizations
-	E = cembed([diff(rand(ts_length)) for i = 1:5])
-	ϵ = 0.3
-	v = TEVars([1], [2], [3, 4], [5])
-	estimates_5D[i] = transferentropy_visitfreq(E, ϵ, v)
-	@test estimates_5D[i] >= 0
+	x = rand(100)
+	y = rand(100)
+	D = Dataset(x, y)
+	pts = customembed(D, Positions(2, 2, 2, 2, 1), Lags(1, 0, -2, -5, 0))
+	v = TEVars(Tf = [1], Tpp = [2, 3, 4], Spp = [5])
+	binning_scheme = RectangularBinning([2, 4, 5, 5, 3])
 
-	pts = [E.points[:, i] for i = 1:size(E.points, 2)]
-	@test transferentropy_visitfreq(pts, RectangularBinning(ϵ), v, b = 2) >= 0
-	@test transferentropy_visitfreq(pts, ϵ, v, b = 2) >= 0
-
+	@test transferentropy_visitfreq(pts, binning_scheme, v, b = 2) >= 0
 end
-#
-# @show estimates_3D
-# @show estimates_4D
-# @show estimates_5D
-# @show estimates_3D_norm
-# @show estimates_4D_norm
-# @show estimates_5D_norm
-# @test all(estimates_3D .>= 0)
-# @test all(estimates_4D .>= 0)
-# @test all(estimates_5D .>= 0)
-#
-# @test all(estimates_3D_norm .>= 0)
-# @test all(estimates_4D_norm .>= 0)
-# @test all(estimates_5D_norm .>= 0)
