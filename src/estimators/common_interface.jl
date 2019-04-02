@@ -257,7 +257,7 @@ y = trajectory(sys1, 80, Ttr = 1000);
 
 # Wrap the time series in a dataset containing the states of the 
 # composite system.
-pts = Dataset(x, y)
+D = Dataset(x, y)
 ```
 
 #### 2. Generalised embedding
@@ -278,7 +278,10 @@ documentation for a detailed explanation on how it works).
 # first three embedding columns, lagging them with lags (η, 0, -τ), and 
 # putting the 1st column of `data` (x) in the last position of the embedding,
 # not lagging it.
-embedding = customembed(D, Positions(2, 2, 2, 1), Lags(η, 0, -τ, 0))
+τ = optimal_delay(y) # embedding lag
+η = 2 # prediction lag
+
+pts = customembed(D, Positions(2, 2, 2, 1), Lags(η, 0, -τ, 0))
 ```
 
 #### 3. Instructions to the estimator
@@ -294,10 +297,10 @@ vars = TEVars(Tf = [1], Tpp = [2, 3], Spp = [4])
 
 We'll compute transfer entropy using the visitation frequency estimator over 
 a rectangular partition where the box sizes are determined by 
-splitting each coordinate axis into ``12`` equally spaced intervals each.
+splitting each coordinate axis into ``6`` equally spaced intervals each.
 
 ```julia 
-binning = RectangularBinning(12)
+binning = RectangularBinning(6)
 ```
 
 #### 5. Compute transfer entropy
@@ -312,7 +315,6 @@ transferentropy(pts, vars, binning, TransferOperatorGrid())
 ϵs = 10 .^ range(log(10, 0.001), log10(0.3), length = 15)
 map(ϵ -> transferentropy(pts, vars, RectangularBinning(ϵ), VisitationFrequency())) #, or
 map(ϵ -> transferentropy(pts, vars, RectangularBinning(ϵ), TransferOperatorGrid()))
-
 ```
 """
 transferentropy(pts, vars::TEVars, ϵ::RectangularBinning, 
