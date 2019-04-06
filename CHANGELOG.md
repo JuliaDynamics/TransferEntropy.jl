@@ -1,3 +1,8 @@
+# Release v0.4.2
+
+## New functionality
+
+- Added `te_embed` function that for regular and conditional transfer entropy analyses constructs appropriate delay reconstruction points and corresponding `TEVars` instances that instructs the `transferentropy` methods how to compute the marginals.
 
 # Release v0.4.1
 
