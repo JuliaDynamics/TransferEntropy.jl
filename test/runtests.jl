@@ -24,3 +24,4 @@ end
 end
 
 include("estimators/test_common_interface.jl")
+include("test_te_embed.jl")
