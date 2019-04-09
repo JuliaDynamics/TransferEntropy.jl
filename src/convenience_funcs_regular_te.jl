@@ -1,7 +1,7 @@
 
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}; 
+    transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}; 
         dim = 3, η = 1, τ = 1, 
         estimator = VisitationFrequency(), 
         n_subdivs = 3)
@@ -14,7 +14,7 @@ are used for the ``T_f`` and ``S_pp`` component.
 
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}; 
+function transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}; 
     dim = 3, η = 1, τ = 1, 
     estimator = VisitationFrequency(), 
     n_subdivs = 3)
@@ -44,7 +44,7 @@ end
 
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}, 
+    transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}, 
         binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}}; 
         dim = 3, η = 1, τ = 1, estimator = VisitationFrequency())
 
@@ -56,7 +56,7 @@ are used for the ``T_f`` and ``S_pp`` component.
 
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}, 
+function transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}, 
     binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}}; 
     dim = 3, η = 1, τ = 1, estimator = VisitationFrequency())
 
@@ -79,7 +79,7 @@ end
 
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}, 
+    transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}, 
         k::Int, l::Int, m::Int; 
         η = 1, τ = 1, estimator = VisitationFrequency(), n_subdivs = 3)
 
@@ -91,7 +91,7 @@ inferring appropriate bin sizes from time series length.
 
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}, 
+function transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}, 
         k::Int, l::Int, m::Int; 
         η = 1, τ = 1, estimator = VisitationFrequency(), n_subdivs = 3)
 
@@ -117,7 +117,7 @@ end
 
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}, 
+    transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}, 
         binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}}, 
         k::Int, l::Int, m::Int; 
         dim = 3, η = 1, τ = 1, estimator = VisitationFrequency())
@@ -130,7 +130,7 @@ explicitly specifying the partition(s).
 
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, response::AbstractArray{Real, 1}, 
+function transferentropy(source::AbstractArray{<:Real, 1}, response::AbstractArray{<:Real, 1}, 
         binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}}, 
         k::Int, l::Int, m::Int; 
         dim = 3, η = 1, τ = 1, estimator = VisitationFrequency())

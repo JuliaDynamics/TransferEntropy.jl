@@ -1,8 +1,8 @@
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, 
-        response::AbstractArray{Real, 1}, 
-        cond::AbstractArray{Real, 1},
+    transferentropy(source::AbstractArray{<:Real, 1}, 
+        response::AbstractArray{<:Real, 1}, 
+        cond::AbstractArray{<:Real, 1},
         binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}};
         dim = 4, η = 1, τ = 1, estimator = VisitationFrequency())
 
@@ -15,9 +15,9 @@ are used for the ``T_f``, ``S_{pp}`` and ``C_{pp}`` components.
     
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, 
-    response::AbstractArray{Real, 1}, 
-    cond::AbstractArray{Real, 1},
+function transferentropy(source::AbstractArray{<:Real, 1}, 
+    response::AbstractArray{<:Real, 1}, 
+    cond::AbstractArray{<:Real, 1},
     binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}};
     dim = 4, η = 1, τ = 1, estimator = VisitationFrequency())
 
@@ -40,9 +40,9 @@ end
 
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, 
-        response::AbstractArray{Real, 1}, 
-        cond::AbstractArray{Real, 1};
+    transferentropy(source::AbstractArray{<:Real, 1}, 
+        response::AbstractArray{<:Real, 1}, 
+        cond::AbstractArray{<:Real, 1};
         dim = 4, η = 1, τ = 1, estimator = VisitationFrequency(), n_subdivs = 3)
 
 Compute transfer entropy from `source` to `target` conditioned on `cond`,
@@ -56,9 +56,9 @@ are used for the ``T_f``, ``S_{pp}`` and ``C_{pp}`` components.
 
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, 
-        response::AbstractArray{Real, 1}, 
-        cond::AbstractArray{Real, 1};
+function transferentropy(source::AbstractArray{<:Real, 1}, 
+        response::AbstractArray{<:Real, 1}, 
+        cond::AbstractArray{<:Real, 1};
         dim = 4, η = 1, τ = 1, estimator = VisitationFrequency(), n_subdivs = 3)
 
     dim >= 4 || throw(ArgumentError("`dim` must be 4 or higher for conditional TE"))
@@ -85,9 +85,9 @@ end
 
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, 
-        response::AbstractArray{Real, 1}, 
-        cond::AbstractArray{Real, 1},
+    transferentropy(source::AbstractArray{<:Real, 1}, 
+        response::AbstractArray{<:Real, 1}, 
+        cond::AbstractArray{<:Real, 1},
         binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}},
         k::Int, l::Int, m::Int, n::Int; η = 1, τ = 1, estimator = VisitationFrequency())
 
@@ -101,9 +101,9 @@ sizes from time series length.
 
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, 
-        response::AbstractArray{Real, 1}, 
-        cond::AbstractArray{Real, 1},
+function transferentropy(source::AbstractArray{<:Real, 1}, 
+        response::AbstractArray{<:Real, 1}, 
+        cond::AbstractArray{<:Real, 1},
         binning_scheme::Union{RectangularBinning, AbstractArray{RectangularBinning}},
         k::Int, l::Int, m::Int, n::Int; η = 1, τ = 1, estimator = VisitationFrequency())
 
@@ -124,9 +124,9 @@ function transferentropy(source::AbstractArray{Real, 1},
 end
 
 """
-    transferentropy(source::AbstractArray{Real, 1}, 
-        response::AbstractArray{Real, 1},
-        cond::AbstractArray{Real, 1},
+    transferentropy(source::AbstractArray{<:Real, 1}, 
+        response::AbstractArray{<:Real, 1},
+        cond::AbstractArray{<:Real, 1},
         k::Int, l::Int, m::Int, n::Int;
         η = 1, τ = 1, estimator = VisitationFrequency(), n_subdivs = 3)
 
@@ -137,9 +137,9 @@ bin sizes from the time series length (see [`TEVars`](@ref)).
 
 Returns one transfer entropy estimate per partition.
 """
-function transferentropy(source::AbstractArray{Real, 1}, 
-        response::AbstractArray{Real, 1},
-        cond::AbstractArray{Real, 1},
+function transferentropy(source::AbstractArray{<:Real, 1}, 
+        response::AbstractArray{<:Real, 1},
+        cond::AbstractArray{<:Real, 1},
         k::Int, l::Int, m::Int, n::Int;
         η = 1, τ = 1, estimator = VisitationFrequency(), n_subdivs = 3)
 
