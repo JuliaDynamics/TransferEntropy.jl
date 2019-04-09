@@ -21,6 +21,9 @@ include("estimators/transferentropy_transferoperator.jl")
 include("estimators/common_interface.jl")
 include("te_embed.jl")
 
+include("convenience_funcs_regular_te.jl")
+include("convenience_funcs_conditional_te.jl")
+
 export
 transferentropy
 TEVars
