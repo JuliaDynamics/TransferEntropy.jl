@@ -25,3 +25,6 @@ end
 
 include("estimators/test_common_interface.jl")
 include("test_te_embed.jl")
+
+include("test_convenience_funcs_regular_TE.jl")
+include("test_convenience_funcs_conditional_TE.jl")
