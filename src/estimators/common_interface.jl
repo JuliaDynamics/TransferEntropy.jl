@@ -2,8 +2,13 @@ import PerronFrobenius: AbstractTriangulationInvariantMeasure
 import CausalityToolsBase: RectangularBinning, CustomReconstruction
 import StateSpaceReconstruction: Simplex, generate_interior_points
 import StaticArrays: SVector
+import Distances: Metric 
 
-export transferentropy, TransferEntropyEstimator, TransferOperatorGrid, VisitationFrequency
+export transferentropy, 
+    TransferEntropyEstimator, 
+        TransferOperatorGrid, 
+        VisitationFrequency, 
+        NearestNeighbourMI
 
 """
     TransferEntropyEstimator
@@ -19,6 +24,29 @@ abstract type TransferEntropyEstimator end
 
 function Base.show(io::IO, estimator::TransferEntropyEstimator)
     s = "`$(typeof(estimator))` transfer entropy estimator with logarithm to base $(estimator.b))"
+    print(io, s)
+end
+
+"""
+    NearestNeighbourMI <: TransferEntropyEstimator
+
+A transfer entropy estimator that uses Kraskov et al. (2004)'s  [1] nearest 
+neighbour estimator to compute mutual information terms.
+
+## References
+
+1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
+    mutual information." Physical review E 69.6 (2004): 066138.
+"""
+@Base.kwdef struct NearestNeighbourMI <: TransferEntropyEstimator
+    k1::Int = 2
+    k2::Int = 3
+    metric::Metric = Chebyshev()
+    b::Number = 2
+end
+
+function Base.show(io::IO, estimator::NearestNeighbourMI)
+    s = "`$(typeof(estimator))(k1=$(k1), k2=$(k2), metric=$(typeof(metric)))` transfer entropy estimator with logarithm to base $(estimator.b)"
     print(io, s)
 end
 
