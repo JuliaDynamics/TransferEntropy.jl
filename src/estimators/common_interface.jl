@@ -2,7 +2,7 @@ import PerronFrobenius: AbstractTriangulationInvariantMeasure
 import CausalityToolsBase: RectangularBinning, CustomReconstruction
 import StateSpaceReconstruction: Simplex, generate_interior_points
 import StaticArrays: SVector
-import Distances: Metric 
+import Distances: Metric, Chebyshev
 
 export transferentropy, 
     TransferEntropyEstimator, 
