@@ -34,11 +34,10 @@ using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
 Base.@kwdef struct TransferOperatorGrid <: TransferEntropyEstimator 
     """ The base of the logarithm usen when computing transfer entropy. """
-    b::Number = 2
+    b::Number = 2.0
 
     TransferOperatorGrid(b) = new(b)
 end
-
 
 """
     VisitationFrequency(; b::Number = 2)
@@ -56,7 +55,7 @@ using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
 Base.@kwdef struct VisitationFrequency <: TransferEntropyEstimator 
     """ The base of the logarithm usen when computing transfer entropy. """
-    b::Number
+    b::Number = 2.0
 end
 
 """
