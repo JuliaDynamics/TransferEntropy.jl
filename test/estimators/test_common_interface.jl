@@ -7,12 +7,23 @@ spts = [SVector{3, Float64}(pt) for pt in pts]
 mpts = [MVector{3, Float64}(pt) for pt in pts]
 D = Dataset(pts)
 
+# Initialising test
+@test VisitationFrequency().b isa Number
+@test VisitationFrequency(b = 2).b isa Number
+@test VisitationFrequency(b = 10).b isa Number
+@test TransferOperatorGrid().b isa Number
+@test TransferOperatorGrid(b = 10).b isa Number
+
 vars = TEVars([1], [2], [3])
 @test transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency()) >= 0
 @test transferentropy(spts, vars, RectangularBinning(0.2), VisitationFrequency()) >= 0
 @test transferentropy(mpts, vars,  RectangularBinning(0.2), VisitationFrequency()) >= 0
 @test transferentropy(D, vars, RectangularBinning(0.2), VisitationFrequency()) >= 0
 
+# Different logarithms should give different TE values
+te_b2 = transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency(b = 2))
+te_b10 = transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency(b = 10))
+@test te_b2 != te_b10
 
 @test transferentropy(pts, vars, RectangularBinning(0.2), TransferOperatorGrid()) >= 0
 @test transferentropy(spts, vars, RectangularBinning(0.2), TransferOperatorGrid()) >= 0
