@@ -22,7 +22,7 @@ vars = TEVars([1], [2], [3])
 
 # Different logarithms should give different TE values
 te_b2 = transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency(b = 2))
-te_b10 = transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency(b = 2))
+te_b10 = transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency(b = 10))
 @test te_b2 != te_b10
 
 @test transferentropy(pts, vars, RectangularBinning(0.2), TransferOperatorGrid()) >= 0
