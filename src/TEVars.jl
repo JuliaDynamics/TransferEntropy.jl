@@ -53,4 +53,9 @@ TEVars(;Tf::Vector{Int} = Int[],
 		Cpp::Vector{Int} = Int[]) =
 	TEVars(Tf, Tpp, Spp, Cpp)
     
+function Base.show(io::IO, tv::TEVars) 
+    s = "$(typeof(tv))(Tf = $(tv.target_future), Tpp = $(tv.target_presentpast), Spp = $(tv.source_presentpast), Cpp = $(tv.conditioned_presentpast))"
+    print(io, s)
+end
+
 export TEVars
