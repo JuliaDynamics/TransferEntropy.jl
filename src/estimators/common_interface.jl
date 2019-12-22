@@ -17,6 +17,11 @@ An abstract type for transfer entropy estimators. This type has several concrete
 """
 abstract type TransferEntropyEstimator end 
 
+function Base.show(io::IO, estimator::TransferEntropyEstimator)
+    s = "`$(typeof(estimator))` transfer entropy estimator with logarithm to base $(estimator.b))"
+    print(io, s)
+end
+
 """
     TransferOperatorGrid(; b::Number = 2)
 
