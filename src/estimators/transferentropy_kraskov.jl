@@ -15,7 +15,7 @@ end
 
 """
     transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
-        v::TEVars; metric = Chebyshev())
+        v::TEVars; metric = Chebyshev(), b = 2)
 
 Compute transfer entropy decomposed as the sum of mutual informations,
 using an adapted version of the Kraskov estimator for mutual information [1].
@@ -38,14 +38,17 @@ using an adapted version of the Kraskov estimator for mutual information [1].
     transfer entropy expression.
 
 ## Keyword arguments
+
 - `metric`: The distance metric. Must be a valid metric from `Distances.jl`.
+- `b`: The base of the logarithm, dictating the unit of the transfer entropy. 
+        The default `b=2` gives the transfer entropy in bits.
 
 # References
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
     mutual information." Physical review E 69.6 (2004): 066138.
 """
 function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
-        v::TEVars; metric = Chebyshev(), normalise = false) where T
+        v::TEVars; metric = Chebyshev(), normalise = false, b = 2) where T
 
     # Make sure that the array contains points as columns.
     if size(points, 1) > size(points, 2)
@@ -110,8 +113,8 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
             digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
     end
 
-    # Convert to bits so that the value is compatible with the other estimators
-    te / log(2)
+    # Convert from nats to to the desired unit (b^x = e^1 => 1/ln(b))
+    te / log(b)
 end
 
 
@@ -121,7 +124,7 @@ end
         target_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         source_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         conditioned_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}};
-        metric = Chebyshev()) where T
+        metric = Chebyshev(), b = 2) where T
 
 Compute transfer entropy decomposed as the sum of mutual informations,
 using an adapted version of the Kraskov estimator for mutual information [1].
@@ -153,7 +156,8 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Keyword arguments
 - `metric`: The distance metric. Must be a valid metric from `Distances.jl`.
-
+- `b`: The base of the logarithm, dictating the unit of the transfer entropy. 
+        The default `b=2` gives the transfer entropy in bits.
 
 # References
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
@@ -164,7 +168,7 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
         target_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         source_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         conditioned_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}};
-        metric = Chebyshev()) where T
+        metric = Chebyshev(), b = 2) where T
 
     # Make sure that the array contains points as columns.
     if size(points, 1) > size(points, 2)
@@ -175,7 +179,7 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
     v = TEVars(target_future, target_presentpast,
                 source_presentpast, conditioned_presentpast)
 
-    transferentropy_kraskov(points, k1, k2, v)
+    transferentropy_kraskov(points, k1, k2, v, b = b)
 end
 
 
@@ -184,12 +188,13 @@ end
         target_future::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         target_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         source_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}};
-        metric = Chebyshev()) where T
+        metric = Chebyshev(), b = 2) where T
 
 Compute transfer entropy decomposed as the sum of mutual informations,
 using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Arguments
+
 - `points`: The set of points representing the embedding for which to compute
     transfer entropy. Must be provided as an array of size `dim`-by-`n` points.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
@@ -215,7 +220,10 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 This version of the function assumes there is no conditioning.
 
 ## Keyword arguments
+
 - `metric`: The distance metric. Must be a valid metric from `Distances.jl`.
+- `b`: The base of the logarithm, dictating the unit of the transfer entropy. 
+        The default `b=2` gives the transfer entropy in bits.
 
 
 # References
@@ -226,7 +234,7 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
         target_future::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         target_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         source_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}};
-        metric = Chebyshev()) where T
+        metric = Chebyshev(), b = 2) where T
 
     # Make sure that the array contains points as columns.
     if size(points, 1) > size(points, 2)
@@ -237,17 +245,18 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
     v = TEVars(target_future, target_presentpast,
                 source_presentpast, Int[])
 
-    transferentropy_kraskov(points, k1, k2, v)
+    transferentropy_kraskov(points, k1, k2, v, b = b)
 end
 
 """
     transferentropy_kraskov(E::StateSpaceReconstruction.AbstractEmbedding,
-            k1::Int, k2::Int, v::TEVars; metric = Chebyshev())
+            k1::Int, k2::Int, v::TEVars; metric = Chebyshev(), b = 2)
 
 Compute transfer entropy decomposed as the sum of mutual informations,
 using an adapted version of the Kraskov estimator for mutual information [1].
 
-Arguments:
+## Arguments
+
 - `E`: The embedding for which to compute transfer entropy.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
     information estimate. To minimize bias, choose ``k_1 < k_2`` if
@@ -263,19 +272,26 @@ Arguments:
     be grouped as what when computing the marginal entropies that go into the
     transfer entropy expression.
 
-# References
+## Keyword arguments
+
+- `metric`: The distance metric. Must be a valid metric from `Distances.jl`.
+- `b`: The base of the logarithm, dictating the unit of the transfer entropy. 
+        The default `b=2` gives the transfer entropy in bits.
+
+## References
+
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
 mutual information." Physical review E 69.6 (2004): 066138.
 """
 function transferentropy_kraskov(E::Embeddings.AbstractEmbedding{D, T},
-            k1::Int, k2::Int, v::TEVars; metric = Chebyshev()) where {D, T}
+            k1::Int, k2::Int, v::TEVars; metric = Chebyshev(), b = 2) where {D, T}
 
     # Make sure that the array contains points as columns.
     if size(E.points, 1) > size(E.points, 2)
         error("The dimension exceeds the number of points.")
     end
 
-    transferentropy_kraskov(E.points, k1, k2, v, metric = metric)
+    transferentropy_kraskov(E.points, k1, k2, v, metric = metric, b = b)
 end
 
 """
@@ -284,12 +300,13 @@ end
         target_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         source_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         conditioned_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}};
-        metric = Chebyshev()) where T
+        metric = Chebyshev(), b = 2) where T
 
 Compute transfer entropy decomposed as the sum of mutual informations,
 using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Arguments
+
 - `points`: The set of points representing the embedding for which to compute
     transfer entropy. Must be provided as an array of size `dim`-by-`n` points.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
@@ -315,9 +332,13 @@ using an adapted version of the Kraskov estimator for mutual information [1].
     past values of conditional variables?
 
 ## Keyword arguments
+
 - `metric`: The distance metric. Must be a valid metric from `Distances.jl`.
+- `b`: The base of the logarithm, dictating the unit of the transfer entropy. 
+        The default `b = 2` gives the transfer entropy in bits.
 
 # References
+
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
     mutual information." Physical review E 69.6 (2004): 066138.
 """
@@ -326,7 +347,7 @@ function transferentropy_kraskov(E::Embeddings.AbstractEmbedding{D, T}, k1::Int,
         target_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         source_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}},
         conditioned_presentpast::Union{Int, UnitRange{Int}, Vector{Int}, Tuple{Int}};
-        metric = Chebyshev()) where {D, T}
+        metric = Chebyshev(), b = 2) where {D, T}
 
     # Make sure that the array contains points as columns.
     if size(E.points, 1) > size(E.points, 2)
@@ -337,7 +358,7 @@ function transferentropy_kraskov(E::Embeddings.AbstractEmbedding{D, T}, k1::Int,
     v = TEVars(target_future, target_presentpast,
                 source_presentpast, conditioned_presentpast)
 
-    transferentropy_kraskov(E.points, k1, k2, v)
+    transferentropy_kraskov(E.points, k1, k2, v, b = b)
 end
 
 tekraskov = transferentropy_kraskov
