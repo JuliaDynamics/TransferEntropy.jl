@@ -94,7 +94,8 @@ end
 """
     transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
         binning_scheme::RectangularBinning; 
-        estimator = VisitationFrequency(), n::Int = 10000)
+        estimator::TransferEntropyEstimator = VisitationFrequency(), 
+        n::Int = 10000) -> Float64
 
 #### Transfer entropy using a precomputed invariant measure over a triangulated partition
 
@@ -157,7 +158,7 @@ tes = map(ϵ -> transferentropy(μ, v, RectangularBinning(ϵ)), 2:50)
 """
 function transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
         binning_scheme::RectangularBinning; 
-        estimator = VisitationFrequency(b = 2), n::Int = 20000)
+        estimator::TransferEntropyEstimator = VisitationFrequency(b = 2), n::Int = 20000)
     
     # Get the base of the logarithm
     b = estimator.b 
