@@ -37,7 +37,10 @@ This three-argument constructor assumes there will be no conditional variables.
 TEVars(Tf::Vector{Int}, Tpp::Vector{Int}, Spp::Vector{Int}) = TEVars(Tf, Tpp, Spp, Int[])
 
 """
-    TEVars(;Tf = Int[], Tpp = Int[], Spp = Int[], Cpp = Int[])
+    TEVars(Tf::Vector{Int}, Tpp::Vector{Int}, Spp::Vector{Int})
+    TEVars(Tf::Vector{Int}, Tpp::Vector{Int}, Spp::Vector{Int}, Cpp::Vector{Int})
+    
+    TEVars(;Tf = Int[], Tpp = Int[], Spp = Int[], Cpp = Int[]) -> TEVars
 
 Which axes of the state space correspond to the future of the target (`Tf`),
 the present/past of the target (`Tpp`), the present/past of the source (`Spp`), and
