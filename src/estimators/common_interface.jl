@@ -5,6 +5,7 @@ import StaticArrays: SVector
 import Distances: Metric, Chebyshev
 
 export transferentropy, 
+    BinnedTransferEntropyEstimator, 
     TransferEntropyEstimator, 
         TransferOperatorGrid, 
         VisitationFrequency, 
