@@ -5,7 +5,7 @@ import StaticArrays: SVector
 import Distances: Metric, Chebyshev
 
 export transferentropy, 
-    BinnedTransferEntropyEstimator, 
+    BinningTransferEntropyEstimator, 
     TransferEntropyEstimator, 
         TransferOperatorGrid, 
         VisitationFrequency, 
@@ -32,10 +32,12 @@ end
     BinningTransferEntropyEstimator
 
 An abstract type for transfer entropy estimators that works on a discretization 
-of the reconstructed state space. Has the following concrete subtypes
+of the [reconstructed state space](@ref custom_delay_reconstruction). Has the following concrete subtypes
 
 - [`VisitationFrequency`](@ref)
 - [`TransferOperatorGrid`](@ref)
+
+These estimators are accepted as input by the [`transferentropy`](@ref te_estimator_rectangular) method.
 """
 abstract type BinningTransferEntropyEstimator end 
 
@@ -44,7 +46,8 @@ abstract type BinningTransferEntropyEstimator end
     NearestNeighbourMI(k1::Int = 2, k2::Int = 3, metric::Metric = Chebyshev, b::Number)
 
 A transfer entropy estimator counting of nearest neighbours nearest neighbours 
-to estimate mutual information terms (the method from [1], as implemented in [2])
+to estimate mutual information over an appropriate 
+[custom delay reconstruction](@ref custom_delay_reconstruction) (the method from [1], as implemented in [2]).
 
 ## Fields 
 
@@ -89,11 +92,13 @@ end
     TransferOperatorGrid(; b::Number = 2)
 
 An transfer entropy estimator which computes transfer entropy over a 
-dicretization of an appropriate delay reconstruction, using the logarithm
-to base `b`. The invariant probabilities over the partition are computed 
-using an approximation to the transfer (Perron-Frobenius) operator over 
-the grid [1], which explicitly gives the transition probabilities between 
-states. 
+dicretization of an appropriate [delay reconstruction](@ref custom_delay_reconstruction), 
+using the logarithm to base `b`. Invariant probabilities over the 
+partition are computed using an approximation to the transfer (Perron-Frobenius) 
+operator over the grid [1], which explicitly gives the transition probabilities 
+between states. 
+
+This estimator is accepted as input by the [`transferentropy`](@ref te_estimator_rectangular) method.
 
 ## Fields 
 
@@ -116,10 +121,12 @@ end
     VisitationFrequency(; b::Number = 2)
 
 An transfer entropy estimator which computes transfer entropy over a 
-dicretization of an appropriate delay reconstruction, using the 
+dicretization of an appropriate [delay reconstruction](@ref custom_delay_reconstruction), using the 
 logarithm to the base `b`. The invariant probabilities over the partition 
 are computed using an approximation to the transfer (Perron-Frobenius) operator 
 over the grid [1], which explicitly gives the transition probabilities between states. 
+
+This estimator is accepted as input by the [`transferentropy`](@ref te_estimator_rectangular) method.
 
 ## References
 
@@ -139,7 +146,8 @@ end
 
 #### Transfer entropy using a precomputed invariant measure over a triangulated partition
 
-Estimate transfer entropy from an invariant measure over a triangulation
+Estimate transfer entropy from an invariant measure over a triangulation of 
+an appropriate [generalised delay reconstruction](@ref custom_delay_reconstruction)
 that has been precomputed either as 
 
 1. `μ = invariantmeasure(pts, TriangulationBinning(), ApproximateIntersection())`, or
@@ -246,9 +254,9 @@ partition specified by `ϵ` (a [`RectangularBinning`](@ref) instance).
 ## Fields 
 
 - **`pts`**: An ordered set of `m`-dimensional points (`pts`) representing 
-    an appropriate generalised embedding of some data series. Must be 
-    vector of states, not a vector of variables/time series. Wrap your time 
-    series in a `DynamicalSystemsBase.Dataset` first if the latter is the case.
+    an appropriate [generalised embedding]((@ref custom_delay_reconstruction)) 
+    of some data series. Must be vector of states, not a vector of variables/time series. 
+    Wrap your time series in a `DynamicalSystemsBase.Dataset` first if the latter is the case.
 - **`vars::TEVars`**: A [`TEVars`](@ref) instance specifying how the `m` different 
     variables of `pts` are to be mapped into the marginals required for transfer 
     entropy computation. 
@@ -293,7 +301,8 @@ raw_timeseries = Dataset(x, y)
 
 #### 2. Generalised embedding
 
-*Note: If your data are already organised in a form of a generalised embedding, 
+*Note: If your data are already organised in a form of a 
+[generalised embedding](@ref custom_delay_reconstruction), 
 where columns of the dataset correspond to lagged variables of the time series, 
 you can skip to step 3.*
 
