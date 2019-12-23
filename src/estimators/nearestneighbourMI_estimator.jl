@@ -1,16 +1,15 @@
 import Distances: pairwise
-import DelayEmbeddings: AbstractDataset
-import StaticArrays: SVector
+import DelayEmbeddings: AbstractDataset, Dataset
+import StaticArrays: SVector, MVector
 import DelayEmbeddings: KDTree
 import NearestNeighbors: knn
 
 
 KDTree(D::CustomReconstruction, metric::Metric = Euclidean()) = KDTree(D.reconstructed_pts, metric)
 
-
-# Define pairwise distances methods for static vectors, including 
-# Dataset and Customreconstruction.
-const VSV = Union{AbstractDataset, Vector{<:SVector}}
+# Define pairwise distances methods for vectors of static vectors, vectors of vectors,
+# and Datasets and Customreconstructions.
+const VSV = Union{AbstractDataset, Vector{<:SVector}, Vector{<:MVector}, Vector{Vector}}
 
 function pairwise(x::VSV, y::VSV, metric::Metric)
     length(x) == length(y) || error("Lengths of input data does not match")
@@ -25,7 +24,7 @@ function pairwise(x::VSV, y::VSV, metric::Metric)
 end
 
 function pairwise(x::VSV, metric::Metric)
-    d = zeros(eltype(eltype(x)), length(x), length(x))
+    dists = zeros(eltype(eltype(x)), length(x), length(x))
     @inbounds for j in 1:length(x)
         for i in 1:length(x)
             dists[i, j] = evaluate(metric, x[i], x[j])
@@ -56,6 +55,38 @@ function marginal_NN(points::VSV, dists_to_kth)
 
     return N
 end
+
+const SV = Union{Vector{<:SVector}, Vector{<:MVector}, Dataset}
+
+function get_marginal_pts(pts::SV, X, Y, Z)
+    XY = vcat(X, Y)
+    YZ = vcat(Y, Z)
+
+    pts_X = pts[:, X]
+    pts_Y = pts[:, Y]
+    pts_XY = pts[:, XY]
+    pts_YZ = pts[:, YZ]
+    pts_XYZ = pts
+
+    return pts_X, pts_Y, pts_XY, pts_YZ, pts_XYZ
+    
+end
+
+
+function get_marginal_pts(pts::Vector{<:Vector}, X, Y, Z)
+    XY = vcat(X, Y)
+    YZ = vcat(Y, Z)
+    pts_X = [pt[X] for pt in pts]
+    pts_Y = [pt[Y] for pt in pts]
+    pts_XY = [pt[XY] for pt in pts]
+    pts_YZ = [pt[YZ] for pt in pts]
+    pts_XYZ = pts
+
+    return pts_X, pts_Y, pts_XY, pts_YZ, pts_XYZ
+end
+
+get_treedata(pts) = pts 
+get_treedata(pts::Vector{Vector}) = hcat(pts...)
 
 """
     transferentropy(pts, vars::TEVars, estimator::NearestNeighbourMI)
@@ -102,18 +133,12 @@ function transferentropy(pts, vars::TEVars, estimator::NearestNeighbourMI)
     X = vars.target_future
     Y = vars.target_presentpast
     Z = vcat(vars.source_presentpast, vars.conditioned_presentpast)
-    XY = vcat(X, Y)
-    YZ = vcat(Y, Z)
 
-    pts_X = pts[:, X]
-    pts_Y = pts[:, Y]
-    pts_XY = pts[:, XY]
-    pts_YZ = pts[:, YZ]
-    pts_XYZ = pts
+    pts_X, pts_Y, pts_XY, pts_YZ, pts_XYZ = get_marginal_pts(pts, X, Y, Z)
     
     # Create trees to search for nearest neighbors
-    tree_XYZ = KDTree(pts_XYZ, metric)
-    tree_XY = KDTree(pts_XY, metric)
+    tree_XYZ = KDTree(get_treedata(pts_XYZ), metric)
+    tree_XY = KDTree(get_treedata(pts_XY), metric)
     
     # Find the k nearest neighbors to all of the points in each of the trees.
     # We sort the points according to their distances, because we want precisely

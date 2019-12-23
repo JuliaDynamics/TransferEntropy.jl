@@ -31,6 +31,13 @@ te_b10 = transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency
 @test transferentropy(D, vars, RectangularBinning(0.2), TransferOperatorGrid()) >= 0
 
 
+@test NearestNeighbourMI(b = 10).b isa Number
+
+@test transferentropy(D, vars, NearestNeighbourMI(b = 2)) isa Number
+@test transferentropy(pts, vars, NearestNeighbourMI(b = 2)) isa Number
+@test transferentropy(spts, vars, NearestNeighbourMI(b = 2)) isa Number
+@test transferentropy(mpts, vars, NearestNeighbourMI(b = 2)) isa Number
+
 
 pts = invariantize([rand(3) for i = 1:15])
 spts = [SVector{3, Float64}(pt) for pt in pts]
