@@ -2,8 +2,13 @@ import PerronFrobenius: AbstractTriangulationInvariantMeasure
 import CausalityToolsBase: RectangularBinning, CustomReconstruction
 import StateSpaceReconstruction: Simplex, generate_interior_points
 import StaticArrays: SVector
+import Distances: Metric, Chebyshev
 
-export transferentropy, TransferEntropyEstimator, TransferOperatorGrid, VisitationFrequency
+export transferentropy, 
+    TransferEntropyEstimator, 
+        TransferOperatorGrid, 
+        VisitationFrequency, 
+        NearestNeighbourMI
 
 """
     TransferEntropyEstimator
@@ -19,6 +24,29 @@ abstract type TransferEntropyEstimator end
 
 function Base.show(io::IO, estimator::TransferEntropyEstimator)
     s = "`$(typeof(estimator))` transfer entropy estimator with logarithm to base $(estimator.b))"
+    print(io, s)
+end
+
+"""
+    NearestNeighbourMI <: TransferEntropyEstimator
+
+A transfer entropy estimator that uses Kraskov et al. (2004)'s  [1] nearest 
+neighbour estimator to compute mutual information terms.
+
+## References
+
+1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
+    mutual information." Physical review E 69.6 (2004): 066138.
+"""
+@Base.kwdef struct NearestNeighbourMI <: TransferEntropyEstimator
+    k1::Int = 2
+    k2::Int = 3
+    metric::Metric = Chebyshev()
+    b::Number = 2
+end
+
+function Base.show(io::IO, estimator::NearestNeighbourMI)
+    s = "`$(typeof(estimator))(k1=$(k1), k2=$(k2), metric=$(typeof(metric)))` transfer entropy estimator with logarithm to base $(estimator.b)"
     print(io, s)
 end
 
@@ -66,7 +94,8 @@ end
 """
     transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
         binning_scheme::RectangularBinning; 
-        estimator = VisitationFrequency(), n::Int = 10000)
+        estimator::TransferEntropyEstimator = VisitationFrequency(), 
+        n::Int = 10000) -> Float64
 
 #### Transfer entropy using a precomputed invariant measure over a triangulated partition
 
@@ -129,7 +158,7 @@ tes = map(ϵ -> transferentropy(μ, v, RectangularBinning(ϵ)), 2:50)
 """
 function transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
         binning_scheme::RectangularBinning; 
-        estimator = VisitationFrequency(b = 2), n::Int = 20000)
+        estimator::TransferEntropyEstimator = VisitationFrequency(b = 2), n::Int = 20000)
     
     # Get the base of the logarithm
     b = estimator.b 
@@ -274,10 +303,10 @@ the generalised reconstruction of your time series (`embedding_pts` in
 our case):
 
 - Which columns correspond to the future of the target variable (``T_f```)?
-- Which columns correspond to the present and past of the target variable (``T_pp```)?
-- Which columns correspond to the present and past of the source variable (``S_pp```)?
+- Which columns correspond to the present and past of the target variable (``T_{pp}```)?
+- Which columns correspond to the present and past of the source variable (``S_{pp}```)?
 - Which columns correspond to the present/past/future of any variables 
-    that we are to condition on (``C_pp```)?
+    that we are to condition on (``C_{pp}``)?
 
 This information is needed to ensure that marginals are properly assigned during transfer 
 entropy computation. The estimators accept this information in the form of a `TEVars` 
@@ -296,7 +325,7 @@ be considered a state, and the probability of visitation is equally distributed
 within the box. 
 
 In this example, we'll use a rectangular partition where the box sizes are 
-determined by splitting each coordinate axis into ``6`` equally spaced 
+determined by splitting each coordinate axis into 6 equally spaced 
 intervals, spanning the range of the data.
 
 ```julia 
@@ -310,14 +339,16 @@ Now we're ready to compute transfer entropy. First, let's use the
 gives the transfer entropy in units of bits.
 
 ```julia
-te_vf = transferentropy(embedding_pts, vars, binning, VisitationFrequency(b = 2)) #, or
+estimator = VisitationFrequency(b = 2)
+te_vf = transferentropy(embedding_pts, vars, binning, estimator) #, or
 ```
 
 Okay, but what if we want to use another estimator and want the transfer 
 entropy in units of nats? Easy. 
 
 ```
-transferentropy(embedding_pts, vars, binning, TransferOperatorGrid(b = Base.MathConstants.e))
+estimator = TransferOperatorGrid(b = Base.MathConstants.e)
+transferentropy(embedding_pts, vars, binning, estimator)
 ```
 
 Above, we computed transfer entropy for one particular choice of partition. 
@@ -327,9 +358,14 @@ over 15 different cubic grids spanning the range of the data, with differing box
 all having fixed edge lengths  (logarithmically spaced from 0.001 to 0.3).
 
 ```
-# Box sizes
-ϵs = 10 .^ range(log(10, 0.001), log10(0.3), length = 15)
-tes = map(ϵ -> transferentropy(embedding_pts, vars, RectangularBinning(ϵ), VisitationFrequency(b = 2)), ϵs)
+# Define estimator
+est = VisitationFrequency(b = 2)
+
+# Define binning schemes based on different box sizes
+edgelengths = 10 .^ range(log(10, 0.001), log10(0.3), length = 15)
+bs = [RectangularBinning(ϵ) for ϵ in edgelengts]
+
+tes = map(b -> transferentropy(embedding_pts, vars, b, est), bs)
 ```
 
 `tes` now contains 15 different values of the transfer entropy, one for each of 

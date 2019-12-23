@@ -38,7 +38,7 @@ mpts = [MVector{3, Float64}(pt) for pt in pts]
 D = Dataset(pts)
 
 
-# Compute invariant measure over a triangulation using approximate 
+# Compute invariant measure over a triangulation using approximate and exact
 # simplex intersections. This is relatively slow.
 μapprox = invariantmeasure(pts, TriangulationBinning(), ApproximateIntersection())
 μexact = invariantmeasure(pts, TriangulationBinning(), ExactIntersection())
