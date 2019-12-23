@@ -23,7 +23,7 @@ An abstract type for transfer entropy estimators. This type has several concrete
 abstract type TransferEntropyEstimator end 
 
 function Base.show(io::IO, estimator::TransferEntropyEstimator)
-    s = "`$(typeof(estimator))` transfer entropy estimator with logarithm to base $(estimator.b))"
+    s = "$(typeof(estimator))($(estimator.b))"
     print(io, s)
 end
 
@@ -46,7 +46,11 @@ neighbour estimator to compute mutual information terms.
 end
 
 function Base.show(io::IO, estimator::NearestNeighbourMI)
-    s = "`$(typeof(estimator))(k1=$(k1), k2=$(k2), metric=$(typeof(metric)))` transfer entropy estimator with logarithm to base $(estimator.b)"
+    k1 = estimator.k1
+    k2 = estimator.k2
+    metric = estimator.metric
+    b = estimator.b
+    s = "$(typeof(estimator))(b=$(b), k1=$(k1), k2=$(k2), metric=$(typeof(metric)))"
     print(io, s)
 end
 
@@ -247,7 +251,7 @@ We need `pts` to be a vector of states. Therefore, collect the time series in a
 `DynamicalSystems.Dataset` instance. This way, the states of the composite system
 will be represented as a `Vector{SVector}`.
 
-```
+```julia
 raw_timeseries = Dataset(x, y)
 ```
 
@@ -346,7 +350,7 @@ te_vf = transferentropy(embedding_pts, vars, binning, estimator) #, or
 Okay, but what if we want to use another estimator and want the transfer 
 entropy in units of nats? Easy. 
 
-```
+```julia
 estimator = TransferOperatorGrid(b = Base.MathConstants.e)
 transferentropy(embedding_pts, vars, binning, estimator)
 ```
@@ -357,7 +361,7 @@ the choice of partition. Below is an example where we compute transfer entropy
 over 15 different cubic grids spanning the range of the data, with differing box sizes 
 all having fixed edge lengths  (logarithmically spaced from 0.001 to 0.3).
 
-```
+```julia
 # Define estimator
 est = VisitationFrequency(b = 2)
 
