@@ -13,12 +13,12 @@ export transferentropy,
 """
     TransferEntropyEstimator
 
-An abstract type for transfer entropy estimators. This type has several concrete subtypes. 
+An abstract type for transfer entropy estimators. This type has several concrete subtypes
+that are accepted as inputs to the [`transferentropy`](@ref) methods. 
 
-## Estimators that work on state space partitions 
-
-- [`VisitationFrequency`](@ref).
-- [`TransferOperatorGrid`](@ref).
+- [`VisitationFrequency`](@ref)
+- [`TransferOperatorGrid`](@ref)
+- [`NearestNeighbourMI`](@ref)
 """
 abstract type TransferEntropyEstimator end 
 
@@ -28,15 +28,45 @@ function Base.show(io::IO, estimator::TransferEntropyEstimator)
 end
 
 """
-    NearestNeighbourMI <: TransferEntropyEstimator
+    BinningTransferEntropyEstimator
 
-A transfer entropy estimator that uses Kraskov et al. (2004)'s  [1] nearest 
-neighbour estimator to compute mutual information terms.
+An abstract type for transfer entropy estimators that works on a discretization 
+of the reconstructed state space. Has the following concrete subtypes
+
+- [`VisitationFrequency`](@ref)
+- [`TransferOperatorGrid`](@ref)
+"""
+abstract type BinningTransferEntropyEstimator end 
+
+
+"""
+    NearestNeighbourMI(k1::Int = 2, k2::Int = 3, metric::Metric = Chebyshev, b::Number)
+
+A transfer entropy estimator counting of nearest neighbours nearest neighbours 
+to estimate mutual information terms (the method from [1], as implemented in [2])
+
+## Fields 
+
+- **`k1::Int = 2`**: The number of nearest neighbours for the highest-dimensional mutual
+    information estimate. To minimize bias, choose ``k_1 < k_2`` if
+    ``min(k_1, k_2) < 10`` (see fig. 16 in [1]). Beyond dimension 5, choosing
+    ``k_1 = k_2`` results in fairly low bias, and a low number of nearest
+    neighbours, say `k1 = k2 = 4`, will suffice.
+- **`k2::Int = 3`**: The number of nearest neighbours for the lowest-dimensional mutual
+    information estimate. To minimize bias, choose ``k_1 < k_2`` if
+    if ``min(k_1, k_2) < 10`` (see fig. 16 in [1]). Beyond dimension 5, choosing
+    ``k_1 = k_2`` results in fairly low bias, and a low number of nearest
+    neighbours, say `k1 = k2 = 4`, will suffice.
+- **`metric::Metric = Chebyshev()`**: The metric used for distance computations.
+- **`b::Number = 2`**: The base of the logarithm, controlling the unit of the transfer 
+    entropy estimate (e.g. `b = 2` will give the transfer entropy in bits).
 
 ## References
 
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
     mutual information." Physical review E 69.6 (2004): 066138.
+2. Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
+    using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
 @Base.kwdef struct NearestNeighbourMI <: TransferEntropyEstimator
     k1::Int = 2
@@ -64,12 +94,17 @@ using an approximation to the transfer (Perron-Frobenius) operator over
 the grid [1], which explicitly gives the transition probabilities between 
 states. 
 
+## Fields 
+
+- **`b::Number = 2`**: The base of the logarithm, controlling the unit of the transfer 
+    entropy estimate (e.g. `b = 2` will give the transfer entropy in bits).
+
 ## References
 
 [1] Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
 using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
-Base.@kwdef struct TransferOperatorGrid <: TransferEntropyEstimator 
+Base.@kwdef struct TransferOperatorGrid <: BinningTransferEntropyEstimator
     """ The base of the logarithm usen when computing transfer entropy. """
     b::Number = 2.0
 
@@ -90,7 +125,7 @@ over the grid [1], which explicitly gives the transition probabilities between s
 [1] Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
 using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
-Base.@kwdef struct VisitationFrequency <: TransferEntropyEstimator 
+Base.@kwdef struct VisitationFrequency <: BinningTransferEntropyEstimator
     """ The base of the logarithm usen when computing transfer entropy. """
     b::Number = 2.0
 end
@@ -98,7 +133,7 @@ end
 """
     transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
         binning_scheme::RectangularBinning; 
-        estimator::TransferEntropyEstimator = VisitationFrequency(), 
+        estimator::BinningTransferEntropyEstimator = VisitationFrequency(), 
         n::Int = 10000) -> Float64
 
 #### Transfer entropy using a precomputed invariant measure over a triangulated partition
@@ -162,7 +197,7 @@ tes = map(ϵ -> transferentropy(μ, v, RectangularBinning(ϵ)), 2:50)
 """
 function transferentropy(μ::AbstractTriangulationInvariantMeasure, vars::TEVars,
         binning_scheme::RectangularBinning; 
-        estimator::TransferEntropyEstimator = VisitationFrequency(b = 2), n::Int = 20000)
+        estimator::BinningTransferEntropyEstimator = VisitationFrequency(b = 2), n::Int = 20000)
     
     # Get the base of the logarithm
     b = estimator.b 
@@ -202,7 +237,7 @@ end
 
 """
     transferentropy(pts, vars::TEVars, ϵ::RectangularBinning, 
-        estimator::TransferEntropyEstimator) -> Float64
+        estimator::BinningTransferEntropyEstimator) -> Float64
 
 Compute the transfer entropy for a set of `pts` over the state space 
 partition specified by `ϵ` (a [`RectangularBinning`](@ref) instance). 
@@ -218,7 +253,7 @@ partition specified by `ϵ` (a [`RectangularBinning`](@ref) instance).
     entropy computation. 
 - **`ϵ::RectangularBinning`**: A [`RectangularBinning`](@ref) instance that 
     dictates how the point cloud (state space reconstruction) should be discretized. 
-- **`estimator::TransferEntropyEstimator`**. There are different ways of 
+- **`estimator::BinningTransferEntropyEstimator`**. There are different ways of 
     computing the transfer entropy over a discretization of a point cloud.
     The `estimator` should be a valid [`TransferEntropyEstimator`](@ref)
     that works for rectangular partitions, for example `VisitationFrequency()`
@@ -378,7 +413,7 @@ is close to or equal to zero, because there are not enough points distributed
 among the bins (of which there are many when the box edge length is small).
 """
 function transferentropy(pts, vars::TEVars, ϵ::RectangularBinning, 
-    estimator::TransferEntropyEstimator) end
+    estimator::BinningTransferEntropyEstimator) end
 
 
 function transferentropy(pts, vars::TEVars, ϵ::RectangularBinning, 
