@@ -21,6 +21,7 @@ Compute transfer entropy decomposed as the sum of mutual informations,
 using an adapted version of the Kraskov estimator for mutual information [1].
 
 ## Arguments
+
 - `points`: The set of points representing the embedding for which to compute
     transfer entropy. Must be provided as an array of size `dim`-by-`n` points.
 - `k1`: The number of nearest neighbours for the highest-dimensional mutual
@@ -43,7 +44,8 @@ using an adapted version of the Kraskov estimator for mutual information [1].
 - `b`: The base of the logarithm, dictating the unit of the transfer entropy. 
         The default `b=2` gives the transfer entropy in bits.
 
-# References
+## References
+
 1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
     mutual information." Physical review E 69.6 (2004): 066138.
 """

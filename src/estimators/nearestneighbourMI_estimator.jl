@@ -1,9 +1,16 @@
 import Distances: pairwise
-import DynamicalSystemsBase: AbstractDataset, Dataset
+import DelayEmbeddings: AbstractDataset
 import StaticArrays: SVector
+import DelayEmbeddings: KDTree
+import NearestNeighbors: knn
 
+
+KDTree(D::CustomReconstruction, metric::Metric = Euclidean()) = KDTree(D.reconstructed_pts, metric)
+
+
+# Define pairwise distances methods for static vectors, including 
+# Dataset and Customreconstruction.
 const VSV = Union{AbstractDataset, Vector{<:SVector}}
-
 
 function pairwise(x::VSV, y::VSV, metric::Metric)
     length(x) == length(y) || error("Lengths of input data does not match")
@@ -50,18 +57,46 @@ function marginal_NN(points::VSV, dists_to_kth)
     return N
 end
 
-import TransferEntropy.transferentropy 
-import DelayEmbeddings: KDTree
-KDTree(D::CustomReconstruction, metric::Metric = Euclidean()) = KDTree(D.reconstructed_pts, metric)
+"""
+    transferentropy(pts, vars::TEVars, estimator::NearestNeighbourMI)
 
-function transferentropy(points::AbstractDataset, vars::TEVars, estimator::NearestNeighbourMI)
+Compute the transfer entropy for a set of `pts`, computing mutual 
+information (MI) terms using counting of nearest neighbours. 
+
+Uses the MI estimator from [1], which was implemented to compute 
+transfer entropy in [2].
+
+## Arguments 
+
+- **`pts`**: An ordered set of `m`-dimensional points (`pts`) representing 
+    an appropriate generalised embedding of some data series. Must be 
+    vector of states, not a vector of variables/time series. Wrap your time 
+    series in a `DynamicalSystemsBase.Dataset` first if the latter is the case.
+
+- **`vars::TEVars`**: A [`TEVars`](@ref) instance specifying how the `m` different 
+    variables of `pts` are to be mapped into the marginals required for transfer 
+    entropy computation. 
+
+- **`estimator::NearestNeighbourMI`**: An instance of a [`NearestNeighbourMI`](@ref), 
+    estimator, which contains information about the number of nearest neighbours to use,
+    the distance metric and the base of the logarithm that controls the 
+    unit of the transfer entropy.
+
+## References
+
+1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
+    mutual information." Physical review E 69.6 (2004): 066138.
+2. Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
+    using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
+"""
+function transferentropy(pts, vars::TEVars, estimator::NearestNeighbourMI)
     
     metric = estimator.metric
     b = estimator.b
     k1 = estimator.k1
     k2 = estimator.k2
     
-    npts = length(points)
+    npts = length(pts)
 
     # Create some dummy variable names to avoid cluttering the code too much
     X = vars.target_future
@@ -70,11 +105,11 @@ function transferentropy(points::AbstractDataset, vars::TEVars, estimator::Neare
     XY = vcat(X, Y)
     YZ = vcat(Y, Z)
 
-    pts_X = points[:, X]
-    pts_Y = points[:, Y]
-    pts_XY = points[:, XY]
-    pts_YZ = points[:, YZ]
-    pts_XYZ = points
+    pts_X = pts[:, X]
+    pts_Y = pts[:, Y]
+    pts_XY = pts[:, XY]
+    pts_YZ = pts[:, YZ]
+    pts_XYZ = pts
     
     # Create trees to search for nearest neighbors
     tree_XYZ = KDTree(pts_XYZ, metric)
@@ -111,7 +146,7 @@ function transferentropy(points::AbstractDataset, vars::TEVars, estimator::Neare
     return te / log(b)
 end
 
-function transferentropy(points::CustomReconstruction, vars::TEVars, estimator::NearestNeighbourMI)
-    transferentropy(points.reconstructed_pts, vars, estimator)
+function transferentropy(pts::CustomReconstruction, vars::TEVars, estimator::NearestNeighbourMI)
+    transferentropy(pts.reconstructed_pts, vars, estimator)
 end
 
