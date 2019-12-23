@@ -119,7 +119,7 @@ function get_marginal_pts(pts::AbstractDataset, vars::TEVars)
 end
 
 """
-    transferentropy(pts, vars::TEVars, estimator::NearestNeighbourMI)
+    transferentropy(pts, vars::TEVars, estimator::NearestNeighbourMI) -> Float64
 
 Compute the transfer entropy for a set of `pts`, computing mutual 
 information (MI) terms using counting of nearest neighbours. 
@@ -130,7 +130,7 @@ transfer entropy in [2].
 ## Arguments 
 
 - **`pts`**: An ordered set of `m`-dimensional points (`pts`) representing 
-    an appropriate generalised embedding of some data series. Must be 
+    an appropriate [generalised embedding](@ref) of some data series. Must be 
     vector of states, not a vector of variables/time series. Wrap your time 
     series in a `DynamicalSystemsBase.Dataset` first if the latter is the case.
 
@@ -142,6 +142,12 @@ transfer entropy in [2].
     estimator, which contains information about the number of nearest neighbours to use,
     the distance metric and the base of the logarithm that controls the 
     unit of the transfer entropy.
+
+## Returns 
+
+A single number that is the transfer entropy estimated over `pts` by assigning marginals 
+according to `vars`, using nearest neighbour counting method [1] to estimate 
+the necessary mutual information terms [2].
 
 ## References
 
