@@ -33,16 +33,24 @@ te_b10 = transferentropy(pts, vars, RectangularBinning(0.2), VisitationFrequency
 
 @test NearestNeighbourMI(b = 10).b isa Number
 
-@test transferentropy(D, vars, NearestNeighbourMI(b = 2)) isa Number
-@test transferentropy(pts, vars, NearestNeighbourMI(b = 2)) isa Number
-@test transferentropy(spts, vars, NearestNeighbourMI(b = 2)) isa Number
-@test transferentropy(mpts, vars, NearestNeighbourMI(b = 2)) isa Number
-
 
 pts = invariantize([rand(3) for i = 1:15])
 spts = [SVector{3, Float64}(pt) for pt in pts]
 mpts = [MVector{3, Float64}(pt) for pt in pts]
 D = Dataset(pts)
+
+te_D = transferentropy(D, vars, NearestNeighbourMI(b = 2))
+te_pts = transferentropy(pts, vars, NearestNeighbourMI(b = 2))
+te_spts = transferentropy(spts, vars, NearestNeighbourMI(b = 2))
+te_mpts = transferentropy(mpts, vars, NearestNeighbourMI(b = 2))
+
+@test te_D isa Number
+@test te_pts isa Number
+@test te_spts isa Number
+@test te_mpts isa Number
+
+te_D ≈ te_pts ≈ te_spts ≈ te_mpts
+
 
 
 # Compute invariant measure over a triangulation using approximate and exact

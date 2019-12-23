@@ -6,10 +6,9 @@ import Distances: Metric, Chebyshev
 
 export transferentropy, 
     TransferEntropyEstimator, 
-    BinningTransferEntropyEstimator,
         TransferOperatorGrid, 
         VisitationFrequency, 
-    NearestNeighbourMI
+        NearestNeighbourMI
 
 """
     TransferEntropyEstimator
