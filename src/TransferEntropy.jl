@@ -19,6 +19,7 @@ include("estimators/transferentropy_kraskov.jl")
 include("estimators/transferentropy_visitfreq.jl")
 include("estimators/transferentropy_transferoperator.jl")
 include("estimators/common_interface.jl")
+include("estimators/nearestneighbourMI_estimator.jl")
 include("te_embed.jl")
 
 include("convenience_funcs_regular_te.jl")
