@@ -46,7 +46,11 @@ neighbour estimator to compute mutual information terms.
 end
 
 function Base.show(io::IO, estimator::NearestNeighbourMI)
-    s = "`$(typeof(estimator))(k1=$(k1), k2=$(k2), metric=$(typeof(estimator.metric)))` transfer entropy estimator with logarithm to base $(estimator.b)"
+    k1 = estimator.k1
+    k2 = estimator.k2
+    metric = estimator.metric
+    b = estimator.b
+    s = "`$(typeof(estimator))(k1=$(k1), k2=$(k2), metric=$(typeof(metric)))` transfer entropy estimator with logarithm to base $(b)"
     print(io, s)
 end
 
