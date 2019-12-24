@@ -29,7 +29,7 @@ function Base.show(io::IO, estimator::TransferEntropyEstimator)
 end
 
 """
-    BinningTransferEntropyEstimator
+    BinningTransferEntropyEstimator <: TransferEntropyEstimator
 
 An abstract type for transfer entropy estimators that works on a discretization 
 of the [reconstructed state space](@ref custom_delay_reconstruction). Has the following concrete subtypes
@@ -37,7 +37,15 @@ of the [reconstructed state space](@ref custom_delay_reconstruction). Has the fo
 - [`VisitationFrequency`](@ref)
 - [`TransferOperatorGrid`](@ref)
 
-These estimators are accepted as input by the [`transferentropy`](@ref te_estimator_rectangular) method.
+## Used by
+
+Concrete subtypes are accepted as inputs by
+
+- [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
+- [`VisitationFrequencyTest`](@ref)
+- [`TransferOperatorGridTest`](@ref), 
+- [`ExactSimplexIntersectionTest`](@ref)
+- [`ApproximateSimplexIntersectionTest`](@ref)
 """
 abstract type BinningTransferEntropyEstimator end 
 
@@ -64,6 +72,13 @@ to estimate mutual information over an appropriate
 - **`metric::Metric = Chebyshev()`**: The metric used for distance computations.
 - **`b::Number = 2`**: The base of the logarithm, controlling the unit of the transfer 
     entropy estimate (e.g. `b = 2` will give the transfer entropy in bits).
+
+## Used by 
+
+This estimator is accepted as input by
+
+- [`transferentropy`](@ref te_estimator_nn) (low level method),
+- [`NearestNeighbourMITest`](@ref)
 
 ## References
 
@@ -98,12 +113,20 @@ partition are computed using an approximation to the transfer (Perron-Frobenius)
 operator over the grid [1], which explicitly gives the transition probabilities 
 between states. 
 
-This estimator is accepted as input by the [`transferentropy`](@ref te_estimator_rectangular) method.
-
 ## Fields 
 
 - **`b::Number = 2`**: The base of the logarithm, controlling the unit of the transfer 
     entropy estimate (e.g. `b = 2` will give the transfer entropy in bits).
+
+
+## Used by
+
+This estimator is accepted as input by
+
+- [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
+- [`TransferOperatorGridTest`](@ref)
+- [`ExactSimplexIntersectionTest`](@ref)
+- [`ApproximateSimplexIntersectionTest`](@ref)
 
 ## References
 
@@ -126,7 +149,14 @@ logarithm to the base `b`. The invariant probabilities over the partition
 are computed using an approximation to the transfer (Perron-Frobenius) operator 
 over the grid [1], which explicitly gives the transition probabilities between states. 
 
-This estimator is accepted as input by the [`transferentropy`](@ref te_estimator_rectangular) method.
+## Used by
+
+This estimator is accepted as input by
+
+- [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
+- [`VisitationFrequencyTest`](@ref)
+- [`ExactSimplexIntersectionTest`](@ref)
+- [`ApproximateSimplexIntersectionTest`](@ref)
 
 ## References
 
@@ -147,15 +177,16 @@ end
 #### Transfer entropy using a precomputed invariant measure over a triangulated partition
 
 Estimate transfer entropy from an invariant measure over a triangulation of 
-an appropriate [generalised delay reconstruction](@ref custom_delay_reconstruction)
-that has been precomputed either as 
+an appropriate [generalised delay reconstruction](@ref custom_delay_reconstruction).
+
+The invariant measure has been precomputed either as 
 
 1. `μ = invariantmeasure(pts, TriangulationBinning(), ApproximateIntersection())`, or
 2. `μ = invariantmeasure(pts, TriangulationBinning(), ExactIntersection())` 
 
-where the first method uses approximate simplex intersections (faster) and 
-the second method uses exact simplex intersections (slow). `μ` contains 
-all the information needed to compute transfer entropy. 
+`μ` contains all the information needed to compute transfer entropy, and the estimate 
+of the measure will be slightly different depending on the method. Approximate simplex 
+intersections is faster, while exact simplex intersections are (very) slow. 
 
 Note: `pts` must be a vector of states, not a vector of 
 variables/(time series). Wrap your time series in a `Dataset`
@@ -163,28 +194,34 @@ first if the latter is the case.
 
 #### Computing transfer entropy (triangulation -> rectangular partition)
 
-Because we need to compute marginals, we need a rectangular grid. To do so,
-transfer entropy is computed by sampling the simplices of the 
-triangulation according to their measure with a total of approximately 
-`n` points. Introducing multiple points as representatives for the partition
-elements does not introduce any bias, because we in computing the 
-invariant measure, we use no more information than what is encoded in the 
-dynamics of the original data points. However, from the invariant measure,
-we can get a practically infinite amount of points to estimate transfer 
-entropy from.
+Computing transfer entropy directly on a triangulation is not possible. 
+To compute marginals, we need a rectangular grid. 
 
-Then, transfer entropy is estimated using the visitation 
-frequency estimator on those points (see docs for `transferentropy_visitfreq` 
-for more information), on a rectangular grid specified by `binning_scheme`.
+Therefore, first we create a cloud of points (approximately `n` points) 
+with known measure by sampling points uniformly from within the simplices 
+of the triangulation. Each point has measure proportional to the measure 
+of the simplex from which it was sampled.  
+
+Introducing multiple points as representatives for the partition elements 
+does not introduce any bias, because in computing the 
+invariant measure, we use no more information than what is encoded in the 
+dynamics of the original data points. But from the invariant measure,
+we can get a practically infinite amount of points to estimate transfer 
+entropy from, by generating points as described above.
+
+After sampling, a rectangular grid is superimposed on the new point cloud 
+according to `binning_scheme`. 
+Transfer entropy is then computed using a [`BinningTransferEntropyEstimator`].
+frequency estimator on those (roughly `n`) points.
 
 #### Common use case
 
-This method is good to use if you want to explore the sensitivity 
-of transfer entropy to the bin size in the final rectangular grid, 
-when you have few observations in the time series. The invariant 
-measure, which encodes the dynamical information, is slow to compute over 
-the triangulation, but only needs to be computed once.
-After that, transfer entropy may be estimated at multiple scales very quickly.
+The invariant measure, which encodes the dynamical information, is slow to compute over 
+the triangulation, but only needs to be computed once. After that, transfer entropy may 
+be estimated at multiple scales (grids) very quickly. 
+
+This method is therefore useful if you want to explore the sensitivity of transfer entropy 
+to the bin size in the final rectangular grid, when you have few observations in the time series.
 
 ### Example 
 
