@@ -132,6 +132,8 @@ x, y, z = rand(100), rand(100), rand(100)
 pts, vars = te_embed(x, y, z) # default k = l = m = n = 1
 pts, vars = te_embed(x, y, z, 2, 1, 2, 1) # specify k = 2, l = 1, m = 2, n = 1
 pts, vars = te_embed(x, y, z, η = 2, τ = 3) # specify prediction and embedding lag
+pts, vars = te_embed(x, y, z, 2, 1, 2, 1) # specify k = 2, l = 1, m = 2, n = 1
+pts, vars = te_embed(x, y, z, 1, 2, 2, 1, η = 2, τ = 3) # specify k = 1, l = 2, m = 2, n = 1
 
 # specify prediction and embedding lag, with k = 1, l = 2, m = 2, n = 1
 pts, vars = te_embed(x, y, z, 1, 2, 2, 1 η = 2, τ = 3) 
