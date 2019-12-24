@@ -1,7 +1,7 @@
 name = "TransferEntropy"
 uuid = "ea221983-52f3-5440-99c7-13ea201cd633"
 repo = "https://github.com/kahaaga/TransferEntropy.jl.git"
-version = "0.5.5"
+version = "0.5.6"
 
 [deps]
 CausalityToolsBase = "b1f25513-c649-51ee-8a1c-0e98d01ae897"
