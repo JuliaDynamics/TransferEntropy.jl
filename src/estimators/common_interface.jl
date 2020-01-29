@@ -42,10 +42,6 @@ of the [reconstructed state space](@ref custom_delay_reconstruction). Has the fo
 Concrete subtypes are accepted as inputs by
 
 - [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
-- [`VisitationFrequencyTest`](@ref)
-- [`TransferOperatorGridTest`](@ref), 
-- [`ExactSimplexIntersectionTest`](@ref)
-- [`ApproximateSimplexIntersectionTest`](@ref)
 """
 abstract type BinningTransferEntropyEstimator end 
 
@@ -78,7 +74,6 @@ to estimate mutual information over an appropriate
 This estimator is accepted as input by
 
 - [`transferentropy`](@ref te_estimator_nn) (low level method),
-- [`NearestNeighbourMITest`](@ref)
 
 ## References
 
@@ -124,9 +119,6 @@ between states.
 This estimator is accepted as input by
 
 - [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
-- [`TransferOperatorGridTest`](@ref)
-- [`ExactSimplexIntersectionTest`](@ref)
-- [`ApproximateSimplexIntersectionTest`](@ref)
 
 ## References
 
@@ -154,9 +146,6 @@ over the grid [1], which explicitly gives the transition probabilities between s
 This estimator is accepted as input by
 
 - [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
-- [`VisitationFrequencyTest`](@ref)
-- [`ExactSimplexIntersectionTest`](@ref)
-- [`ApproximateSimplexIntersectionTest`](@ref)
 
 ## References
 
