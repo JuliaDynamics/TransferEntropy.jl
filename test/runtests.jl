@@ -1,5 +1,5 @@
 if lowercase(get(ENV, "CI", "false")) == "true"
-    include("install_dependencies.jl")
+    include("install_test_dependencies.jl")
 end
 
 using TransferEntropy
