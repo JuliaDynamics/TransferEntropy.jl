@@ -6,8 +6,14 @@ est_nn = NearestNeighbourMI()
 
 p = EmbeddingTE()
 
-# Regular transfer entropy
-@test transferentropy(x, y, p, est_vf)
-@test transferentropy(x, y, z, p, est_vf)
+# VisitationFrequency
+# -------------------
+@test transferentropy(x, y, p, est_vf) isa Real
+@test transferentropy(x, y, z, p, est_vf) isa Real
+
+# TransferOperatorGrid
+# -------------------
+@test transferentropy(x, y, p, est_to) isa Real
+@test transferentropy(x, y, z, p, est_to) isa Real
 
 # Conditional transfer entropy
