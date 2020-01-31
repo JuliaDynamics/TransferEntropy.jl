@@ -12,21 +12,21 @@ using NearestNeighbors
 @reexport using PerronFrobenius
 using StateSpaceReconstruction; export invariantize
 
-using StatsBase
+import StatsBase
+import DelayEmbeddings: AbstractDataset
 
+include("EmbeddingTE.jl")
 include("TEVars.jl")
-include("estimators/transferentropy_kraskov.jl")
-include("estimators/transferentropy_visitfreq.jl")
-include("estimators/transferentropy_transferoperator.jl")
-include("estimators/common_interface.jl")
-include("estimators/nearestneighbourMI_estimator.jl")
-include("te_embed.jl")
-
-include("convenience_funcs_regular_te.jl")
-include("convenience_funcs_conditional_te.jl")
+include("Estimators/Estimators.jl")
+include("interface.jl")
 
 export
-transferentropy
-TEVars
+    transferentropy,
+    TEVars,
+    EmbeddingTE
+
+#include("old_code/te_embed.jl")
+#include("old_code/convenience_funcs_regular_te.jl")
+#include("old_code/convenience_funcs_conditional_te.jl")
 
 end # module

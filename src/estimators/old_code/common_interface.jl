@@ -3,6 +3,7 @@ import CausalityToolsBase: RectangularBinning, CustomReconstruction
 import StateSpaceReconstruction: Simplex, generate_interior_points
 import StaticArrays: SVector
 import Distances: Metric, Chebyshev
+import StatsBase 
 
 export transferentropy, 
     BinningTransferEntropyEstimator, 
@@ -49,9 +50,10 @@ abstract type BinningTransferEntropyEstimator end
 """
     NearestNeighbourMI(k1::Int = 2, k2::Int = 3, metric::Metric = Chebyshev, b::Number)
 
-A transfer entropy estimator counting of nearest neighbours nearest neighbours 
+A transfer entropy estimator using counting of nearest neighbours nearest neighbours 
 to estimate mutual information over an appropriate 
-[custom delay reconstruction](@ref custom_delay_reconstruction) (the method from [1], as implemented in [2]).
+[custom delay reconstruction](@ref custom_delay_reconstruction) of the input data. 
+(the method from Kraskov et al. (2004)[^1], as implemented in Diego et al. (2019)[^2]).
 
 ## Fields 
 
@@ -69,17 +71,13 @@ to estimate mutual information over an appropriate
 - **`b::Number = 2`**: The base of the logarithm, controlling the unit of the transfer 
     entropy estimate (e.g. `b = 2` will give the transfer entropy in bits).
 
-## Used by 
-
-This estimator is accepted as input by
-
-- [`transferentropy`](@ref te_estimator_nn) (low level method),
-
 ## References
 
-1. Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
+[^1]:
+    Kraskov, Alexander, Harald Stögbauer, and Peter Grassberger. "Estimating
     mutual information." Physical review E 69.6 (2004): 066138.
-2. Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
+[^2]:
+    Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
     using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
 @Base.kwdef struct NearestNeighbourMI <: TransferEntropyEstimator
@@ -99,62 +97,77 @@ function Base.show(io::IO, estimator::NearestNeighbourMI)
 end
 
 """
-    TransferOperatorGrid(; b::Number = 2)
+    TransferOperatorGrid(; b::Number = 2, summary_statistic = StatsBase.mean, 
+        binning = ExtendedPalusLimit())
 
 An transfer entropy estimator which computes transfer entropy over a 
-dicretization of an appropriate [delay reconstruction](@ref custom_delay_reconstruction), 
-using the logarithm to base `b`. Invariant probabilities over the 
-partition are computed using an approximation to the transfer (Perron-Frobenius) 
-operator over the grid [1], which explicitly gives the transition probabilities 
-between states. 
+dicretization of an appropriate [delay reconstruction](@ref custom_delay_reconstruction) of the input data.
+Invariant probabilities over the partition are computed using an approximation to the transfer (Perron-Frobenius) 
+operator over the grid [1], which explicitly gives the transition probabilities between states. 
+The transfer entropy is computed using the logarithm to base `b`. 
 
 ## Fields 
 
 - **`b::Number = 2`**: The base of the logarithm, controlling the unit of the transfer 
     entropy estimate (e.g. `b = 2` will give the transfer entropy in bits).
-
-
-## Used by
-
-This estimator is accepted as input by
-
-- [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
+- **`summary_statistic::Function = StatsBase.mean`**: The summary statistic to use if multiple discretization schemes are given.
+- **`binning::Union{RectangularBinning, Vector{RectangularBinning}, BinningHeuristic} = ExtendedPalusLimit()`**: 
+    The discretization scheme. Can either be fixed (i.e. one or more `RectangularBinning` instances),
+    or a `BinningHeuristic`. In the latter case, the binning is determined from the input data.
 
 ## References
 
-[1] Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
-using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
+[^1]:
+    Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
+    using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
 Base.@kwdef struct TransferOperatorGrid <: BinningTransferEntropyEstimator
     """ The base of the logarithm usen when computing transfer entropy. """
     b::Number = 2.0
 
-    TransferOperatorGrid(b) = new(b)
+    """ The summary statistic to use if multiple discretization schemes are given """
+    summary_statistic::Function = StatsBase.mean
+
+    """ The discretization scheme. """
+    binning::Union{RectangularBinning, Vector{RectangularBinning}, BinningHeuristic} = ExtendedPalusLimit()
+
+    TransferOperatorGrid(b, summary_statistic, binning) = new(b, summary_statistic, binning)
 end
 
 """
     VisitationFrequency(; b::Number = 2)
 
 An transfer entropy estimator which computes transfer entropy over a 
-dicretization of an appropriate [delay reconstruction](@ref custom_delay_reconstruction), using the 
-logarithm to the base `b`. The invariant probabilities over the partition 
-are computed using an approximation to the transfer (Perron-Frobenius) operator 
-over the grid [1], which explicitly gives the transition probabilities between states. 
+dicretization of an appropriate [delay reconstruction](@ref custom_delay_reconstruction) from the 
+input time series [^1]. The invariant probabilities over the partition are estimated 
+using a simple counting approach.
 
-## Used by
+## Fields 
 
-This estimator is accepted as input by
-
-- [`transferentropy`](@ref te_estimator_rectangular) (low-level method)
+- **`b::Number = 2`**: The base of the logarithm, controlling the unit of the transfer 
+    entropy estimate (e.g. `b = 2` will give the transfer entropy in bits).
+- **`summary_statistic::Function = StatsBase.mean`**: The summary statistic to use if multiple discretization schemes are given.
+- **`binning::Union{RectangularBinning, Vector{RectangularBinning}, BinningHeuristic}`**: 
+    The discretization scheme. Can either be fixed (i.e. one or more `RectangularBinning` instances),
+    or a `BinningHeuristic`. In the latter case, the binning is determined from the input data.
 
 ## References
 
-[1] Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
-using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
+[^1]:
+    Diego, David, Kristian Agasøster Haaga, and Bjarte Hannisdal. "Transfer entropy computation 
+    using the Perron-Frobenius operator." Physical Review E 99.4 (2019): 042212.
 """
 Base.@kwdef struct VisitationFrequency <: BinningTransferEntropyEstimator
     """ The base of the logarithm usen when computing transfer entropy. """
     b::Number = 2.0
+
+    """ The summary statistic to use if multiple discretization schemes are given """
+    summary_statistic::Function = StatsBase.mean
+
+    """ The discretization scheme. """
+    binning::Union{RectangularBinning, Vector{RectangularBinning}, BinningHeuristic} = ExtendedPalusLimit()
+
+    VisitationFrequency(b, summary_statistic, binning) = new(b, summary_statistic, binning)
 end
 
 """

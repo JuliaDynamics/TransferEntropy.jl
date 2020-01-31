@@ -20,6 +20,8 @@ end
 Compute transfer entropy decomposed as the sum of mutual informations,
 using an adapted version of the Kraskov estimator for mutual information [1].
 
+This estimator is accepted as input by the [`transferentropy`](@ref te_estimator_rectangular) method.
+
 ## Arguments
 
 - `points`: The set of points representing the embedding for which to compute
