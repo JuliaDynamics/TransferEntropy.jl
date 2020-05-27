@@ -1,3 +1,5 @@
+import GroupSlices: groupinds, groupslices
+import PerronFrobenius: InvariantDistribution
 """
 	marginal_indices(A)
 

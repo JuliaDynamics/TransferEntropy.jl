@@ -1,11 +1,14 @@
 using Distances
 using NearestNeighbors
-import StateSpaceReconstruction: cembed
+using DelayEmbeddings
 
 @testset "Kraskov (kNN) 3D $i" for i in 1:n_realizations
     # Some random points that we embed
-    pts = rand(3, 100)
-    E = cembed(pts)
+    x = rand(100)
+    y = rand(100)
+    js = (2, 2, 1)
+    τs = (1, 0, 0)
+    E = genembed([x, y], τs, js)
 
     # How many neighbors to consider?
     k1 = 2
@@ -53,8 +56,11 @@ end
 
 @testset "Kraskov (kNN) 4D $i" for i in 1:n_realizations
     # Some random points that we embed
-    pts = rand(4, 200)
-    E = cembed(pts)
+    x = rand(100)
+    y = rand(100)
+    js = (2, 2, 2, 1)
+    τs = (1, 0, -1, 0)
+    E = genembed([x, y], τs, js)
 
     # How many neighbors to consider?
     k1 = 2

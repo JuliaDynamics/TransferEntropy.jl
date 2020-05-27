@@ -1,5 +1,6 @@
 using CausalityToolsBase
-using StateSpaceReconstruction
+using TransferEntropy
+using DelayEmbeddings
 
 # You'd use an 
 pts = invariantize([rand(3) for i = 1:200])

@@ -4,7 +4,7 @@ import StaticArrays: SVector, MVector
 import DelayEmbeddings: KDTree
 import NearestNeighbors: knn
 
-import Distances: pairwise
+import Distances: pairwise, Metric
 import DelayEmbeddings: AbstractDataset
 import StaticArrays: SVector, MVector
 import DelayEmbeddings: KDTree
@@ -130,7 +130,7 @@ transfer entropy in [2].
 ## Arguments 
 
 - **`pts`**: An ordered set of `m`-dimensional points (`pts`) representing 
-    an appropriate [generalised embedding](@ref) of some data series. Must be 
+    an appropriate [generalized embedding](@ref) of some data series. Must be 
     vector of states, not a vector of variables/time series. Wrap your time 
     series in a `DynamicalSystemsBase.Dataset` first if the latter is the case.
 

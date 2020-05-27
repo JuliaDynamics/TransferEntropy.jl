@@ -1,3 +1,8 @@
+import DelayEmbeddings: genembed, AbstractDataset, Dataset
+import CausalityToolsBase: optimal_delay, optimal_dimension, OptimiseDelay, OptimiseDim
+
+export te_embed, EmbeddingTE
+
 function rc(x::Union{AbstractDataset, Vector{T}, Vector{Vector{T}}},
         dim::Union{Int, AbstractVector{Int}, OptimiseDim}, 
         τ::Union{Int, AbstractVector{Int}, OptimiseDelay}, forward = false) where T <: Number
@@ -131,8 +136,7 @@ end
 
 
 """
-    EmbeddingTE(dS = 1, dT = 1, d𝒯 = 1, dC = 1, 
-        τS = -1, τT = -1, η = 1, τC = -1)
+    EmbeddingTE(; dS = 1, dT = 1, d𝒯 = 1, dC = 1, τS = -1, τT = -1, η𝒯 = 1, τC = -1)
 
 Embedding parameters for transfer entropy analysis. 
 
@@ -289,25 +293,17 @@ function Base.show(io::IO, x::EmbeddingTE)
     print(io, s)
 end
 
-using CausalityToolsBase
-using DelayEmbeddings
-
 """
-    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, 
-        p::EmbeddingTE) -> (Vector{Vector}, TEVars, Lags)
+    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::EmbeddingTE) → (points, vars, τs)
+    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::AbstractVector{T}, p::EmbeddingTE) → (points, vars, τs)
 
-Generalised delay reconstruction of `source` and `target` for transfer entropy 
-computation using embedding parameters provided by the [`EmbeddingTE`](@ref)
+Generalised delay reconstruction of `source` and `target` (and `cond` if provided) 
+for transfer entropy computation using embedding parameters provided by the [`EmbeddingTE`](@ref)
 instance `p`.
 
-## Returns
-
-A tuple of 
-
-- the embedding points
-- a [`TEVars`](@ref) instance that keeps track of which variables of the embedding belong to 
-    which marginals of the reconstruction (indices are: source = 1, target = 2, cond = 3)
-- a [`Lags`](@ref) instance, which stores the lags for each variable of the reconstruction.
+Returns a tuple of the embedded `points`, `vars` (a [`TEVars`](@ref) instance that keeps track of which 
+variables of the embedding belong to which marginals of the reconstruction; indices are: source = 1, 
+target = 2, cond = 3), and a tuple `τs`, which stores the lags for each variable of the reconstruction.
 """
 function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::EmbeddingTE) where T
     
@@ -326,14 +322,14 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::Embed
     pos_𝒯 .= pos_𝒯 .+ 1
     pos_T .= pos_T .+ 1
     
-    pos = Positions([pos_𝒯; pos_T; pos_S])
-    lags = Lags([lags_𝒯; lags_T; lags_S])
+    js = ([pos_𝒯; pos_T; pos_S]...,)
+    τs = ([lags_𝒯; lags_T; lags_S]...,)
     
     # TODO: This only works for single time series at the moment
     ts = Dataset(source, target)
     
     # The reconstructed points
-    pts = customembed(ts, pos, lags)
+    pts = genembed(ts, τs, js)
     d𝒯 = length(pos_𝒯)
     dT = length(pos_T)
     dS = length(pos_S)
@@ -344,26 +340,9 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::Embed
         T = 1+(d𝒯):dT+(d𝒯)     |> collect, 
         S = 1+(dT+d𝒯):dS+(d𝒯+dT) |> collect)
 
-    return pts, vars, lags
+    return pts, vars, τs
 end
 
-"""
-    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::AbstractVector{T}, 
-        p::EmbeddingTE) -> (Vector{Vector}, TEVars, Lags)
-
-Generalised delay reconstruction of `source`, `target` and `cond` for transfer entropy 
-computation using embedding parameters provided by the [`EmbeddingTE`](@ref)
-instance `p`.
-
-## Returns
-
-A tuple of 
-
-- the embedding points
-- a [`TEVars`](@ref) instance that keeps track of which variables of the embedding belong to 
-    which marginals of the reconstruction (indices are: source = 1, target = 2, cond = 3)
-- a [`Lags`](@ref) instance, which stores the lags for each variable of the reconstruction.
-"""
 function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::AbstractVector{T}, p::EmbeddingTE) where T
     
     #@show p.τS
@@ -382,14 +361,14 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::Ab
     pos_T .= pos_T .+ 1
     pos_C .= pos_C .+ 2
 
-    pos = Positions([pos_𝒯; pos_T; pos_S; pos_C])
-    lags = Lags([lags_𝒯; lags_T; lags_S; lags_C])
+    js = ([pos_𝒯; pos_T; pos_S; pos_C]...,)
+    τs = ([lags_𝒯; lags_T; lags_S; lags_C]...,)
     
     # TODO: This only works for single time series at the moment
     ts = Dataset(source, target, cond)
     
     # The reconstructed points
-    pts = customembed(ts, pos, lags)
+    pts = genembed(ts, τs, js)
     d𝒯 = length(pos_𝒯)
     dT = length(pos_T)
     dS = length(pos_S)
@@ -402,5 +381,5 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::Ab
         S = 1+(dT+d𝒯):dS+(d𝒯+dT)     |> collect,
         C = 1+(dT+d𝒯+dS):dC+(d𝒯+dT+dS) |> collect)
 
-    return pts, vars, lags
+    return pts, vars, τs
 end

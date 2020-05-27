@@ -1,76 +1,76 @@
-import StateSpaceReconstruction:
-	cembed,
-	assign_bin_labels
+# import StateSpaceReconstruction:
+# 	cembed,
+# 	assign_bin_labels
 
-import PerronFrobenius:
-	get_binvisits,
-	estimate_transferoperator_from_binvisits,
-	invariantmeasure
+# import PerronFrobenius:
+# 	get_binvisits,
+# 	estimate_transferoperator_from_binvisits,
+# 	invariantmeasure
 
 
-# Estimate transfer entropy from scratch from a random
-# set of points `n_realizations` times.
-ts_length = 100
+# # Estimate transfer entropy from scratch from a random
+# # set of points `n_realizations` times.
+# ts_length = 100
 
-# Estimate transfer entropy using the wrapper function,
-# and manually (doing the steps performed inside the
-# wrapper function) to make sure that they give the same
-# result.
-estimates_3D_wrapper = Vector{Float64}(undef, n_realizations)
-estimates_3D_allsteps = Vector{Float64}(undef, n_realizations)
+# # Estimate transfer entropy using the wrapper function,
+# # and manually (doing the steps performed inside the
+# # wrapper function) to make sure that they give the same
+# # result.
+# estimates_3D_wrapper = Vector{Float64}(undef, n_realizations)
+# estimates_3D_allsteps = Vector{Float64}(undef, n_realizations)
 
-@testset "3D #$i" for i in 1:n_realizations
-	E = cembed([diff(rand(ts_length)) for i = 1:3])
-	ϵ = 3
-	# Test by doing all the dirty work and providing the raw input to the estimator
-	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = get_binvisits(bins_visited_by_orbit)
-	TO = estimate_transferoperator_from_binvisits(bininfo)
-	iv = invariantmeasure(TO)
-	v = TEVars([1], [2], [3], Int[])
+# @testset "3D #$i" for i in 1:n_realizations
+# 	E = cembed([diff(rand(ts_length)) for i = 1:3])
+# 	ϵ = 3
+# 	# Test by doing all the dirty work and providing the raw input to the estimator
+# 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
+# 	bininfo = get_binvisits(bins_visited_by_orbit)
+# 	TO = estimate_transferoperator_from_binvisits(bininfo)
+# 	iv = invariantmeasure(TO)
+# 	v = TEVars([1], [2], [3], Int[])
 
-	estimates_3D_wrapper[i] = tetogrid(E, ϵ, v)
-	estimates_3D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	@test estimates_3D_wrapper[i] >= 0
-	@test estimates_3D_allsteps[i] >= 0
-end
+# 	estimates_3D_wrapper[i] = tetogrid(E, ϵ, v)
+# 	estimates_3D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
+# 	@test estimates_3D_wrapper[i] >= 0
+# 	@test estimates_3D_allsteps[i] >= 0
+# end
 
-ts_length = 200
-estimates_4D_wrapper = Vector{Float64}(undef, n_realizations)
-estimates_4D_allsteps = Vector{Float64}(undef, n_realizations)
+# ts_length = 200
+# estimates_4D_wrapper = Vector{Float64}(undef, n_realizations)
+# estimates_4D_allsteps = Vector{Float64}(undef, n_realizations)
 
-@testset "4D #$i" for i in 1:n_realizations
-	E = cembed([diff(rand(ts_length)) for i = 1:4])
-	ϵ = 0.3
-	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = get_binvisits(bins_visited_by_orbit)
-	TO = estimate_transferoperator_from_binvisits(bininfo)
-	iv = invariantmeasure(TO)
-	v = TEVars([1], [2], [3, 4], Int[])
-	estimates_4D_wrapper[i] = tetogrid(E, ϵ, v)
-	estimates_4D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	@test estimates_4D_wrapper[i] >= 0
-	@test estimates_4D_allsteps[i] >= 0
-end
+# @testset "4D #$i" for i in 1:n_realizations
+# 	E = cembed([diff(rand(ts_length)) for i = 1:4])
+# 	ϵ = 0.3
+# 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
+# 	bininfo = get_binvisits(bins_visited_by_orbit)
+# 	TO = estimate_transferoperator_from_binvisits(bininfo)
+# 	iv = invariantmeasure(TO)
+# 	v = TEVars([1], [2], [3, 4], Int[])
+# 	estimates_4D_wrapper[i] = tetogrid(E, ϵ, v)
+# 	estimates_4D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
+# 	@test estimates_4D_wrapper[i] >= 0
+# 	@test estimates_4D_allsteps[i] >= 0
+# end
 
-ts_length = 300
-estimates_5D_wrapper = Vector{Float64}(undef, n_realizations)
-estimates_5D_allsteps = Vector{Float64}(undef, n_realizations)
+# ts_length = 300
+# estimates_5D_wrapper = Vector{Float64}(undef, n_realizations)
+# estimates_5D_allsteps = Vector{Float64}(undef, n_realizations)
 
-@testset "5D #$i" for i in 1:n_realizations
-	E = cembed([diff(rand(ts_length)) for i = 1:5])
-	ϵ = [0.2, 0.2, 0.1, 0.2, 0.3]
+# @testset "5D #$i" for i in 1:n_realizations
+# 	E = cembed([diff(rand(ts_length)) for i = 1:5])
+# 	ϵ = [0.2, 0.2, 0.1, 0.2, 0.3]
 
-	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
-	bininfo = get_binvisits(bins_visited_by_orbit)
-	TO = estimate_transferoperator_from_binvisits(bininfo)
-	iv = invariantmeasure(TO)
-	v = TEVars([1], [2], [3, 4], [5])
-	estimates_5D_wrapper[i] = tetogrid(E, ϵ, v)
-	estimates_5D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
-	@test estimates_5D_wrapper[i] >= 0
-	@test estimates_5D_allsteps[i] >= 0
-end
+# 	bins_visited_by_orbit = assign_bin_labels(E, ϵ)
+# 	bininfo = get_binvisits(bins_visited_by_orbit)
+# 	TO = estimate_transferoperator_from_binvisits(bininfo)
+# 	iv = invariantmeasure(TO)
+# 	v = TEVars([1], [2], [3, 4], [5])
+# 	estimates_5D_wrapper[i] = tetogrid(E, ϵ, v)
+# 	estimates_5D_allsteps[i] = tetogrid(bins_visited_by_orbit, iv, v)
+# 	@test estimates_5D_wrapper[i] >= 0
+# 	@test estimates_5D_allsteps[i] >= 0
+# end
 
 # # If everything  works as expected, there should be no negative
 # # transfer entropy values.

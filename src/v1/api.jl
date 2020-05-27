@@ -1,5 +1,3 @@
-include("low_level_estimation/low_level.jl")
-
 """
     transferentropy(source, target, embedding::EmbeddingTE, estimator::TransferEntropyEstimator)
     transferentropy(source, target, cond, embedding::EmbeddingTE, estimator::TransferEntropyEstimator)
@@ -46,49 +44,21 @@ transferentropy(x, y, z, embedding, est_vf)
 ```
 
 """
-function transferentropy end 
+function transferentropy end
 
+# Low-level method
+function _transferentropy end
 
-#####################
-# Binning estimators
-#####################
+"""
+    TransferEntropyEstimator
 
+An abstract type for transfer entropy estimators. 
+"""
+abstract type TransferEntropyEstimator end 
 
-function transferentropy(source, target, embedding::EmbeddingTE, estimator::Estimators.BinningTransferEntropyEstimator)
-    # Generalised delay embedding
-    pts, vars, lags = te_embed(source, target, embedding)
-
-    # Get the binning (if a heuristic is used, determine binning from input time series and dimension)
-    if estimator.binning isa BinningHeuristic
-        total_dim = length(pts[1])
-        binning = Estimators.estimate_partition(target, total_dim, estimator.binning)
-    else
-        binning = estimator.binning
-    end
-
-    # Compute TE over different partitions
-    bs = binning isa Vector{RectangularBinning} ? binning : [binning]
-    tes = map(binscheme -> _transferentropy(pts, vars, binscheme, estimator), bs)
-
-    return estimator.summary_statistic(tes)
+function Base.show(io::IO, estimator::TransferEntropyEstimator)
+    s = "$(typeof(estimator))($(estimator.b))"
+    print(io, s)
 end
 
-function transferentropy(source, target, cond, embedding::EmbeddingTE, estimator::Estimators.BinningTransferEntropyEstimator)
-    # Generalised delay embedding
-    pts, vars, lags = te_embed(source, target, cond, embedding)
-
-    # Get the binning (if a heuristic is used, determine binning from input time series and dimension)
-    if estimator.binning isa BinningHeuristic
-        total_dim = length(pts[1])
-        binning = Estimators.estimate_partition(target, total_dim, estimator.binning)
-    else
-        binning = estimator.binning
-    end
-
-    # Compute TE over different partitions
-    bs = binning isa Vector{RectangularBinning} ? binning : [binning]
-    tes = map(binscheme -> _transferentropy(pts, vars, binscheme, estimator), bs)
-
-    return estimator.summary_statistic(tes)
-end
-
+export TransferEntropyEstimator

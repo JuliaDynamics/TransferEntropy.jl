@@ -1,6 +1,9 @@
 import PerronFrobenius: AbstractTriangulationInvariantMeasure
-import CausalityToolsBase: RectangularBinning, CustomReconstruction
-import StateSpaceReconstruction: Simplex, generate_interior_points
+import CausalityToolsBase: 
+    RectangularBinning, 
+    CustomReconstruction,
+    Simplex, 
+    generate_interior_points
 import StaticArrays: SVector
 import Distances: Metric, Chebyshev
 import StatsBase 
@@ -179,7 +182,7 @@ end
 #### Transfer entropy using a precomputed invariant measure over a triangulated partition
 
 Estimate transfer entropy from an invariant measure over a triangulation of 
-an appropriate [generalised delay reconstruction](@ref custom_delay_reconstruction).
+an appropriate [generalized delay reconstruction](@ref custom_delay_reconstruction).
 
 The invariant measure has been precomputed either as 
 
@@ -293,7 +296,7 @@ partition specified by `ϵ` (a [`RectangularBinning`](@ref) instance).
 ## Fields 
 
 - **`pts`**: An ordered set of `m`-dimensional points (`pts`) representing 
-    an appropriate [generalised embedding]((@ref custom_delay_reconstruction)) 
+    an appropriate [generalized embedding]((@ref custom_delay_reconstruction)) 
     of some data series. Must be vector of states, not a vector of variables/time series. 
     Wrap your time series in a `DynamicalSystemsBase.Dataset` first if the latter is the case.
 - **`vars::TEVars`**: A [`TEVars`](@ref) instance specifying how the `m` different 
@@ -341,13 +344,13 @@ raw_timeseries = Dataset(x, y)
 #### 2. Generalised embedding
 
 *Note: If your data are already organised in a form of a 
-[generalised embedding](@ref custom_delay_reconstruction), 
+[generalized embedding](@ref custom_delay_reconstruction), 
 where columns of the dataset correspond to lagged variables of the time series, 
 you can skip to step 3.*
 
 Say we want to compute transfer entropy from ``x`` to ``y``, and that we 
 require a 4-dimensional embedding. For that, we need to decide on a 
-generalised state space reconstruction of the time series. One possible choice 
+generalized state space reconstruction of the time series. One possible choice 
 is 
 
 ```math
@@ -387,7 +390,7 @@ columns have.
 #### 3. Instructions to the estimator
 
 The transfer entropy estimators needs the following about the columns of 
-the generalised reconstruction of your time series (`embedding_pts` in 
+the generalized reconstruction of your time series (`embedding_pts` in 
 our case):
 
 - Which columns correspond to the future of the target variable (``T_f```)?
@@ -407,7 +410,7 @@ vars = TEVars(Tf = [1], Tpp = [2, 3], Spp = [4])
 #### 4. Rectangular grid specification
 
 Entropy is essentially a property of a collection of states. To meaningfully talk about 
-states for our generalised state space reconstruction, we will divide the coordinate 
+states for our generalized state space reconstruction, we will divide the coordinate 
 axes of the reconstruction into a rectangular grid. Each box in the grid will 
 be considered a state, and the probability of visitation is equally distributed 
 within the box. 
