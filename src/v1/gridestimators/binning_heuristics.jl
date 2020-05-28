@@ -1,6 +1,6 @@
 import CausalityToolsBase: BinningHeuristic
 
-export PalusLimit, ExtendedPalusLimit
+export PalusLimit, ExtendedPalusLimit, estimate_partition
 
 """
     PalusLimit(max_subdivs::Int = 8) <: BinningHeuristic
