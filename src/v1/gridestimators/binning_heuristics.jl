@@ -54,7 +54,7 @@ function Base.show(io::IO, x::ExtendedPalusLimit)
 end
 
 """
-    estimate_partition(x::AbstractVector{T}, dim::Int, heuristic::BinningHeuristic) -> RectangularBinning
+    estimate_partition(x::AbstractVector{T}, dim::Int, heuristic::BinningHeuristic) -> Union{RectangularBinning, Vector{RectangularBinning}}
 
 Estimate a suitable partition for a `dim`-dimensional state space reconstruction of the data series `x` 
 using the provided binning `heuristic`.
@@ -80,7 +80,7 @@ The heuristic can be any of the following:
 Using default number of maximum subdivisions along each marginal: 
 
 ```jldoctest
-using CausalityTools
+using TransferEntropy
 x = rand(1000) # our time series
 D = 3 # dimension of the desired state space reconstruction
 estimate_partition(x, D, PalusLimit())
@@ -93,7 +93,7 @@ Limiting maximum number of intervals along each marginal to 5:
 
 
 ```jldoctest
-using CausalityTools
+using TransferEntropy
 estimate_partition(rand(1000), 4, PalusLimit(max_subdivs = 5))
 
 # output
@@ -106,7 +106,7 @@ Getting three distinct binning, extending from what is obtained
 using `PalusLimit`, plus two additional finer partitions. 
 
 ```jldoctest
-using CausalityTools
+using TransferEntropy
 x = rand(1000) # our time series
 D = 3 # dimension of the desired state space reconstruction
 heuristic = ExtendedPalusLimit(ext_finer = 2)
