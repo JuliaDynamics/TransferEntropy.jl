@@ -120,10 +120,15 @@ estimate_partition(x, D, heuristic)
  RectangularBinning(7)
 ```
 """
-function estimate_partition(x::AbstractVector{T}, dim::Int, heuristic::BinningHeuristic) where T end
+function estimate_partition(x, dim::Int, heuristic::BinningHeuristic) end
 
 function estimate_partition(x::AbstractVector{T}, dim::Int, heuristic::PalusLimit) where T
     N = length(x)
+    n_subdivs = min(floor(Int, N^(1/(dim+1))), heuristic.max_subdivs)
+    return RectangularBinning(n_subdivs)
+end
+
+function estimate_partition(N::Int, dim::Int, heuristic::PalusLimit)
     n_subdivs = min(floor(Int, N^(1/(dim+1))), heuristic.max_subdivs)
     return RectangularBinning(n_subdivs)
 end
@@ -141,3 +146,18 @@ function estimate_partition(x::AbstractVector{T}, dim::Int, heuristic::ExtendedP
         return [RectangularBinning(bs) for bs in min_subdivs:max_subdivs]
     end
 end
+
+function estimate_partition(N::Int, dim::Int, heuristic::ExtendedPalusLimit)
+    n_subdivs = min(floor(Int, N^(1/(dim+1))), heuristic.max_subdivs)
+    
+    min_subdivs = max(heuristic.min_subdivs, n_subdivs - heuristic.ext_coarser)
+    max_subdivs = min(heuristic.max_subdivs, n_subdivs + heuristic.ext_finer)
+    
+    if min_subdivs == max_subdivs
+        return RectangularBinning(min_subdivs)
+    else
+        return [RectangularBinning(bs) for bs in min_subdivs:max_subdivs]
+    end
+end
+
+

@@ -5,9 +5,11 @@ version = "1.0.0"
 
 [deps]
 CausalityToolsBase = "b1f25513-c649-51ee-8a1c-0e98d01ae897"
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
 DelayEmbeddings = "5732040d-69e3-5649-938a-b6b4f237613f"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 GroupSlices = "d853e229-7c7c-56e9-b6be-9a1acc5f13d9"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NearestNeighbors = "b8a86587-4115-5ab1-83bc-aa920d37bbce"
 PerronFrobenius = "260eed61-d0e8-5f1e-b040-a9756a401c97"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -20,7 +22,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 julia = "^1.1"
 
 [extras]
+Simplices = "d5428e67-3037-59ba-9ab1-57a04f0a3b6a"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Test", "Simplices"]

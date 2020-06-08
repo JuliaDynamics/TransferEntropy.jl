@@ -1,14 +1,13 @@
 import DelayEmbeddings: Dataset
-import Distances: Metric, evaluate, Euclidean
+import Distances: Metric, evaluate, Euclidean, pairwise
 import StaticArrays: MVector, SVector 
-
+import DelayEmbeddings: KDTree
 
 # Define pairwise distances methods for vectors of static vectors, vectors of vectors,
 # and Datasets and Customreconstructions.
 const VSV = Union{Dataset, Vector{<:SVector}, Vector{<:MVector}, Vector{Vector}}
 
-KDTree(D::Dataset, metric::Metric = Euclidean()) = KDTree(D.data, metric)
-KDTree(pts::Union{Vector{<:SVector}, Vector{<:MVector}}, metric::Metric = Euclidean()) = KDTree(pts, metric)
+#KDTree(pts::Vector{<:SVector}, metric::Metric = Euclidean()) = KDTree(pts, metric)
 
 function pairwise(x::VSV, y::VSV, metric::Metric)
     length(x) == length(y) || error("Lengths of input data does not match")

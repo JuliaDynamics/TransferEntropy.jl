@@ -149,26 +149,7 @@ following marginals:
 
 ```math
 \\begin{align}
-\\mathcal{T}^{(d_{\\mathcal{T}})} &= \\{(T(t+\\eta^{d_{\\mathcal{T}}}), \\ldots, T(t+\\eta^2), T(t+\\eta^1) \\} \\\\
-T^{(d_{T})} &= \\{ (T(t), T(t-\\tau^1_{T}), T(t-\\tau^2_{T}), \\ldots, T(t - \\tau^{d_{T} - 1}_{T})) \\} \\\\
-S^{(d_{S})} &= \\{ (S(t), S(t-\\tau^1_{S}), S(t-\\tau^2_{S}), \\ldots, S(t-\\tau^{d_{S} - 1}_{S})) \\} \\\\
-C^{(d_{C})} &= \\{ (C(t), C(t-\\tau^1_{C}), C(t-\\tau^2_{C}), \\ldots, C(t-\\tau^{d_{C} - 1}_{C})) \\}
-\\end{align}
-```
-
-and combined, we get the generalized delay reconstruction ``\\mathbb{E} = (\\mathcal{T}^{(d_{\\mathcal{T}})}, T^{(d_{T})}, S^{(d_{S})}, C^{(d_{C})})``. Transfer entropy is then computed as 
-
-```math
-\\begin{align}
-TE_{S \\rightarrow T | C} = \\int_{\\mathbb{E}} P(\\mathcal{T}, T, S, C) \\log_{b}{\\left(\\frac{P(\\mathcal{T} | T, S, C)}{P(\\mathcal{T} | T, C)}\\right)},
-\\end{align}
-```
-
-or, if conditionals are not relevant,
-
-```math
-\\begin{align}
-TE_{S \\rightarrow T} = \\int_{\\mathbb{E}} P(\\mathcal{T}, T, S) \\log_{b}{\\left(\\frac{P(\\mathcal{T} | T, S)}{P(\\mathcal{T} | T)}\\right)},
+\\mathcal{T}^{(d_{\\mathcal T})} &= \\{ (T(t+\\eta^{d_{\\mathcal T}}), \\ldots, T(t+\\eta^2), T(t+\\eta^1) \\}
 \\end{align}
 ```
 
@@ -226,7 +207,7 @@ using CausalityTools
 p = EmbeddingTE()
 
 # output
-EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η=1)
+EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η𝒯=1)
 ```
 
 Optimising parameters for the target variable's history (the ``T`` component):
@@ -239,7 +220,7 @@ p = EmbeddingTE(
 )
 
 # output
-EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η=1)
+EmbeddingTE(dS=1, dT=OptimiseDim(method_delay = ac_zero, method_dim = f1nn, maxdim = 6, maxdelay_frac = 0.1), dC=1, d𝒯=1, τS=-1, τT=OptimiseDelay(method_delay = ac_zero, maxdelay_frac = 0.1), τC=-1, η𝒯=1)
 ```
 """
 @Base.kwdef struct EmbeddingTE
@@ -283,6 +264,19 @@ EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η=1)
         if τC isa Int
             τC < 0 || throw(ArgumentError("delay for marginal C must be a negative integer (got τC=$(τC))"))
         end
+
+        if τS isa AbstractVector{Int} || τS isa AbstractUnitRange{Int64}
+            all(τS .<= 0) || throw(ArgumentError("delays for marginal S must be <= 0 (got τS=$(τS))"))
+        end
+
+        if τT isa AbstractVector{Int} || τT isa AbstractUnitRange{Int64}
+            all(τT .<= 0) || throw(ArgumentError("delays for marginal T must be <= 0 (got τT=$(τT))"))
+        end
+
+        if τC isa AbstractVector{Int} || τC isa AbstractUnitRange{Int64}
+            all(τC .<= 0) || throw(ArgumentError("delays for marginal C must be <= 0 (got τC=$(τC))"))
+        end
+
         new(dS, dT, d𝒯, dC, τS, τT, η𝒯, τC)
     end
     
@@ -291,6 +285,30 @@ end
 function Base.show(io::IO, x::EmbeddingTE)
     s = "EmbeddingTE(dS=$(x.dS), dT=$(x.dT), dC=$(x.dC), d𝒯=$(x.d𝒯), τS=$(x.τS), τT=$(x.τT), τC=$(x.τC), η𝒯=$(x.η𝒯))"
     print(io, s)
+end
+
+function get_delay_reconstruction_params(source, target, p::EmbeddingTE)
+    pos_𝒯, lags_𝒯 = rc(target, p.d𝒯, p.η𝒯, true)
+    pos_T, lags_T = rc(target, p.dT, p.τT, false)
+    pos_S, lags_S = rc(source, p.dS, p.τS, false)
+    pos_C, lags_C = rc(source, p.dC, p.τC, false)
+
+    js = ([pos_𝒯; pos_T; pos_S]...,)
+    τs = ([lags_𝒯; lags_T; lags_S]...,)
+
+    return τs, js
+end
+
+function get_delay_reconstruction_params(source, target, cond, p::EmbeddingTE)
+    pos_𝒯, lags_𝒯 = rc(target, p.d𝒯, p.η𝒯, true)
+    pos_T, lags_T = rc(target, p.dT, p.τT, false)
+    pos_S, lags_S = rc(source, p.dS, p.τS, false)
+    pos_C, lags_C = rc(cond, p.dC, p.τC, false)
+
+    js = ([pos_𝒯; pos_T; pos_S; pos_C]...,)
+    τs = ([lags_𝒯; lags_T; lags_S; pos_C]...,)
+
+    return τs, js
 end
 
 """
@@ -340,7 +358,7 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::Embed
         T = 1+(d𝒯):dT+(d𝒯)     |> collect, 
         S = 1+(dT+d𝒯):dS+(d𝒯+dT) |> collect)
 
-    return pts, vars, τs
+    return pts, vars, τs, js
 end
 
 function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::AbstractVector{T}, p::EmbeddingTE) where T
@@ -381,5 +399,5 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::Ab
         S = 1+(dT+d𝒯):dS+(d𝒯+dT)     |> collect,
         C = 1+(dT+d𝒯+dS):dC+(d𝒯+dT+dS) |> collect)
 
-    return pts, vars, τs
+    return pts, vars, τs, js
 end

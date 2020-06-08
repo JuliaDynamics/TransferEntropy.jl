@@ -8,6 +8,7 @@ using Test
 using Distances
 using DelayEmbeddings
 using StaticArrays
+using Simplices
 
 include("test_interface.jl")
 

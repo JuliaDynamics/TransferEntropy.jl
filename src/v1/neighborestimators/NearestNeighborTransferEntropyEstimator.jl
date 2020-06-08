@@ -21,7 +21,7 @@ abstract type NearestNeighborTransferEntropyEstimator{M} <: TransferEntropyEstim
 function transferentropy(source, target, embedding::EmbeddingTE, 
         estimator::NearestNeighborTransferEntropyEstimator{M}) where M
     # Generalised delay embedding
-    pts, vars, lags = te_embed(source, target, embedding)
+    pts, vars, τs, js = te_embed(source, target, embedding)
     
     _transferentropy(pts, vars, estimator)
 end
@@ -29,7 +29,7 @@ end
 function transferentropy(source, target, cond, embedding::EmbeddingTE, 
         estimator::NearestNeighborTransferEntropyEstimator{M}) where M
     # Generalised delay embedding
-    pts, vars, lags = te_embed(source, target, cond, embedding)
+    pts, vars, τs, js = te_embed(source, target, cond, embedding)
 
     _transferentropy(pts, vars, estimator)
 end

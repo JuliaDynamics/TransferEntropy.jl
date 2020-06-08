@@ -149,7 +149,7 @@ following marginals:
 T^{(d_{T})} &= \\{ (T(t), T(t-\\tau^1_{T}), T(t-\\tau^2_{T}), \\ldots, T(t - \\tau^{d_{T} - 1}_{T})) \\} \\\\
 S^{(d_{S})} &= \\{ (S(t), S(t-\\tau^1_{S}), S(t-\\tau^2_{S}), \\ldots, S(t-\\tau^{d_{S} - 1}_{S})) \\} \\\\
 C^{(d_{C})} &= \\{ (C(t), C(t-\\tau^1_{C}), C(t-\\tau^2_{C}), \\ldots, C(t-\\tau^{d_{C} - 1}_{C})) \\}
-\\end{align}
+\\end{align}    
 ```
 
 and combined, we get the generalized delay reconstruction ``\\mathbb{E} = (\\mathcal{T}^{(d_{\\mathcal{T}})}, T^{(d_{T})}, S^{(d_{S})}, C^{(d_{C})})``. Transfer entropy is then computed as 

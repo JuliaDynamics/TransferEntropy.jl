@@ -1,12 +1,14 @@
 export transferentropy, NearestNeighborMI
 
-import Distances: Metric, Chebyshev
-import ..TEVars
-import .._transferentropy 
-import DelayEmbeddings: Dataset 
+import Distances: pairwise, evaluate, Metric, Chebyshev
+import DelayEmbeddings: AbstractDataset, Dataset
 import StaticArrays: SVector, MVector
-import SpecialFunctions: digamma 
+import DelayEmbeddings: KDTree
 import NearestNeighbors: knn
+import ..TEVars
+import ..EmbeddingTE
+import .._transferentropy
+import SpecialFunctions: digamma
 
 """
     NearestNeighborMI(k1::Int = 2, k2::Int = 3, metric::Metric = Chebyshev, b::Number)
@@ -65,33 +67,31 @@ function marginal_NN(points::VSV, dists_to_kth)
     return N
 end
 
-const SVV{N, T} = Union{Vector{<:SVector{N, T}}, Vector{<:MVector{N, T}}} where {N, T}
-
 """
     get_marginal_pts(t::Type{NearestNeighborMI}, pts::SVV{N, T}, v::TEVars) → (pts_X, pts_Y, pts_XY, pts_YZ, pts_XYZ)
 
 Subset relevant marginals of `pts` for transfer entropy computation, as given by `vars`. 
 These marginals are used for the `NearestNeighborMI` estimator.
 """
-function get_marginal_pts(t::NearestNeighborMI, pts::SVV{N, T}, v::TEVars) where {N, T}
-
+function get_marginal_pts(t::NearestNeighborMI, pts::Vector{<:SVector{<:N, <:T}}, v::TEVars) where {N, T}
+    TT = eltype(pts[1])
      # Create some dummy variable names to avoid cluttering the code too much
     X = v.𝒯
     Y = v.T
     Z = vcat(v.S, v.C)
     XY = vcat(X, Y)
     YZ = vcat(Y, Z)
-    
+                       
     nX = length(X)
     nY = length(Y)
     nZ = length(Z)
     nXY = nX + nY
     nYZ = nY + nZ
-    
-    pts_X = [SVector{nX, T}(pt[X]) for pt in pts]
-    pts_Y = [SVector{nY, T}(pt[Y]) for pt in pts]
-    pts_XY = [SVector{nXY, T}(pt[XY]) for pt in pts]
-    pts_YZ = [SVector{nYZ, T}(pt[YZ]) for pt in pts]
+
+    pts_X = [SVector{nX, TT}(pt[X]) for pt in pts]
+    pts_Y = [SVector{nY, TT}(pt[Y]) for pt in pts]
+    pts_XY = [SVector{nXY, TT}(pt[XY]) for pt in pts]
+    pts_YZ = [SVector{nYZ, TT}(pt[YZ]) for pt in pts]
     pts_XYZ = pts
 
     return pts_X, pts_Y, pts_XY, pts_YZ, pts_XYZ
@@ -102,19 +102,12 @@ function get_marginal_pts(t::NearestNeighborMI, pts::Vector{Vector{T}}, vars::TE
 end
 
 function get_marginal_pts(t::NearestNeighborMI, pts::Dataset, v::TEVars)
-    
-     # Create some dummy variable names to avoid cluttering the code too much
     X = v.𝒯
     Y = v.T
     Z = vcat(v.S, v.C)
+
     XY = vcat(X, Y)
     YZ = vcat(Y, Z)
-    
-    nX = length(X)
-    nY = length(Y)
-    nZ = length(Z)
-    nXY = nX + nY
-    nYZ = nY + nZ
     
     pts_X = pts[:, X]
     pts_Y = pts[:, Y]

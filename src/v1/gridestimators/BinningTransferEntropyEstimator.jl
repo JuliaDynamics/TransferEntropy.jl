@@ -24,7 +24,7 @@ import CausalityToolsBase: BinningHeuristic, RectangularBinning
 
 function transferentropy(source, target, embedding::EmbeddingTE, estimator::BinningTransferEntropyEstimator)
     # Generalised delay embedding
-    pts, vars, lags = te_embed(source, target, embedding)
+    pts, vars, τs, js = te_embed(source, target, embedding)
 
     # Get the binning (if a heuristic is used, determine binning from input time series and dimension)
     if estimator.binning isa BinningHeuristic
@@ -43,7 +43,7 @@ end
 
 function transferentropy(source, target, cond, embedding::EmbeddingTE, estimator::BinningTransferEntropyEstimator)
     # Generalised delay embedding
-    pts, vars, lags = te_embed(source, target, cond, embedding)
+    pts, vars, τs, js = te_embed(source, target, cond, embedding)
 
     # Get the binning (if a heuristic is used, determine binning from input time series and dimension)
     if estimator.binning isa BinningHeuristic
