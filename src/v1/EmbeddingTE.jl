@@ -143,14 +143,39 @@ Embedding parameters for transfer entropy analysis.
 ## Convention for generalized delay reconstruction
 
 This struct contains instructions for transfer entropy computations using the following convention.
-Let ``S`` be time series for the source variable, ``T`` be the time series for the target variable and 
-``C`` the time series for any conditional variable. To compute transfer entropy, we need the 
+Let ``x(t)`` be time series for the source variable, ``y(t)`` be the time series for the target variable and 
+``z(t)`` the time series for any conditional variable. To compute transfer entropy, we need the 
 following marginals:
 
+
 ```math
-\\begin{align}
-\\mathcal{T}^{(d_{\\mathcal T})} &= \\{ (T(t+\\eta^{d_{\\mathcal T}}), \\ldots, T(t+\\eta^2), T(t+\\eta^1) \\}
-\\end{align}
+\\begin{aligned}
+\\mathcal{T}^{(d_{\\mathcal{T}})} &= \\{(y(t+\\eta^{d_{\\mathcal{T}}}), \\ldots, y(t+\\eta^2), y(t+\\eta^1) \\} \\\\
+T^{(d_{T})} &= \\{ (y(t), y(t+\\tau^1_{T}), y(t+\\tau^2_{T}), \\ldots, y(t + \\tau^{d_{T} - 1}_{T})) \\} \\\\
+S^{(d_{S})} &= \\{ (x(t), x(t+\\tau^1_{S}), x(t+\\tau^2_{S}), \\ldots, x(t + \\tau^{d_{S} - 1}_{S})) \\} \\\\
+C^{(d_{C})} &= \\{ (z(t), z(t+\\tau^1_{C}), z(t+\\tau^2_{C}), \\ldots, z(t + \\tau^{d_{C} - 1}_{C})) \\}
+\\end{aligned}
+```
+
+Depending on the application, the delay reconstruction lags ``\\tau^k_{T} \\leq 0``, ``\\tau^k_{S} \\leq 0``, and ``\\tau^k_{C} \\leq 0`` 
+may be equally spaced, or non-equally spaced, but they are always *negative*. The predictions lags ``\\eta^k``may also be equally spaced 
+or non-equally spaced, but are always positive. This way, the ``T``, ``S`` and ``C`` marginals always contains present/past states, 
+while the ``\\mathcal T`` marginal contain future states relative to the other marginals. 
+
+Combined, we get the generalized delay reconstruction ``\\mathbb{E} = (\\mathcal{T}^{(d_{\\mathcal{T}})}, T^{(d_{T})}, S^{(d_{S})}, C^{(d_{C})})``. Transfer entropy is then computed as 
+
+```math
+\\begin{aligned}
+TE_{S \\rightarrow T | C} = \\int_{\\mathbb{E}} P(\\mathcal{T}, T, S, C) \\log_{b}{\\left(\\frac{P(\\mathcal{T} | T, S, C)}{P(\\mathcal{T} | T, C)}\\right)},
+\\end{aligned}
+```
+
+or, if conditionals are not relevant,
+
+```math
+\\begin{aligned}
+TE_{S \\rightarrow T} = \\int_{\\mathbb{E}} P(\\mathcal{T}, T, S) \\log_{b}{\\left(\\frac{P(\\mathcal{T} | T, S)}{P(\\mathcal{T} | T)}\\right)},
+\\end{aligned}
 ```
 
 Here, 
