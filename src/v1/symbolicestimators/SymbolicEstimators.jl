@@ -5,6 +5,5 @@ using Reexport
     include("SymbolicPerm.jl")
     include("SymbolicAmplitudeAware.jl")
     include("symbolic.jl")
-    println("hey")
 end
 

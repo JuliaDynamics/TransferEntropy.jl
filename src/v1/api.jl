@@ -7,8 +7,11 @@
     transferentropy(src, targ, [, cond], emb::EmbeddingTE, method::TransferOperatorGrid)
     transferentropy(src, targ, [, cond], emb::EmbeddingTE, method::SimplexEstimator)
 
-Compute transfer entropy from `src` to `targ` (conditioned on `cond` if given), using the provided `estimator`.
-Delay reconstruction parameters are given as an `EmbeddingTE` instance. 
+Estimate transfer entropy[^Schreiber2000] (or, equivalently, conditional mutual information[^Paluš2001]) 
+from `src` to `targ`, TE(src → targ), using the provided estimation `method` with delay reconstruction 
+parameters `emb`. 
+
+If a third time series `cond` is also provided, compute the conditonal transfer entropy TE(src → targ | cond).
 
 ## Arguments 
 
@@ -45,6 +48,9 @@ transferentropy(x, y, embedding, VisitationFrequency(b = 2))
 # the `SymbolicPerm` estimator.
 transferentropy(x, y, z, embedding, SymbolicPerm(b = 2))
 ```
+
+[^Schreiber2000]: Schreiber, Thomas. "Measuring information transfer." Physical review letters 85.2 (2000): 461.
+[^Paluš2001]: Paluš, M., Komárek, V., Hrnčíř, Z., & Štěrbová, K. (2001). Synchronization as adjustment of information rates: Detection from bivariate time series. Physical Review E, 63(4), 046211.
 """
 function transferentropy end
 

@@ -146,9 +146,9 @@ following marginals:
 ```math
 \\begin{align}
 \\mathcal{T}^{(d_{\\mathcal{T}})} &= \\{(T(t+\\eta^{d_{\\mathcal{T}}}), \\ldots, T(t+\\eta^2), T(t+\\eta^1) \\} \\\\
-T^{(d_{T})} &= \\{ (T(t), T(t-\\tau^1_{T}), T(t-\\tau^2_{T}), \\ldots, T(t - \\tau^{d_{T} - 1}_{T})) \\} \\\\
-S^{(d_{S})} &= \\{ (S(t), S(t-\\tau^1_{S}), S(t-\\tau^2_{S}), \\ldots, S(t-\\tau^{d_{S} - 1}_{S})) \\} \\\\
-C^{(d_{C})} &= \\{ (C(t), C(t-\\tau^1_{C}), C(t-\\tau^2_{C}), \\ldots, C(t-\\tau^{d_{C} - 1}_{C})) \\}
+T^{(d_{T})} &= \\{ (T(t+\\tau^0_{T}), T(t+\\tau^1_{T}), T(t+\\tau^2_{T}), \\ldots, T(t+\\tau^{d_{T} - 1}_{T})) \\} \\\\
+S^{(d_{S})} &= \\{ (S(t+\\tau^0_{S}), S(t+\\tau^1_{S}), S(t+\\tau^2_{S}), \\ldots, S(t+\\tau^{d_{S} - 1}_{S})) \\} \\\\
+C^{(d_{C})} &= \\{ (C(t+\\tau^0_{C}), C(t+\\tau^1_{C}), C(t+\\tau^2_{C}), \\ldots, C(t+\\tau^{d_{C} - 1}_{C})) \\}
 \\end{align}    
 ```
 
@@ -204,7 +204,6 @@ In summary, one can provide
 
 For the prediction lag, one can provide 
 
-- 
 - A single delay ``\\eta_f``, in which case ``\\eta_{\\mathcal{T}} = \\{\\eta_f, 2\\eta_f, \\ldots, (d_{\\mathcal{T}} - 1)\\eta_f \\}``, or 
 - All the delays manually. If so, then the number of delays must equal ``d_{\\mathcal{T}}``, which is the dimension of the marginal). 
 

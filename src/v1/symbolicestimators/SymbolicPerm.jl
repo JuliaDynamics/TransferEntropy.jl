@@ -74,7 +74,7 @@ function symbolize(E::Dataset, method::SymbolicPerm)
     sp = zeros(Int, m)
     @inbounds for i = 1:n
         sortperm!(sp, E[i])
-        symb[i] = nthperm(sp)
+        symb[i] = encode_pattern(sp, m)
     end
     
     return symb

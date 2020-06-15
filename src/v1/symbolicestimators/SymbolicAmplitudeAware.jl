@@ -91,16 +91,17 @@ function symbolize(E::Dataset, method::SymbolicAmplitudeAware)
     `E[i]`.
     =#
     sp = zeros(Int, m)
-    
+
     # Compute normalization, map to range [0, 1] and 
     # quantize/bin into method.n different values
     f = AAPE_norm.(E.data, method.A)
     nf = norm_minmax(f)
-    discrete_motifs = quantize(nf, n_submotifs = method.n)
+    submotifs = quantize(nf, n_submotifs = method.n)
     
     @inbounds for i = 1:n
+        # The permutation part of the symbol
         sortperm!(sp, E[i])
-        symb[i] = nthperm(sp) + discrete_motifs[i]
+        symb[i] = encode_pattern(sp, m) + submotifs[i]
     end
     
     return symb

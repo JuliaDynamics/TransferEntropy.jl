@@ -151,15 +151,17 @@ following marginals:
 ```math
 \\begin{aligned}
 \\mathcal{T}^{(d_{\\mathcal{T}})} &= \\{(y(t+\\eta^{d_{\\mathcal{T}}}), \\ldots, y(t+\\eta^2), y(t+\\eta^1) \\} \\\\
-T^{(d_{T})} &= \\{ (y(t), y(t+\\tau^1_{T}), y(t+\\tau^2_{T}), \\ldots, y(t + \\tau^{d_{T} - 1}_{T})) \\} \\\\
-S^{(d_{S})} &= \\{ (x(t), x(t+\\tau^1_{S}), x(t+\\tau^2_{S}), \\ldots, x(t + \\tau^{d_{S} - 1}_{S})) \\} \\\\
-C^{(d_{C})} &= \\{ (z(t), z(t+\\tau^1_{C}), z(t+\\tau^2_{C}), \\ldots, z(t + \\tau^{d_{C} - 1}_{C})) \\}
+T^{(d_{T})} &= \\{ (y(t+\\tau^0_{T}), y(t+\\tau^1_{T}), y(t+\\tau^2_{T}), \\ldots, y(t + \\tau^{d_{T} - 1}_{T})) \\} \\\\
+S^{(d_{S})} &= \\{ (x(t+\\tau^0_{S}), x(t+\\tau^1_{S}), x(t+\\tau^2_{S}), \\ldots, x(t + \\tau^{d_{S} - 1}_{S})) \\} \\\\
+C^{(d_{C})} &= \\{ (z(t+\\tau^0_{C}), z(t+\\tau^1_{C}), z(t+\\tau^2_{C}), \\ldots, z(t + \\tau^{d_{C} - 1}_{C})) \\}
 \\end{aligned}
 ```
 
 Depending on the application, the delay reconstruction lags ``\\tau^k_{T} \\leq 0``, ``\\tau^k_{S} \\leq 0``, and ``\\tau^k_{C} \\leq 0`` 
-may be equally spaced, or non-equally spaced, but they are always *negative*. The predictions lags ``\\eta^k``may also be equally spaced 
-or non-equally spaced, but are always positive. This way, the ``T``, ``S`` and ``C`` marginals always contains present/past states, 
+may be equally spaced, or non-equally spaced. The predictions lags ``\\eta^k``may also be equally spaced 
+or non-equally spaced, but are always positive. For transfer entropy, convention dictates that at least one 
+``\\tau^k_{T}``, one ``\\tau^k_{S}`` and one ``\\tau^k_{C}`` equals zero. This way, the ``T``, ``S`` and ``C`` marginals 
+always contains present/past states, 
 while the ``\\mathcal T`` marginal contain future states relative to the other marginals. 
 
 Combined, we get the generalized delay reconstruction ``\\mathbb{E} = (\\mathcal{T}^{(d_{\\mathcal{T}})}, T^{(d_{T})}, S^{(d_{S})}, C^{(d_{C})})``. Transfer entropy is then computed as 

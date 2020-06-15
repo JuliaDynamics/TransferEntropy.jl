@@ -7,6 +7,26 @@ import ..te_embed
 
 export transferentropy
 
+""" 
+    encode_pattern(motif)
+
+Encode the `motif` (a vector of indices that would sort some embedding vector `v` in ascending order) 
+into its unique integer symbol according to Algorithm 1 in Berger et al. (2019)[^Berger2019].
+
+[Berger2019]: Berger, Sebastian, et al. "Teaching Ordinal Patterns to a Computer: Efficient Encoding Algorithms Based on the Lehmer Code." Entropy 21.10 (2019): 1023.
+"""
+function encode_pattern(x, m::Int = length(x))
+    n = 0
+    for i = 1:m-1
+        for j = i+1:m
+            n += x[i] > x[j] ? 1 : 0
+        end
+        n = (m-i)*n
+    end
+    
+    return n
+end
+
 function transferentropy(source, target, embedding::EmbeddingTE, method::SymbolicTransferEntropyEstimator)
     m = method.m
 
