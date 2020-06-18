@@ -2,7 +2,8 @@ import CausalityToolsBase: BinningHeuristic
 
 export 
 PalusLimit, 
-ExtendedPalusLimit
+ExtendedPalusLimit,
+estimate_partition
 
 """
     PalusLimit
