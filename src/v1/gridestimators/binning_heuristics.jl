@@ -8,7 +8,7 @@ estimate_partition
 """
     PalusLimit
 
-Partition the state space by by splitting each marginal into at most ``N^{\frac{1}{D+1}}`` 
+Partition the state space by by splitting each marginal into at most ``N^{\\frac{1}{D+1}}``
 equally-spaced intervals, where ``N`` is the number of observations and ``D`` is the 
 dimension of the state space. This results in a rectangular binning.
 """
