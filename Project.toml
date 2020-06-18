@@ -21,7 +21,18 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 [compat]
 julia = "^1.1"
 CausalityToolsBase = "1"
+Combinatorics = "1"
+DelayEmbeddings = "^1.6"
+Distances = "^0.8, ^1"
+GroupSlices = "0.0.3"
+NearestNeighbors = "^0.4.3"
 PerronFrobenius = "1"
+Reexport = "0.2.0"
+Requires = "1"
+SpecialFunctions = "0.10.3"
+StaticArrays = "0.12.3"
+StatsBase = "0.32.2"
+
 
 [extras]
 Simplices = "d5428e67-3037-59ba-9ab1-57a04f0a3b6a"
