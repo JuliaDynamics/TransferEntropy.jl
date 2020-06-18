@@ -1,23 +1,19 @@
 
 module TransferEntropy
 
-import CausalityToolsBase: 
-    RectangularBinning
-
+import CausalityToolsBase: RectangularBinning
 export RectangularBinning
 
-import PerronFrobenius: 
-    SingleGrid
-
+import PerronFrobenius: SingleGrid
 export SingleGrid
 
-include("v1/TEVars.jl")
-include("v1/EmbeddingTE.jl")
-include("v1/api.jl")
+include("TEVars.jl")
+include("EmbeddingTE.jl")
+include("api.jl")
 
-include("v1/gridestimators/GridEstimators.jl")
-include("v1/neighborestimators/NearestNeighborEstimators.jl")
-include("v1/symbolicestimators/SymbolicEstimators.jl")
+include("gridestimators/GridEstimators.jl")
+include("neighborestimators/NearestNeighborEstimators.jl")
+include("symbolicestimators/SymbolicEstimators.jl")
 
 using Requires 
 function __init__()
@@ -27,35 +23,9 @@ function __init__()
             import PerronFrobenius: SimplexExact, SimplexPoint
             export SimplexExact, SimplexPoint
         
-            include("v1/triangulationestimators/TriangulationEstimators.jl")
+            include("triangulationestimators/TriangulationEstimators.jl")
         #end
     end
 end
-# using Reexport
-
-# using Distributions
-# using Distances
-# using SpecialFunctions
-# using NearestNeighbors
-# @reexport using CausalityToolsBase
-# @reexport using PerronFrobenius
-# using StateSpaceReconstruction; export invariantize
-
-# import StatsBase
-# import DelayEmbeddings: AbstractDataset
-
-# include("EmbeddingTE.jl")
-# include("TEVars.jl")
-# include("Estimators/Estimators.jl")
-# include("interface.jl")
-
-# export
-#     transferentropy,
-#     TEVars,
-#     EmbeddingTE
-
-#include("old_code/te_embed.jl")
-#include("old_code/convenience_funcs_regular_te.jl")
-#include("old_code/convenience_funcs_conditional_te.jl")
 
 end # module

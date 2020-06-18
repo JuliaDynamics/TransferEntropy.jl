@@ -123,7 +123,7 @@ estimate_partition(x, D, heuristic)
  RectangularBinning(7)
 ```
 """
-function estimate_partition(x::AbstractVector{T}, dim::Int, heuristic::BinningHeuristic) where T end
+function estimate_partition end
 
 
 function estimate_partition(N::Int, dim::Int, heuristic::PalusLimit)

@@ -1,3 +1,8 @@
+import DelayEmbeddings: genembed, AbstractDataset, Dataset
+import CausalityToolsBase: optimal_delay, optimal_dimension, OptimiseDelay, OptimiseDim
+
+export te_embed, EmbeddingTE
+
 function rc(x::Union{AbstractDataset, Vector{T}, Vector{Vector{T}}},
         dim::Union{Int, AbstractVector{Int}, OptimiseDim}, 
         τ::Union{Int, AbstractVector{Int}, OptimiseDelay}, forward = false) where T <: Number
@@ -131,41 +136,48 @@ end
 
 
 """
-    EmbeddingTE(dS = 1, dT = 1, d𝒯 = 1, dC = 1, 
-        τS = -1, τT = -1, η = 1, τC = -1)
+    EmbeddingTE(; dS = 1, dT = 1, d𝒯 = 1, dC = 1, τS = -1, τT = -1, η𝒯 = 1, τC = -1)
 
 Embedding parameters for transfer entropy analysis. 
 
 ## Convention for generalized delay reconstruction
 
 This struct contains instructions for transfer entropy computations using the following convention.
-Let ``S`` be time series for the source variable, ``T`` be the time series for the target variable and 
-``C`` the time series for any conditional variable. To compute transfer entropy, we need the 
+Let ``x(t)`` be time series for the source variable, ``y(t)`` be the time series for the target variable and 
+``z(t)`` the time series for any conditional variable. To compute transfer entropy, we need the 
 following marginals:
 
+
 ```math
-\\begin{align}
-\\mathcal{T}^{(d_{\\mathcal{T}})} &= \\{(T(t+\\eta^{d_{\\mathcal{T}}}), \\ldots, T(t+\\eta^2), T(t+\\eta^1) \\} \\\\
-T^{(d_{T})} &= \\{ (T(t+\\tau^0_{T}), T(t+\\tau^1_{T}), T(t+\\tau^2_{T}), \\ldots, T(t+\\tau^{d_{T} - 1}_{T})) \\} \\\\
-S^{(d_{S})} &= \\{ (S(t+\\tau^0_{S}), S(t+\\tau^1_{S}), S(t+\\tau^2_{S}), \\ldots, S(t+\\tau^{d_{S} - 1}_{S})) \\} \\\\
-C^{(d_{C})} &= \\{ (C(t+\\tau^0_{C}), C(t+\\tau^1_{C}), C(t+\\tau^2_{C}), \\ldots, C(t+\\tau^{d_{C} - 1}_{C})) \\}
-\\end{align}    
+\\begin{aligned}
+\\mathcal{T}^{(d_{\\mathcal{T}})} &= \\{(y(t+\\eta^{d_{\\mathcal{T}}}), \\ldots, y(t+\\eta^2), y(t+\\eta^1) \\} \\\\
+T^{(d_{T})} &= \\{ (y(t+\\tau^0_{T}), y(t+\\tau^1_{T}), y(t+\\tau^2_{T}), \\ldots, y(t + \\tau^{d_{T} - 1}_{T})) \\} \\\\
+S^{(d_{S})} &= \\{ (x(t+\\tau^0_{S}), x(t+\\tau^1_{S}), x(t+\\tau^2_{S}), \\ldots, x(t + \\tau^{d_{S} - 1}_{S})) \\} \\\\
+C^{(d_{C})} &= \\{ (z(t+\\tau^0_{C}), z(t+\\tau^1_{C}), z(t+\\tau^2_{C}), \\ldots, z(t + \\tau^{d_{C} - 1}_{C})) \\}
+\\end{aligned}
 ```
 
-and combined, we get the generalized delay reconstruction ``\\mathbb{E} = (\\mathcal{T}^{(d_{\\mathcal{T}})}, T^{(d_{T})}, S^{(d_{S})}, C^{(d_{C})})``. Transfer entropy is then computed as 
+Depending on the application, the delay reconstruction lags ``\\tau^k_{T} \\leq 0``, ``\\tau^k_{S} \\leq 0``, and ``\\tau^k_{C} \\leq 0`` 
+may be equally spaced, or non-equally spaced. The predictions lags ``\\eta^k``may also be equally spaced 
+or non-equally spaced, but are always positive. For transfer entropy, convention dictates that at least one 
+``\\tau^k_{T}``, one ``\\tau^k_{S}`` and one ``\\tau^k_{C}`` equals zero. This way, the ``T``, ``S`` and ``C`` marginals 
+always contains present/past states, 
+while the ``\\mathcal T`` marginal contain future states relative to the other marginals. 
+
+Combined, we get the generalized delay reconstruction ``\\mathbb{E} = (\\mathcal{T}^{(d_{\\mathcal{T}})}, T^{(d_{T})}, S^{(d_{S})}, C^{(d_{C})})``. Transfer entropy is then computed as 
 
 ```math
-\\begin{align}
+\\begin{aligned}
 TE_{S \\rightarrow T | C} = \\int_{\\mathbb{E}} P(\\mathcal{T}, T, S, C) \\log_{b}{\\left(\\frac{P(\\mathcal{T} | T, S, C)}{P(\\mathcal{T} | T, C)}\\right)},
-\\end{align}
+\\end{aligned}
 ```
 
 or, if conditionals are not relevant,
 
 ```math
-\\begin{align}
+\\begin{aligned}
 TE_{S \\rightarrow T} = \\int_{\\mathbb{E}} P(\\mathcal{T}, T, S) \\log_{b}{\\left(\\frac{P(\\mathcal{T} | T, S)}{P(\\mathcal{T} | T)}\\right)},
-\\end{align}
+\\end{aligned}
 ```
 
 Here, 
@@ -204,13 +216,14 @@ In summary, one can provide
 
 For the prediction lag, one can provide 
 
+- 
 - A single delay ``\\eta_f``, in which case ``\\eta_{\\mathcal{T}} = \\{\\eta_f, 2\\eta_f, \\ldots, (d_{\\mathcal{T}} - 1)\\eta_f \\}``, or 
 - All the delays manually. If so, then the number of delays must equal ``d_{\\mathcal{T}}``, which is the dimension of the marginal). 
 
 !!! note
     If both the delay and the dimension for a given marginal is to be estimated numerically, make sure 
     to use the same delay estimation method for both 
-    the [`OptimiseDelay`](@ref) and  [`OptimiseDim`](@ref) instances.
+    the [`OptimiseDelay`](@ref) and  [`OptimiseDim`](@ref) instances, so that they agree.
 
 ## Examples
 
@@ -221,7 +234,7 @@ using CausalityTools
 p = EmbeddingTE()
 
 # output
-EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η=1)
+EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η𝒯=1)
 ```
 
 Optimising parameters for the target variable's history (the ``T`` component):
@@ -234,7 +247,7 @@ p = EmbeddingTE(
 )
 
 # output
-EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η=1)
+EmbeddingTE(dS=1, dT=OptimiseDim(method_delay = ac_zero, method_dim = f1nn, maxdim = 6, maxdelay_frac = 0.1), dC=1, d𝒯=1, τS=-1, τT=OptimiseDelay(method_delay = ac_zero, maxdelay_frac = 0.1), τC=-1, η𝒯=1)
 ```
 """
 @Base.kwdef struct EmbeddingTE
@@ -278,6 +291,19 @@ EmbeddingTE(dS=1, dT=1, dC=1, d𝒯=1, τS=-1, τT=-1, τC=-1, η=1)
         if τC isa Int
             τC < 0 || throw(ArgumentError("delay for marginal C must be a negative integer (got τC=$(τC))"))
         end
+
+        if τS isa AbstractVector{Int} || τS isa AbstractUnitRange{Int64}
+            all(τS .<= 0) || throw(ArgumentError("delays for marginal S must be <= 0 (got τS=$(τS))"))
+        end
+
+        if τT isa AbstractVector{Int} || τT isa AbstractUnitRange{Int64}
+            all(τT .<= 0) || throw(ArgumentError("delays for marginal T must be <= 0 (got τT=$(τT))"))
+        end
+
+        if τC isa AbstractVector{Int} || τC isa AbstractUnitRange{Int64}
+            all(τC .<= 0) || throw(ArgumentError("delays for marginal C must be <= 0 (got τC=$(τC))"))
+        end
+
         new(dS, dT, d𝒯, dC, τS, τT, η𝒯, τC)
     end
     
@@ -288,25 +314,41 @@ function Base.show(io::IO, x::EmbeddingTE)
     print(io, s)
 end
 
-using CausalityToolsBase
-using DelayEmbeddings
+function get_delay_reconstruction_params(source, target, p::EmbeddingTE)
+    pos_𝒯, lags_𝒯 = rc(target, p.d𝒯, p.η𝒯, true)
+    pos_T, lags_T = rc(target, p.dT, p.τT, false)
+    pos_S, lags_S = rc(source, p.dS, p.τS, false)
+    pos_C, lags_C = rc(source, p.dC, p.τC, false)
+
+    js = ([pos_𝒯; pos_T; pos_S]...,)
+    τs = ([lags_𝒯; lags_T; lags_S]...,)
+
+    return τs, js
+end
+
+function get_delay_reconstruction_params(source, target, cond, p::EmbeddingTE)
+    pos_𝒯, lags_𝒯 = rc(target, p.d𝒯, p.η𝒯, true)
+    pos_T, lags_T = rc(target, p.dT, p.τT, false)
+    pos_S, lags_S = rc(source, p.dS, p.τS, false)
+    pos_C, lags_C = rc(cond, p.dC, p.τC, false)
+
+    js = ([pos_𝒯; pos_T; pos_S; pos_C]...,)
+    τs = ([lags_𝒯; lags_T; lags_S; pos_C]...,)
+
+    return τs, js
+end
 
 """
-    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, 
-        p::EmbeddingTE) -> (Vector{Vector}, TEVars, Lags)
+    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::EmbeddingTE) → (points, vars, τs)
+    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::AbstractVector{T}, p::EmbeddingTE) → (points, vars, τs)
 
-Generalised delay reconstruction of `source` and `target` for transfer entropy 
-computation using embedding parameters provided by the [`EmbeddingTE`](@ref)
+Generalised delay reconstruction of `source` and `target` (and `cond` if provided) 
+for transfer entropy computation using embedding parameters provided by the [`EmbeddingTE`](@ref)
 instance `p`.
 
-## Returns
-
-A tuple of 
-
-- the embedding points
-- a [`TEVars`](@ref) instance that keeps track of which variables of the embedding belong to 
-    which marginals of the reconstruction (indices are: source = 1, target = 2, cond = 3)
-- a [`Lags`](@ref) instance, which stores the lags for each variable of the reconstruction.
+Returns a tuple of the embedded `points`, `vars` (a [`TEVars`](@ref) instance that keeps track of which 
+variables of the embedding belong to which marginals of the reconstruction; indices are: source = 1, 
+target = 2, cond = 3), and a tuple `τs`, which stores the lags for each variable of the reconstruction.
 """
 function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::EmbeddingTE) where T
     
@@ -325,14 +367,14 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::Embed
     pos_𝒯 .= pos_𝒯 .+ 1
     pos_T .= pos_T .+ 1
     
-    pos = Positions([pos_𝒯; pos_T; pos_S])
-    lags = Lags([lags_𝒯; lags_T; lags_S])
+    js = ([pos_𝒯; pos_T; pos_S]...,)
+    τs = ([lags_𝒯; lags_T; lags_S]...,)
     
     # TODO: This only works for single time series at the moment
     ts = Dataset(source, target)
     
     # The reconstructed points
-    pts = customembed(ts, pos, lags)
+    pts = genembed(ts, τs, js)
     d𝒯 = length(pos_𝒯)
     dT = length(pos_T)
     dS = length(pos_S)
@@ -343,26 +385,9 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, p::Embed
         T = 1+(d𝒯):dT+(d𝒯)     |> collect, 
         S = 1+(dT+d𝒯):dS+(d𝒯+dT) |> collect)
 
-    return pts, vars, lags
+    return pts, vars, τs, js
 end
 
-"""
-    te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::AbstractVector{T}, 
-        p::EmbeddingTE) -> (Vector{Vector}, TEVars, Lags)
-
-Generalised delay reconstruction of `source`, `target` and `cond` for transfer entropy 
-computation using embedding parameters provided by the [`EmbeddingTE`](@ref)
-instance `p`.
-
-## Returns
-
-A tuple of 
-
-- the embedding points
-- a [`TEVars`](@ref) instance that keeps track of which variables of the embedding belong to 
-    which marginals of the reconstruction (indices are: source = 1, target = 2, cond = 3)
-- a [`Lags`](@ref) instance, which stores the lags for each variable of the reconstruction.
-"""
 function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::AbstractVector{T}, p::EmbeddingTE) where T
     
     #@show p.τS
@@ -381,14 +406,14 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::Ab
     pos_T .= pos_T .+ 1
     pos_C .= pos_C .+ 2
 
-    pos = Positions([pos_𝒯; pos_T; pos_S; pos_C])
-    lags = Lags([lags_𝒯; lags_T; lags_S; lags_C])
+    js = ([pos_𝒯; pos_T; pos_S; pos_C]...,)
+    τs = ([lags_𝒯; lags_T; lags_S; lags_C]...,)
     
     # TODO: This only works for single time series at the moment
     ts = Dataset(source, target, cond)
     
     # The reconstructed points
-    pts = customembed(ts, pos, lags)
+    pts = genembed(ts, τs, js)
     d𝒯 = length(pos_𝒯)
     dT = length(pos_T)
     dS = length(pos_S)
@@ -401,5 +426,5 @@ function te_embed(source::AbstractVector{T}, target::AbstractVector{T}, cond::Ab
         S = 1+(dT+d𝒯):dS+(d𝒯+dT)     |> collect,
         C = 1+(dT+d𝒯+dS):dC+(d𝒯+dT+dS) |> collect)
 
-    return pts, vars, lags
+    return pts, vars, τs, js
 end
