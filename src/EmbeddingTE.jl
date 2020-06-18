@@ -210,7 +210,7 @@ For the prediction lag, one can provide
 !!! note
     If both the delay and the dimension for a given marginal is to be estimated numerically, make sure 
     to use the same delay estimation method for both 
-    the [`OptimiseDelay`](@ref) and  [`OptimiseDim`](@ref) instances, so that they agree.
+    the [`OptimiseDelay`](@ref) and  [`OptimiseDim`](@ref) instances.
 
 ## Examples
 
