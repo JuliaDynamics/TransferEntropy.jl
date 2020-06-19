@@ -216,14 +216,13 @@ In summary, one can provide
 
 For the prediction lag, one can provide 
 
-- 
 - A single delay ``\\eta_f``, in which case ``\\eta_{\\mathcal{T}} = \\{\\eta_f, 2\\eta_f, \\ldots, (d_{\\mathcal{T}} - 1)\\eta_f \\}``, or 
 - All the delays manually. If so, then the number of delays must equal ``d_{\\mathcal{T}}``, which is the dimension of the marginal). 
 
 !!! note
     If both the delay and the dimension for a given marginal is to be estimated numerically, make sure 
     to use the same delay estimation method for both 
-    the [`OptimiseDelay`](@ref) and  [`OptimiseDim`](@ref) instances, so that they agree.
+    the [`OptimiseDelay`](@ref) and  [`OptimiseDim`](@ref) instances.
 
 ## Examples
 
