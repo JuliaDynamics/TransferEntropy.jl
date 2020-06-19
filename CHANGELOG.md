@@ -1,3 +1,7 @@
+# Release v1.0.0
+
+The syntax for computing transfer entropy is `transferentropy(src, targ, [cond], emb::EmbeddingTE, est::TransferEntropyEstimator)`. Old method signatures will no longer work. 
+
 # Release v0.4.3
 
 ## New functionality
