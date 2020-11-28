@@ -59,7 +59,6 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
     # The total number of points
     N = size(points, 2)
 
-
     # Create some dummy variable names to avoid cluttering the code too much
     X = v.target_future
     Y = v.target_presentpast
@@ -99,23 +98,10 @@ function transferentropy_kraskov(points::AbstractArray{T, 2}, k1::Int, k2::Int,
     NXY_X   = marginal_NN(pts_X,  ϵ_XY_X)
     NXY_Y   = marginal_NN(pts_Y,  ϵ_XY_Y)
 
-    if normalise
-        warn("Normalisation not properly tested yet")
-        te = sum(digamma.(NXY_X) + digamma.(NXY_Y) -
-            digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
+    te = sum(digamma.(NXY_X) + digamma.(NXY_Y) -
+        digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
 
-        # Distiances between points in the XY space and their k-th nearest beighbour, along
-        # both marginals (so, effectively, the joint distribution)
-        ϵ_XY_XY = colwise(metric, pts_XY, pts_XY[:, kth_NN_idx_XY])
-        NXY_XY   = marginal_NN(pts_XY,  ϵ_XY_XY)
-
-        te = te / (sum(digamma.(NXY_XY) - digamma.(NXY_Y)) / N)
-    else
-        te = sum(digamma.(NXY_X) + digamma.(NXY_Y) -
-            digamma.(NXYZ_X) - digamma.(NXYZ_YZ)) / N
-    end
-
-    # Convert from nats to to the desired unit (b^x = e^1 => 1/ln(b))
+    # Convert transfer entropy estimate to appropriate logarithm
     te / log(b)
 end
 
