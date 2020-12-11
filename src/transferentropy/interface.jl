@@ -34,19 +34,78 @@ for transfer entropy. """
 abstract type TransferEntropyEstimator <: EntropyEstimator end
 
 """
+## Transfer entropy
+
+Transfer entropy between two simultaneously measured scalar time series ``s(n)`` and ``t(n)``,  
+``s(n) = \\{ s_1, s_2, \\ldots, s_N \\} `` and ``t(n) = \\{ t_1, t_2, \\ldots, t_N \\} ``, is
+is defined as 
+
+```math 
+TE(s \\to t) = \\sum_i p(s_i, t_i, t_{i+\\eta}) \\log \\left( \\dfrac{p(t_{i+\\eta} | t_i, s_i)}{p(t_{i+\\eta} | t_i)} \\right)
+```
+
+Including more than one historical/future value can be done by defining the vector-valued
+time series
+
+- ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} = \\{t_i^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} \\}_{i=1}^{N}``
+- ``T^{d_T, \\tau_T} = \\{t_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``
+- ``S^{d_S, \\tau_S} = \\{s_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``, 
+- ``C^{d_C, \\tau_C} = \\{s_i^{(d_C, \\tau_C)} \\}_{i=1}^{N}``, 
+
+each having `N` distinct states, where the 
+``d_T``-dimensional, ``d_S``-dimensional and ``d_C``-dimensional state vectors 
+comprising ``T``, ``S`` and ``C`` are constructed with embedding lags 
+``\\tau_T``, ``\\tau_S``, and ``\\tau_C``, respectively. The ``d_{\\mathcal T}``-dimensional 
+future states ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})}``
+are constructed with prediction lag ``\\eta_{\\mathcal T}`` (i.e. predictions go from 
+present/past states to future states spanning a maximum of 
+``d_{\\mathcal T} \\eta_{\\mathcal T}`` time steps ).
+
+*Note: in the original transfer entropy paper, only the historical states are defined as 
+potentially higher-dimensional, while the future states are always scalar.*
+
+The non-conditioned and conditioned generalized forms of the transfer entropy is then
+
+```math 
+TE(s \\to t) = \\sum_i p(S,T, \\mathcal{T}) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S)}{p(\\mathcal{T} | T)} \\right)
+```
+
+```math 
+TE(s \\to t | c) = \\sum_i p(S,T, \\mathcal{T}, C) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S, C)}{p(\\mathcal{T} | T, C)} \\right)
+```
+
+## Estimation 
+
+Transfer entropy is here estimated by rewriting the generalized transfer entropy, using 
+properties of logarithms and conditional probabilities, as a sum of marginal entropies
+
+```math
+TE(s \\to t) = H(\\mathcal T, T) + H(\\mathcal T, S) - H(T) - H(\\mathcal T, T, S),
+```
+
+```math
+TE(s \\to t | c) = H(\\mathcal T, T, C) + H(\\mathcal T, S, C) - H(T, C) - H(\\mathcal T, T, S, C),
+```
+
+where ``H(\\cdot)`` is the generalized Renyi entropy. Individual marginal entropies are 
+here computed using the provided estimator `est`. In the original transfer entropy 
+paper, the Shannon entropy is used. Here, by adjusting the keyword `α` (defaults to `α=1` 
+for Shannon entropy), the transfer entropy, using the generalized Renyi enropy of order `α`,
+can be computed.
+
 ## General interface 
 
     transferentropy(s, t, [c], est; base = 2, α = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1])
 
-Estimate transfer entropy from source `s` to target `t`, potentially conditioned on `c`
-(``TE(s \\to t)``/``TE(s \\to t | c)``), with logarithms to the given `base`, using the 
-provided entropy/probability estimator `est`.
-
-The input series `s`, `t`, and `c` are equal-length real-valued vectors of length `N`.
+Estimate transfer entropy from source `s` to target `t` (``TE(s \\to t)``), using the 
+provided entropy/probability estimator `est` and Rényi entropy of order-`α`, with 
+logarithms to the given `base`. Optionally, condition on `c` (``TE(s \\to t | c)``). 
 
 The relation between the embedding lags `τT`, `τS`, `τC`, the `η𝒯` (prediction lag), and 
-the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` is given below. 
+the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` is given above.
+
+The input series `s`, `t`, and `c` are equal-length real-valued vectors of length `N`.
 
 ## Nearest neighbor based 
 
@@ -97,65 +156,6 @@ where `length(symb_s) == length(symb_t) == N - (est.m-1)*est.τ`. This is useful
 memory allocations for repeated computations.
 
 See also [`SymbolicPermutation`](@ref).
-
-## Details 
-
-Transfer entropy between two simultaneously measured time series, 
-``s(n) = \\{ s_1, s_2, \\ldots, s_N \\} `` and ``t(n) = \\{ s_1, s_2, \\ldots, s_N \\} ``, is
-is defined as 
-
-```math 
-TE(s \\to t) = \\sum_i p(s_n, t_n, t_{n+\\eta}) \\log \\left( \\dfrac{p(t_{n+\\eta} | t_n, s_n)}{p(t_{n+\\eta} | t_n)} \\right)
-```
-
-Above, the TE is expressed in in simplest, scalar form. Including more than one 
-historical/future value can be done by defining the generalized delay embeddings
-
-- ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} = \\{t_i^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} \\}_{i=1}^{N}``
-- ``T^{d_T, \\tau_T} = \\{t_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``
-- ``S^{d_S, \\tau_S} = \\{s_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``, 
-- ``C^{d_C, \\tau_C} = \\{s_i^{(d_C, \\tau_C)} \\}_{i=1}^{N}``, 
-
-each having `N` distinct states, where the 
-``d_T``-dimensional, ``d_S``-dimensional and ``d_C``-dimensional state vectors 
-comprising ``T``, ``S`` and ``C`` are constructed with embedding lags 
-``\\tau_T``, ``\\tau_S``, and ``\\tau_C``, respectively. The ``d_{\\mathcal T}``-dimensional 
-future states ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})}``
-are constructed with prediction lag ``\\eta_{\\mathcal T}`` (i.e. predictions go from 
-present/past states to future states spanning a maximum of 
-``d_{\\mathcal T} \\eta_{\\mathcal T}`` time steps ).
-
-*Note: in the original transfer entropy paper, only the historical states are defined as 
-potentially higher-dimensional, while the future states are always scalar.*
-
-The non-conditioned and conditioned generalized forms of the transfer entropy is then
-
-```math 
-TE(s \\to t) = \\sum_i p(S,T, \\mathcal{T}) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S)}{p(\\mathcal{T} | T)} \\right)
-```
-
-```math 
-TE(s \\to t | c) = \\sum_i p(S,T, \\mathcal{T}, C) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S, C)}{p(\\mathcal{T} | T, C)} \\right)
-```
-
-## Estimation 
-
-Transfer entropy is here estimated by rewriting the generalized transfer entropy, using 
-properties of logarithms and conditional probabilities, as a sum of marginal entropies
-
-```math
-TE(s \\to t) = H(\\mathcal T, T) + H(\\mathcal T, S) - H(T) - H(\\mathcal T, T, S),
-```
-
-```math
-TE(s \\to t | c) = H(\\mathcal T, T, C) + H(\\mathcal T, S, C) - H(T, C) - H(\\mathcal T, T, S, C),
-```
-
-where ``H(\\cdot)`` is the generalized Renyi entropy. Individual marginal entropies are 
-here computed using the provided estimator `est`. In the original transfer entropy 
-paper, the Shannon entropy is used. Here, by adjusting the keyword `α` (defaults to `α=1` 
-for Shannon entropy), the transfer entropy, using the generalized Renyi enropy of order `α`,
-can be computed.
 """
 function transferentropy end 
 function transferentropy! end

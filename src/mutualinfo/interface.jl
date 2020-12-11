@@ -3,14 +3,31 @@ export mutualinfo, Kraskov1, Kraskov2
 abstract type MutualInformationEstimator <: EntropyEstimator end
 
 """
+## Mutual information
+
+Mutual information is defined as 
+
+```math
+I(X; Y) = \\sum_{y \\in Y} \\sum_{x \\in X} p(x, y) \\log \\left( \\dfrac{p(x, y)}{p(x)p(y)} \\right)
+```
+
+This expression can be expressed as the sum of marginal entropies as follows:
+
+```math
+I(X; Y) = H(X) + H(Y) - H(X, Y).
+```
+
+These individual entropies are computed using the provided entropy/probabilities estimator.
+For some estimators, it is possible to use generalized order-`α` Rényi entropies for the 
+``I(x; y)`` computation.
+
 ## General interface
 
     mutualinfo(x, y, est; base = 2, α = 1)
 
-Estimate mutual information between `x` and `y` (``I(x; y)``) using the provided 
-entropy/probability estimator `est`, with logarithms to the given `base`. Optionally, use 
-the generalized Rényi entropy of order `α` (defaults to `α = 1`, which is the Shannon 
-entropy). See details below.
+Estimate mutual information between `x` and `y`, ``I(x; y)``, using the provided 
+entropy/probability estimator `est` and Rényi entropy of order `α` (defaults to `α = 1`, 
+which is the Shannon entropy), with logarithms to the given `base`.
 
 Both `x` and `y` can be vectors or (potentially multivariate) [`Dataset`](@ref)s.
 
@@ -49,24 +66,6 @@ latter estimators reduce bias compared to the naive estimators.
 
 See also [`KozachenkoLeonenko`](@ref), [`Kraskov`](@ref), [`Kraskov1`](@ref), 
 [`Kraskov2`](@ref).
-
-## Details/estimation
-
-Mutual information is defined as 
-
-```math
-I(X; Y) = \\sum_{y \\in Y} \\sum_{x \\in X} p(x, y) \\log \\left( \\dfrac{p(x, y)}{p(x)p(y)} \\right)
-```
-
-This expression can be expressed as the sum of marginal entropies as follows:
-
-```math
-I(X; Y) = H(X) + H(Y) - H(X, Y).
-```
-
-These individual entropies are computed using the provided entropy/probabilities estimator.
-For some estimators, it is possible to use generalized order-`α` Rényi entropies for the 
-``I(x; y)`` computation, but the default is to use the Shannon entropy (`α = 1`).
 """
 function mutualinfo end 
 
