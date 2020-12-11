@@ -1,3 +1,5 @@
+include("utils.jl")
+
 export transferentropy, transferentropy!
 
 function get_marginals(s, t, emb::EmbeddingTE)
@@ -169,6 +171,9 @@ end
 # TODO: estimate using mutual information decomposition, 
 # function transferentropy(marginal1, marginal2, est; base = 2, α = 1)
 
+
+# Estimate transfer entropy from time series by first embedding them and getting required 
+# marginals.
 function transferentropy(s, t, est; base = 2, α = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1)
     

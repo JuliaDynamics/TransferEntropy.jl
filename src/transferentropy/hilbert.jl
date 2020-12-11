@@ -9,8 +9,6 @@ struct Amplitude <: InstantaneousSignalProperty end
 """ Indicates that the instantaneous phases of a signal should be used. """
 struct Phase <: InstantaneousSignalProperty end 
 
-import Entropies: RectangularBinning, VisitationFrequency
-
 """
     Hilbert(est; 
         source::InstantaneousSignalProperty = Phase(),
