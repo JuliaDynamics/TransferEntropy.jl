@@ -1,4 +1,4 @@
-export mutualinfo, Kraskov1, Kraskov2
+export Kraskov1, Kraskov2
 
 # naive application of estimators in Entropies.jl
 function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est::NearestNeighborEntropyEstimator; base = 2)
