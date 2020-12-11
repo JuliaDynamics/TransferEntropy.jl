@@ -53,5 +53,5 @@ if CI
         push_preview = true
     )
 end
-PyPlot.close("all")
-PyPlot.ion()
+#PyPlot.close("all")
+#PyPlot.ion()
