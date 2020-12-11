@@ -1,4 +1,4 @@
-import Entropies: 
+import Entropies:
     EntropyEstimator, genentropy,
     VisitationFrequency, RectangularBinning,
     NaiveKernel, DirectDistance, TreeDistance,
