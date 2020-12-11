@@ -30,7 +30,10 @@ cd(@__DIR__)
 ENV["JULIA_DEBUG"] = "Documenter"
 
 PAGES = [
-    "TransferEntropy.jl" => "index.md"
+    "TransferEntropy.jl" => "index.md",
+    "Mutual information" => "mutualinfo.md",
+    "Transfer entropy" => "transferentropy.md",
+    "Datasets" => "dataset.md"
 ]
 
 makedocs(

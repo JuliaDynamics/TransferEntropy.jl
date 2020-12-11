@@ -40,7 +40,7 @@ abstract type TransferEntropyEstimator <: EntropyEstimator end
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1])
 
 Estimate transfer entropy from source `s` to target `t`, potentially conditioned on `c`
-(``TE(s \\to t``/``TE(s \\to t | c)``),with logarithms to the given `base`, using the 
+(``TE(s \\to t)``/``TE(s \\to t | c)``), with logarithms to the given `base`, using the 
 provided entropy/probability estimator `est`.
 
 The input series `s`, `t`, and `c` are equal-length real-valued vectors of length `N`.
@@ -53,7 +53,7 @@ the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` is given below.
     transferentropy(s, t, [c], est::Kraskov; base = 2, ...)
     transferentropy(s, t, [c], est::KozachenkoLeonenko; base = 2, ...)
 
-Estimate ``TE(s \\to t``/``TE(s \\to t | c)`` using naive nearest neighbor estimators.
+Estimate ``TE(s \\to t)``/``TE(s \\to t | c)`` using naive nearest neighbor estimators.
 
 For these estimators, only Shannon entropy can be computed (so the keyword `α` does not 
 work). 
@@ -65,7 +65,7 @@ See also [`Kraskov`](@ref), [`KozacheckoLeonenko`](@ref).
     transferentropy(s, t, [c], est::NaiveKernel{Union{TreeDistance, DirectDistance}}; 
         base = 2, α = 1,  ...)
 
-Estimate ``TE(s \\to t``/``TE(s \\to t | c)`` using naive kernel density estimation of 
+Estimate ``TE(s \\to t)``/``TE(s \\to t | c)`` using naive kernel density estimation of 
 probabilities.
 
 See also [`NaiveKernel`](@ref), [`TreeDistance`](@ref), [`DirectDistance`](@ref).
@@ -74,7 +74,7 @@ See also [`NaiveKernel`](@ref), [`TreeDistance`](@ref), [`DirectDistance`](@ref)
 
     transferentropy(s, t, [c], est::Hilbert; base = 2, α = 1,  ...)
 
-Estimate ``TE(s \\to t``/``TE(s \\to t | c)`` by first applying the Hilbert transform 
+Estimate ``TE(s \\to t)``/``TE(s \\to t | c)`` by first applying the Hilbert transform 
 to `s`, `t` (`c`) and then estimating transfer entropy.
 
 See also [`Hilbert`], [`Amplitude`](@ref), [`Phase`](@ref).
@@ -86,7 +86,7 @@ See also [`Hilbert`], [`Amplitude`](@ref), [`Phase`](@ref).
     transferentropy!(symb_s, symb_t, s, t, [c], est::SymbolicPermutation; 
         base = 2, α = 1, m::Int = 3, τ::Int = 1, ...)
 
-Estimate ``TE(s \\to t``/``TE(s \\to t | c)`` using permutation entropies. This is done 
+Estimate ``TE(s \\to t)``/``TE(s \\to t | c)`` using permutation entropies. This is done 
 by first symbolizing the input series `s` and `t` (both of length `N`) using motifs of 
 size `m` and a time delay of `τ`. The series of motifs are encoded as integer symbol time 
 series preserving the permutation information. These symbol time series are embedded as 
@@ -100,9 +100,9 @@ See also [`SymbolicPermutation`](@ref).
 
 ## Details 
 
-Transfer entropy (TE) between two simultaneously measured time series, 
+Transfer entropy between two simultaneously measured time series, 
 ``s(n) = \\{ s_1, s_2, \\ldots, s_N \\} `` and ``t(n) = \\{ s_1, s_2, \\ldots, s_N \\} ``, is
-defined as 
+is defined as 
 
 ```math 
 TE(s \\to t) = \\sum_i p(s_n, t_n, t_{n+\\eta}) \\log \\left( \\dfrac{p(t_{n+\\eta} | t_n, s_n)}{p(t_{n+\\eta} | t_n)} \\right)
