@@ -25,7 +25,7 @@ Themes.compile(joinpath(@__DIR__, "juliadynamics-light.scss"), joinpath(@__DIR__
 Themes.compile(joinpath(@__DIR__, "juliadynamics-dark.scss"), joinpath(@__DIR__, "src/assets/themes/documenter-dark.css"))
 
 # %% Build docs
-PyPlot.ioff()
+#PyPlot.ioff()
 cd(@__DIR__)
 ENV["JULIA_DEBUG"] = "Documenter"
 
