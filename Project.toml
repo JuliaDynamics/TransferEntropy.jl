@@ -1,7 +1,7 @@
 name = "TransferEntropy"
 uuid = "ea221983-52f3-5440-99c7-13ea201cd633"
 repo = "https://github.com/kahaaga/TransferEntropy.jl.git"
-version = "0.5.6"
+version = "1.0.0"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
