@@ -6,7 +6,6 @@ CI && Pkg.instantiate()
 CI && (ENV["GKSwstype"] = "100")
 using Documenter
 using DocumenterTools: Themes
-using PyPlot
 using TransferEntropy, Entropies, DelayEmbeddings
 
 # %% JuliaDynamics theme.
