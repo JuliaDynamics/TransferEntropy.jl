@@ -194,7 +194,7 @@ Increasing the dimensionality of the ``T`` marginal (present/past states of the 
 variable):
 
 ```julia
-# binning-based estimator
+# Binning-based estimator
 est = VisitationFrequency(RectangularBinning(4)) 
 x, y = rand(100), rand(100)
 
