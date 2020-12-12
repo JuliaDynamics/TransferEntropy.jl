@@ -1,4 +1,3 @@
-## Mutual information
 
 ```@docs
 mutualinfo

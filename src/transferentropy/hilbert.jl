@@ -3,10 +3,16 @@ export Amplitude, Phase, Hilbert
 
 abstract type InstantaneousSignalProperty end
 
-""" Indicates that the instantaneous amplitudes of a signal should be used. """
+""" 
+    Amplitude <: InstantaneousSignalProperty
+
+Indicates that the instantaneous amplitudes of a signal should be used. """
 struct Amplitude <: InstantaneousSignalProperty end 
 
-""" Indicates that the instantaneous phases of a signal should be used. """
+""" 
+    Phase <: InstantaneousSignalProperty
+
+Indicates that the instantaneous phases of a signal should be used. """
 struct Phase <: InstantaneousSignalProperty end 
 
 """
@@ -20,15 +26,14 @@ Compute transfer entropy on instantaneous phases/amplitudes of relevant signals,
 obtained by first applying the Hilbert transform to each signal, then extracting the 
 phases/amplitudes of the resulting complex numbers[^Palus2014]. Original time series are 
 thus transformed to instantaneous phase/amplitude time series. Transfer 
-entropy is then estimatred using the provided `est` on those phases/amplitudes (use e.g. 
+entropy is then estimated using the provided `est` on those phases/amplitudes (use e.g. 
 [`VisitationFrequency`](@ref), or [`SymbolicPermutation`](@ref)).
 
 !!! info
     Details on estimation of the transfer entropy (conditional mutual information) 
     following the phase/amplitude extraction step is not given in Palus (2014). Here, 
     after instantaneous phases/amplitudes have been obtained, these are treated as regular 
-    time series, and transfer entropy is estimated using a binning-based visitation 
-    frequency approach over the marginals.
+    time series, from which transfer entropy is then computed as usual.
 
 See also: [`Phase`](@ref), [`Amplitude`](@ref).
 
