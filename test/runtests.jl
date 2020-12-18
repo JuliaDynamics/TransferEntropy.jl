@@ -17,7 +17,7 @@ using Test, TransferEntropy
     # Estimators for which Renyi entropies can be used
     est = VisitationFrequency(RectangularBinning(0.2))
     @test mutualinfo(x, y, est) isa Real
-    @test mutualinfo(x, y, est, α = 2) isa Real
+    @test mutualinfo(x, y, est, q = 2) isa Real
 
     # Estimators for which Renyi entropies cannot be used
     est_kl = KozachenkoLeonenko()
@@ -53,8 +53,8 @@ end
         @testset "Generalized Renyi transfer entropy $(ests[i])"  for i in 1:length(ests)
             println(ests[i])
             est = ests[i]
-            te =  transferentropy(s, t, est, α = 2, base = 2)
-            tec = transferentropy(s, t, c, est, α = 1, base = 3)
+            te =  transferentropy(s, t, est, q = 2, base = 2)
+            tec = transferentropy(s, t, c, est, q = 1, base = 3)
 
             @test te isa Real
             @test tec isa Real
@@ -68,12 +68,12 @@ end
         @testset "SymbolicPermutation" begin
             m, τ = 3, 1
             est = SymbolicPermutation(m = m, τ = τ)
-            te =  transferentropy(s, t, est, α = 2, base = 2)
-            tec = transferentropy(s, t, c, est, α = 1, base = 3)
+            te =  transferentropy(s, t, est, q = 2, base = 2)
+            tec = transferentropy(s, t, c, est, q = 1, base = 3)
 
             S, T, C = ([zeros(Int, length(s)-(m-1)*τ) for x in 1:3]...,)
-            te_inplace =  transferentropy!(S, T, s, t, est, α = 2, base = 2)
-            tec_inplace = transferentropy!(S, T, C, s, t, c, est, α = 1, base = 3)
+            te_inplace =  transferentropy!(S, T, s, t, est, q = 2, base = 2)
+            tec_inplace = transferentropy!(S, T, C, s, t, c, est, q = 1, base = 3)
 
             @test te isa Real
             @test tec isa Real

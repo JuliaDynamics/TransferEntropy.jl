@@ -54,7 +54,7 @@ struct Hilbert <: TransferEntropyEstimator
 end
 
 
-function transferentropy(source, target, est::Hilbert; base = 2, α = 1, 
+function transferentropy(source, target, est::Hilbert; base = 2, q = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1)
         
     hil_s = DSP.hilbert(source)
@@ -81,7 +81,7 @@ function transferentropy(source, target, est::Hilbert; base = 2, α = 1,
 end
 
 
-function transferentropy(source, target, cond, est::Hilbert; base = 2, α = 1,
+function transferentropy(source, target, cond, est::Hilbert; base = 2, q = 1,
         τT = -1, τS = -1, τC = -1, η𝒯 = 1, dT = 1, dS = 1, dC = 1, d𝒯 = 1)
         
     hil_s = DSP.hilbert(source)

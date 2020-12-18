@@ -16,34 +16,34 @@ Here, we rewrite this expression as the sum of the marginal entropies, and exten
 definition of ``I`` to use generalized Rényi entropies
 
 ```math
-I^{\\alpha}(X; Y) = H^{\\alpha}(X) + H^{\\alpha}(Y) - H^{\\alpha}(X, Y),
+I^{q}(X; Y) = H^{q}(X) + H^{q}(Y) - H^{q}(X, Y),
 ```
 
-where ``H^{\\alpha}(\\cdot)`` is the generalized Renyi entropy of order ``\\alpha``.
+where ``H^{q}(\\cdot)`` is the generalized Renyi entropy of order ``q``.
 
 ## General interface
 
-    mutualinfo(x, y, est; base = 2, α = 1)
+    mutualinfo(x, y, est; base = 2, q = 1)
 
-Estimate mutual information between `x` and `y`, ``I^{\\alpha}(x; y)``, using the provided 
-entropy/probability estimator `est` and Rényi entropy of order `α` (defaults to `α = 1`, 
+Estimate mutual information between `x` and `y`, ``I^{q}(x; y)``, using the provided 
+entropy/probability estimator `est` and Rényi entropy of order `q` (defaults to `q = 1`, 
 which is the Shannon entropy), with logarithms to the given `base`.
 
 Both `x` and `y` can be vectors or (potentially multivariate) [`Dataset`](@ref)s.
 
 ## Binning based
 
-    mutualinfo(x, y, est::VisitationFrequency{RectangularBinning}; base = 2, α = 1)
+    mutualinfo(x, y, est::VisitationFrequency{RectangularBinning}; base = 2, q = 1)
 
-Estimate ``I^{\\alpha}(x; y)`` using a visitation frequency estimator. 
+Estimate ``I^{q}(x; y)`` using a visitation frequency estimator. 
 
 See also [`VisitationFrequency`](@ref), [`RectangularBinning`](@ref).
 
 ## Kernel density based 
 
-    mutualinfo(x, y, est::NaiveKernel{Union{DirectDistance, TreeDistance}}; base = 2, α = 1)
+    mutualinfo(x, y, est::NaiveKernel{Union{DirectDistance, TreeDistance}}; base = 2, q = 1)
 
-Estimate ``I^{\\alpha}(x; y)`` using a naive kernel density estimator. 
+Estimate ``I^{q}(x; y)`` using a naive kernel density estimator. 
 
 It is possible to use both direct evaluation of distances, and a tree-based approach. 
 Which approach is faster depends on the application. 
@@ -63,7 +63,7 @@ or the improved [`Kraskov1`](@ref) and [`Kraskov2`](@ref) dedicated ``I`` estima
 latter estimators reduce bias compared to the naive estimators.
 
 *Note: only Shannon entropy is possible to use for nearest neighbor estimators, so the 
-keyword `α` cannot be provided; it is hardcoded as `α = 1`*. 
+keyword `q` cannot be provided; it is hardcoded as `q = 1`*. 
 
 See also [`KozachenkoLeonenko`](@ref), [`Kraskov`](@ref), [`Kraskov1`](@ref), 
 [`Kraskov2`](@ref).
@@ -73,10 +73,10 @@ function mutualinfo end
 mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset) = 
     error("Estimator missing. Please provide a valid estimator as the third argument.")
 
-function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est; base = 2, α = 1)
-    X = genentropy(Dataset(x), est; base = base, α = α)
-    Y = genentropy(Dataset(y), est; base = base, α = α)
-    XY = genentropy(Dataset(x, y), est; base = base, α = α)
+function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est; base = 2, q = 1)
+    X = genentropy(Dataset(x), est; base = base, q = q)
+    Y = genentropy(Dataset(y), est; base = base, q = q)
+    XY = genentropy(Dataset(x, y), est; base = base, q = q)
     MI = X + Y - XY 
 end 
 

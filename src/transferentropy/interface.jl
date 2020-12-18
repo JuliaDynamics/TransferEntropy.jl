@@ -85,27 +85,27 @@ TE(s \\to t | c) = \\sum_i p(S,T, \\mathcal{T}, C) \\log \\left( \\dfrac{p(\\ma
 
 Transfer entropy is here estimated by rewriting the above expressions as a sum of marginal 
 entropies, and extending the definitions above to use Rényi generalized entropies of order 
-`α` as
+`q` as
 
 ```math
-TE^{\\alpha}(s \\to t) = H^{\\alpha}(\\mathcal T, T) + H^{\\alpha}(T, S) - H^{\\alpha}(T) - H^{\\alpha}(\\mathcal T, T, S),
+TE^{q}(s \\to t) = H^{q}(\\mathcal T, T) + H^{q}(T, S) - H^{q}(T) - H^{q}(\\mathcal T, T, S),
 ```
 
 ```math
-TE^{\\alpha}(s \\to t | c) = H^{\\alpha}(\\mathcal T, T, C) + H^{\\alpha}(T, S, C) - H^{\\alpha}(T, C) - H^{\\alpha}(\\mathcal T, T, S, C),
+TE^{q}(s \\to t | c) = H^{q}(\\mathcal T, T, C) + H^{q}(T, S, C) - H^{q}(T, C) - H^{q}(\\mathcal T, T, S, C),
 ```
 
-where ``H^{\\alpha}(\\cdot)`` is the generalized Renyi entropy of order ``\\alpha``. 
+where ``H^{q}(\\cdot)`` is the generalized Renyi entropy of order ``q``. 
 
 ## General interface 
 
-    transferentropy(s, t, [c], est; base = 2, α = 1, 
+    transferentropy(s, t, [c], est; base = 2, q = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1])
 
-Estimate transfer entropy from source `s` to target `t`, ``TE^{\\alpha}(s \\to t)``, using the 
-provided entropy/probability estimator `est` and Rényi entropy of order-`α` (defaults to `α = 1`, 
+Estimate transfer entropy from source `s` to target `t`, ``TE^{q}(s \\to t)``, using the 
+provided entropy/probability estimator `est` and Rényi entropy of order-`q` (defaults to `q = 1`, 
 which is the Shannon entropy), with logarithms to the given `base`. Optionally, condition 
-on `c` and estimate the conditional transfer entropy ``TE^{\\alpha}(s \\to t | c)``. 
+on `c` and estimate the conditional transfer entropy ``TE^{q}(s \\to t | c)``. 
 
 Parameters for embedding lags `τT`, `τS`, `τC`, the `η𝒯` (prediction lag), and 
 the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` have meanings as explained above. 
@@ -121,7 +121,7 @@ The input series `s`, `t`, and `c` must be equal-length real-valued vectors of l
 
 ## Binning based
 
-    transferentropy(s, t, [c], est::VisitationFrequency{RectangularBinning}; base = 2, α = 1, ...)
+    transferentropy(s, t, [c], est::VisitationFrequency{RectangularBinning}; base = 2, q = 1, ...)
 
 Estimate transfer entropy using visitation frequencies over a rectangular binning.
 
@@ -135,25 +135,25 @@ See also: [`VisitationFrequency`](@ref), [`RectangularBinning`](@ref).
 Estimate ``TE^{1}(s \\to t)``/``TE^{1}(s \\to t | c)`` using naive nearest neighbor estimators.
 
 *Note: only Shannon entropy is possible to use for nearest neighbor estimators, so the 
-keyword `α` cannot be provided; it is hardcoded as `α = 1`*. 
+keyword `q` cannot be provided; it is hardcoded as `q = 1`*. 
 
 See also [`Kraskov`](@ref), [`KozachenckoLeonenko`](@ref).
 
 ## Kernel density based 
 
     transferentropy(s, t, [c], est::NaiveKernel{Union{TreeDistance, DirectDistance}}; 
-        base = 2, α = 1,  ...)
+        base = 2, q = 1,  ...)
 
-Estimate ``TE^{\\alpha}(s \\to t)``/``TE^{\\alpha}(s \\to t | c)`` using naive kernel density estimation of 
+Estimate ``TE^{q}(s \\to t)``/``TE^{q}(s \\to t | c)`` using naive kernel density estimation of 
 probabilities.
 
 See also [`NaiveKernel`](@ref), [`TreeDistance`](@ref), [`DirectDistance`](@ref).
 
 ## Instantenous Hilbert amplitudes/phases 
 
-    transferentropy(s, t, [c], est::Hilbert; base = 2, α = 1,  ...)
+    transferentropy(s, t, [c], est::Hilbert; base = 2, q = 1,  ...)
 
-Estimate ``TE^{\\alpha}(s \\to t)``/``TE^{\\alpha}(s \\to t | c)`` by first applying the Hilbert transform 
+Estimate ``TE^{q}(s \\to t)``/``TE^{q}(s \\to t | c)`` by first applying the Hilbert transform 
 to `s`, `t` (`c`) and then estimating transfer entropy.
 
 See also [`Hilbert`](@ref), [`Amplitude`](@ref), [`Phase`](@ref).
@@ -161,11 +161,11 @@ See also [`Hilbert`](@ref), [`Amplitude`](@ref), [`Phase`](@ref).
 ## Symbolic/permutation
 
     transferentropy(s, t, [c], est::SymbolicPermutation; 
-        base = 2, α = 1, m::Int = 3, τ::Int = 1, ...)
+        base = 2, q = 1, m::Int = 3, τ::Int = 1, ...)
     transferentropy!(symb_s, symb_t, s, t, [c], est::SymbolicPermutation; 
-        base = 2, α = 1, m::Int = 3, τ::Int = 1, ...)
+        base = 2, q = 1, m::Int = 3, τ::Int = 1, ...)
 
-Estimate ``TE^{\\alpha}(s \\to t)``/``TE^{\\alpha}(s \\to t | c)`` using permutation entropies. This is done 
+Estimate ``TE^{q}(s \\to t)``/``TE^{q}(s \\to t | c)`` using permutation entropies. This is done 
 by first symbolizing the input series `s` and `t` (and `c`; all of length `N`) using motifs of 
 size `m` and a time delay of `τ`. The series of motifs are encoded as integer symbol time 
 series preserving the permutation information. These symbol time series are embedded as 
@@ -214,43 +214,43 @@ Logarithm bases and the order of the Rényi entropy can also be tuned:
 ```julia
 x, y = rand(100), rand(100)
 est = NaiveKernel(0.3)
-transferentropy(x, y, est, base = MathConstants.e, α = 2) # TE in nats, order-2 Rényi entropy
+transferentropy(x, y, est, base = MathConstants.e, q = 2) # TE in nats, order-2 Rényi entropy
 ```
 """
 function transferentropy end 
 function transferentropy! end
 
 # estimate transfer entropy from marginal entropies, as described in docstring
-function transferentropy(joint, ST, T𝒯, T, est; base = 2, α = 1)
-    te = genentropy(T𝒯, est, base = base, α = α) +
-        genentropy(ST, est, base = base, α = α) -
-        genentropy(T, est, base = base, α = α) -
-        genentropy(joint, est, base = base, α = α)
+function transferentropy(joint, ST, T𝒯, T, est; base = 2, q = 1)
+    te = genentropy(T𝒯, est, base = base, q = q) +
+        genentropy(ST, est, base = base, q = q) -
+        genentropy(T, est, base = base, q = q) -
+        genentropy(joint, est, base = base, q = q)
 end
 
 # TODO: estimate using mutual information decomposition, 
-# function transferentropy(marginal1, marginal2, est; base = 2, α = 1)
+# function transferentropy(marginal1, marginal2, est; base = 2, q = 1)
 
 
 # Estimate transfer entropy from time series by first embedding them and getting required 
 # marginals.
-function transferentropy(s, t, est; base = 2, α = 1, 
+function transferentropy(s, t, est; base = 2, q = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1)
     
     emb = EmbeddingTE(τT = τT, τS = τS, η𝒯 = η𝒯, dT = dT, dS = dS, d𝒯 = d𝒯)
     joint, ST, T𝒯, T = get_marginals(s, t, emb)
 
-    transferentropy(joint, ST, T𝒯, T, est; base = base, α = α)
+    transferentropy(joint, ST, T𝒯, T, est; base = base, q = q)
 
 end
 
-function transferentropy(s, t, c, est; base = 2, α = 1, 
+function transferentropy(s, t, c, est; base = 2, q = 1, 
         τT = -1, τS = -1, τC = -1, η𝒯 = 1, dT = 1, dS = 1, dC = 1, d𝒯 = 1)
     
     emb = EmbeddingTE(τT = τT, τS = τS, τC = τC, η𝒯 = η𝒯, dT = dT, dS = dS, dC = dC, d𝒯 = d𝒯)
     joint, ST, T𝒯, T = get_marginals(s, t, c, emb)
 
-    transferentropy(joint, ST, T𝒯, T, est; base = base, α = α)
+    transferentropy(joint, ST, T𝒯, T, est; base = base, q = q)
 end
 
 transferentropy(s::Vector{<:Real}, t::Vector{<:Real}) = 
