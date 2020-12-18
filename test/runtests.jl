@@ -43,9 +43,14 @@ end
     println("Starting transfer entropy tests...")
     @testset "Generalized Renyi transfer entropy" begin
         # Straight-forward estimators
+        est_vf = VisitationFrequency(RectangularBinning(4))
         ests = [
-            VisitationFrequency(RectangularBinning(4)),
-            Hilbert(VisitationFrequency(RectangularBinning(4))),
+            est_vf,
+            TransferOperator(RectangularBinning(5)),
+            Hilbert(source = Phase(), target = Amplitude(), est_vf),
+            Hilbert(source = Amplitude(), target = Amplitude(), est_vf),
+            Hilbert(source = Phase(), target = Phase(), est_vf),
+            Hilbert(source = Phase(), target = Phase(), cond = Amplitude(), est_vf),
             NaiveKernel(0.5, TreeDistance()),
             NaiveKernel(0.5, DirectDistance())
         ]
