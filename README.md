@@ -7,4 +7,4 @@
 
 Julia package for computing transfer entropy (TE) and mutual information (I).
 
-This package provides essential algorithms for the [`CausalityTools.jl`](https://github.com/kahaaga/CausalityTools.jl) package.
+This package provides essential algorithms for the [`CausalityTools.jl`](https://github.com/juliadynamics/CausalityTools.jl) package, and uses entropy computations from [`Entropies.jl`](https://github.com/juliadynamics/Entropies.jl).
