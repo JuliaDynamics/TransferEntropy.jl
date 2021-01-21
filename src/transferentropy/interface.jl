@@ -123,7 +123,12 @@ The input series `s`, `t`, and `c` must be equal-length real-valued vectors of l
 
     transferentropy(s, t, [c], est::VisitationFrequency{RectangularBinning}; base = 2, q = 1, ...)
 
-Estimate transfer entropy using visitation frequencies over a rectangular binning.
+Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using visitation frequencies over a rectangular binning.
+
+    transferentropy(s, t, [c], est::TransferOperator{RectangularBinning}; base = 2, q = 1, ...)
+
+Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using an approximation to the transfer operator over rectangular 
+binning.
 
 See also: [`VisitationFrequency`](@ref), [`RectangularBinning`](@ref).
 
@@ -132,7 +137,7 @@ See also: [`VisitationFrequency`](@ref), [`RectangularBinning`](@ref).
     transferentropy(s, t, [c], est::Kraskov; base = 2, ...)
     transferentropy(s, t, [c], est::KozachenkoLeonenko; base = 2, ...)
 
-Estimate ``TE^{1}(s \\to t)``/``TE^{1}(s \\to t | c)`` using naive nearest neighbor estimators.
+Estimate ``TE^{1}(s \\to t)`` or ``TE^{1}(s \\to t | c)`` using naive nearest neighbor estimators.
 
 *Note: only Shannon entropy is possible to use for nearest neighbor estimators, so the 
 keyword `q` cannot be provided; it is hardcoded as `q = 1`*. 
@@ -144,7 +149,7 @@ See also [`Kraskov`](@ref), [`KozachenckoLeonenko`](@ref).
     transferentropy(s, t, [c], est::NaiveKernel{Union{TreeDistance, DirectDistance}}; 
         base = 2, q = 1,  ...)
 
-Estimate ``TE^{q}(s \\to t)``/``TE^{q}(s \\to t | c)`` using naive kernel density estimation of 
+Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using naive kernel density estimation of 
 probabilities.
 
 See also [`NaiveKernel`](@ref), [`TreeDistance`](@ref), [`DirectDistance`](@ref).
@@ -153,7 +158,7 @@ See also [`NaiveKernel`](@ref), [`TreeDistance`](@ref), [`DirectDistance`](@ref)
 
     transferentropy(s, t, [c], est::Hilbert; base = 2, q = 1,  ...)
 
-Estimate ``TE^{q}(s \\to t)``/``TE^{q}(s \\to t | c)`` by first applying the Hilbert transform 
+Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` by first applying the Hilbert transform 
 to `s`, `t` (`c`) and then estimating transfer entropy.
 
 See also [`Hilbert`](@ref), [`Amplitude`](@ref), [`Phase`](@ref).
@@ -165,7 +170,7 @@ See also [`Hilbert`](@ref), [`Amplitude`](@ref), [`Phase`](@ref).
     transferentropy!(symb_s, symb_t, s, t, [c], est::SymbolicPermutation; 
         base = 2, q = 1, m::Int = 3, τ::Int = 1, ...)
 
-Estimate ``TE^{q}(s \\to t)``/``TE^{q}(s \\to t | c)`` using permutation entropies. This is done 
+Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using permutation entropy. This is done 
 by first symbolizing the input series `s` and `t` (and `c`; all of length `N`) using motifs of 
 size `m` and a time delay of `τ`. The series of motifs are encoded as integer symbol time 
 series preserving the permutation information. These symbol time series are embedded as 
