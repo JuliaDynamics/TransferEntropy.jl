@@ -11,8 +11,6 @@ import DelayEmbeddings: KDTree
 import NearestNeighbors: knn
 
 
-KDTree(D::CustomReconstruction, metric::Metric = Euclidean()) = KDTree(D.reconstructed_pts, metric)
-
 # Define pairwise distances methods for vectors of static vectors, vectors of vectors,
 # and Datasets and Customreconstructions.
 const VSV = Union{AbstractDataset, Vector{<:SVector}, Vector{<:MVector}, Vector{Vector}}
