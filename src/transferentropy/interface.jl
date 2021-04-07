@@ -244,12 +244,12 @@ Logarithm bases and the order of the Rényi entropy can also be tuned:
 x, y = rand(100), rand(100)
 est = NaiveKernel(0.3)
 transferentropy(x, y, est, base = MathConstants.e, q = 2) # TE in nats, order-2 Rényi entropy
+```
 
 ## References
 
 [^Schreiber2000]: Schreiber, T. (2000). Measuring information transfer. Physical review letters, 85(2), 461.
 [^Jizba2012]: Jizba, P., Kleinert, H., & Shefaat, M. (2012). Rényi’s information transfer between financial time series. Physica A: Statistical Mechanics and its Applications, 391(10), 2971-2989.
-```
 """
 function transferentropy end 
 function transferentropy! end
