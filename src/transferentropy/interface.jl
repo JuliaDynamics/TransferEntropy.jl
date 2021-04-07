@@ -167,12 +167,12 @@ TE(s \\to t | c) = \\sum_i p(S,T, \\mathcal{T}, C) \\log \\left( \\dfrac{p(\\ma
 
 The `N` state vectors for each marginal are either 
 
-- uniform, of the form ``x_{i}^{(d_X, \\omega_X)} = (x_i, x_{i+\\omega}, x_{i+2\\omega}, \\ldots x_{i+(dX - 1)\\omega_X})``, 
+- uniform, of the form ``x_{i}^{(d, \\omega_X)} = (x_i, x_{i+\\omega}, x_{i+2\\omega}, \\ldots x_{i+(d - 1)\\omega})``, 
     with equally spaced state vector entries. *Remember: When constructing marginals for ``T``, ``S`` and ``C``, 
     we need ``\\omega \\leq 0`` to get present/past values, while ``\\omega > 0`` is necessary to get future states 
     when constructing ``\\mathcal{T}``.
-- non-uniform, of the form ``x_{i}^{(d_X, \\omega_X)} = (x_i, x_{i+\\omega_1}, x_{i+\\omega_2}, \\ldots x_{i+\\omega_{dX}})``,
-    with non-equally spaced state vector entries ``\\omega_1, \\omega_2, \\ldots, \\omega_{dX}``,
+- non-uniform, of the form ``x_{i}^{(d, \\omega)} = (x_i, x_{i+\\omega_1}, x_{i+\\omega_2}, \\ldots x_{i+\\omega_{d}})``,
+    with non-equally spaced state vector entries ``\\omega_1, \\omega_2, \\ldots, \\omega_{d}``,
     which can be freely chosen. *Remember: When constructing marginals for ``T``, ``S`` and ``C``, 
     we need ``\\omega_i \\leq 0`` for all ``\\omega_i`` to get present/past values, while ``\\omega_i > 0`` for all ``\\omega_i`` 
     is necessary to get future states when constructing ``\\mathcal{T}``.*
