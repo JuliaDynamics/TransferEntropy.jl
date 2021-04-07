@@ -50,7 +50,7 @@ abstract type TransferEntropyEstimator <: EntropyEstimator end
     transferentropy(s, t, [c], est; base = 2, q = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1]) → Float64
 
-Estimate transfer entropy from source `s` to target `t`, ``TE^{q}(s \\to t)``, using the 
+Estimate transfer entropy [1] from source `s` to target `t`, ``TE^{q}(s \\to t)``, using the 
 provided entropy/probability estimator `est` and Rényi entropy of order-`q` (defaults to `q = 1`, 
 which is the Shannon entropy), with logarithms to the given `base`. Optionally, condition 
 on `c` and estimate the conditional transfer entropy ``TE^{q}(s \\to t | c)``. 
@@ -239,6 +239,9 @@ Logarithm bases and the order of the Rényi entropy can also be tuned:
 x, y = rand(100), rand(100)
 est = NaiveKernel(0.3)
 transferentropy(x, y, est, base = MathConstants.e, q = 2) # TE in nats, order-2 Rényi entropy
+
+## References
+[1] Schreiber, T. (2000). Measuring information transfer. Physical review letters, 85(2), 461.
 ```
 """
 function transferentropy end 
