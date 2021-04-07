@@ -1,5 +1,9 @@
 # Changelog
 
+## Release v1.1.3
+
+- Fixed typo in documentation
+
 ## Release v1.1.2
 
 - Documentation improvements.
