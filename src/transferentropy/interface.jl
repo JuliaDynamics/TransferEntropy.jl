@@ -26,6 +26,17 @@ function get_marginals(s, t, c, emb::EmbeddingTE)
     return joint, ST, T𝒯, T
 end
 
+# map a set of pre-embedded points to the correct marginals for transfer entropy computation
+function get_marginals(pts, emb::TEVars)    
+    # Get marginals
+    ST = pts[:, [vars.S; vars.T]]
+    T𝒯 = pts[:, [vars.𝒯; vars.T]]
+    T = pts[:, vars.T]
+    joint = pts
+
+    return joint, ST, T𝒯, T
+end
+
 
 """ 
 Abstract types for transfer entropy estimators that are not already implemented as basic 
