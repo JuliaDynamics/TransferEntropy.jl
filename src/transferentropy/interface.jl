@@ -189,7 +189,7 @@ future states spanning a maximum of `d𝒯*η𝒯` time steps).
 *Note: in Schreiber's paper, only the historical states are defined as 
 potentially higher-dimensional, while the future states are always scalar.*
 
-## Estimation 
+### Estimation 
 
 Transfer entropy is here estimated by rewriting the above expressions as a sum of marginal 
 entropies, and extending the definitions above to use Rényi generalized entropies of order 
