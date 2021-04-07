@@ -1,5 +1,9 @@
 # Changelog
 
+## Release v1.1.1
+
+- Documentation improvements.
+
 ## Release v1.1.0
 
 - Internal API changes. Not affecting end user.
