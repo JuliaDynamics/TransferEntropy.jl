@@ -65,7 +65,9 @@ Default embedding values use scalar time series for each marginal. Hence, the va
 `τT`, `τS` or `τC` affect the estimated ``TE`` only if the corresponding dimension(s) 
 `dT`, `dS` or `dC` are larger than `1`.
 
-The input series `s`, `t`, and `c` must be equal-length real-valued vectors of length `N`.
+## Input data
+
+The input series `s`, `t`, and `c` must be equal-length real-valued vectors.
 
 ## Binning based
 
