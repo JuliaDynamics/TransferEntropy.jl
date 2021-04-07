@@ -145,7 +145,7 @@ TE(s \\to t) = \\sum_i p(s_i, t_i, t_{i+\\eta}) \\log \\left( \\dfrac{p(t_{i+\\e
 ### Transfer entropy on generalized embeddings
 
 By defining the vector-valued time series, it is possible to include more than one 
-historical/future value for each marginal (see ' Uniform vs. non-uniform embeddings' below
+historical/future value for each marginal (see 'Uniform vs. non-uniform embeddings' below
 for embedding details):
 
 - ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} = \\{t_i^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} \\}_{i=1}^{N}``, 
