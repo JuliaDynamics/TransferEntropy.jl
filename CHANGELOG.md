@@ -1,5 +1,9 @@
 # Changelog
 
+## Release v1.1.2
+
+- Documentation improvements.
+
 ## Release v1.1.1
 
 - Documentation improvements.
