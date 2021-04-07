@@ -226,7 +226,7 @@ function transferentropy end
 function transferentropy! end
 
 # estimate transfer entropy from marginal entropies, as described in docstring
-function transferentropy(joint, ST, T𝒯, T, est; base = 2, q = 1)
+function _transferentropy(joint, ST, T𝒯, T, est; base = 2, q = 1)
     te = genentropy(T𝒯, est, base = base, q = q) +
         genentropy(ST, est, base = base, q = q) -
         genentropy(T, est, base = base, q = q) -
@@ -245,8 +245,7 @@ function transferentropy(s, t, est; base = 2, q = 1,
     emb = EmbeddingTE(τT = τT, τS = τS, η𝒯 = η𝒯, dT = dT, dS = dS, d𝒯 = d𝒯)
     joint, ST, T𝒯, T = get_marginals(s, t, emb)
 
-    transferentropy(joint, ST, T𝒯, T, est; base = base, q = q)
-
+    _transferentropy(joint, ST, T𝒯, T, est; base = base, q = q)
 end
 
 function transferentropy(s, t, c, est; base = 2, q = 1, 
@@ -255,7 +254,7 @@ function transferentropy(s, t, c, est; base = 2, q = 1,
     emb = EmbeddingTE(τT = τT, τS = τS, τC = τC, η𝒯 = η𝒯, dT = dT, dS = dS, dC = dC, d𝒯 = d𝒯)
     joint, ST, T𝒯, T = get_marginals(s, t, c, emb)
 
-    transferentropy(joint, ST, T𝒯, T, est; base = base, q = q)
+    _transferentropy(joint, ST, T𝒯, T, est; base = base, q = q)
 end
 
 transferentropy(s::Vector{<:Real}, t::Vector{<:Real}) = 
