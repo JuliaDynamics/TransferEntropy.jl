@@ -50,7 +50,7 @@ abstract type TransferEntropyEstimator <: EntropyEstimator end
     transferentropy(s, t, [c], est; base = 2, q = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1]) → Float64
 
-Estimate transfer entropy [1] from source `s` to target `t`, ``TE^{q}(s \\to t)``, using the 
+Estimate transfer entropy[^1] from source `s` to target `t`, ``TE^{q}(s \\to t)``, using the 
 provided entropy/probability estimator `est` and Rényi entropy of order-`q` (defaults to `q = 1`, 
 which is the Shannon entropy), with logarithms to the given `base`. Optionally, condition 
 on `c` and estimate the conditional transfer entropy ``TE^{q}(s \\to t | c)``. 
@@ -199,7 +199,8 @@ TE^{q}(s \\to t) = H^{q}(\\mathcal T, T) + H^{q}(T, S) - H^{q}(T) - H^{q}(\\math
 TE^{q}(s \\to t | c) = H^{q}(\\mathcal T, T, C) + H^{q}(T, S, C) - H^{q}(T, C) - H^{q}(\\mathcal T, T, S, C),
 ```
 
-where ``H^{q}(\\cdot)`` is the generalized Renyi entropy of order ``q``. 
+where ``H^{q}(\\cdot)`` is the generalized Rényi entropy of order ``q``. This is equivalent
+to the Rényi transfer entropy implementation in Jizba et al (2013)[^2].
 
 
 ## Examples
@@ -241,7 +242,9 @@ est = NaiveKernel(0.3)
 transferentropy(x, y, est, base = MathConstants.e, q = 2) # TE in nats, order-2 Rényi entropy
 
 ## References
-[1] Schreiber, T. (2000). Measuring information transfer. Physical review letters, 85(2), 461.
+
+[^1]: Schreiber, T. (2000). Measuring information transfer. Physical review letters, 85(2), 461.
+[^2]: Jizba, P., Kleinert, H., & Shefaat, M. (2012). Rényi’s information transfer between financial time series. Physica A: Statistical Mechanics and its Applications, 391(10), 2971-2989.
 ```
 """
 function transferentropy end 
