@@ -1,5 +1,5 @@
 import Entropies:
-    EntropyEstimator, genentropy,
+    genentropy, ProbabilitiesEstimator, EntropyEstimator,
     VisitationFrequency, RectangularBinning,
     NaiveKernel, DirectDistance, TreeDistance,
     NearestNeighborEntropyEstimator, KozachenkoLeonenko, Kraskov
@@ -16,4 +16,4 @@ using NearestNeighbors, Distances, SpecialFunctions
 
 
 const Vector_or_Dataset{D, T} = Union{AbstractVector{T}, AbstractDataset{D, T}} where {D, T}
-
+const Est = Union{ProbabilitiesEstimator, EntropyEstimator}

@@ -1,9 +1,20 @@
-# Release v0.4.3
+# Changelog
 
-## New functionality
+## Release v1.1.0
+
+- Internal API changes. Not affecting end user.
+- Documentation update.
+
+## Release v1.0.0
+
+- Completely new API. See documentation for details.
+
+## Release v0.4.3
+
+### New functionality
 
 Added convenience methods to compute regular transfer entropy directly from time series. The following methods work:
-        
+
 1. `transferentropy(source, driver; dim = 3, τ = 1, η = 1)`: compute transfer entropy from `source` to `target` using a `dim`-dimensional delay reconstruction with prediction lag `η` and embedding lag `τ`, inferring appropriate bin sizes from time series length. Extra dimensions are assigned to the ``T_{pp}`` component of the delay reconstruction. Returns the result over those binsizes. 
 
 2. `transferentropy(source, driver, Union{::RectangularBinning, AbstractArray{::RectangularBinning}}, dim = 3, τ = 1, η = 1)`: compute transfer entropy from `source` to `target` using a `dim`-dimensional delay reconstruction with prediction lag `η` and embedding lag `τ`, specifying the partition(s) explicitly. Extra dimensions are assigned to the ``T_{pp}`` component of the delay reconstruction. Returns one transfer entropy estimate per partition. 
@@ -16,29 +27,29 @@ The same works for computing conditional transfer entropy with three time series
 
 An optional `estimator` keyword may be provided. The default is `estimator = VisitationFrequency()`, but `estimator = TransferOperatorGrid()` also works. For triangulation-based estimators, you still need to compute the invariant measure manually first, then compute transfer entropy as usual.
 
-# Release v0.4.2
+## Release v0.4.2
 
-## New functionality
+### New functionality
 
 - Added `te_embed` function that for regular and conditional transfer entropy analyses constructs appropriate delay reconstruction points and corresponding `TEVars` instances that instructs the `transferentropy` methods how to compute the marginals.
 
-# Release v0.4.1
+## Release v0.4.1
 
 - Update documentation with more examples.
 - Fix bug in triangulation estimator where multiple points at the origin was used to sample 
         simplices. This bug only affected the new methods with updates syntax from v`0.4.0`.
 
-# Release v0.4.0
+## Release v0.4.0
 
 New syntax for the different estimators.
 
-## Rectangular binnings
+### Rectangular binnings
 
 - `transferentropy(pts, v::TEVars, binning_scheme::RectangularBinning, VisitationFrequency())` uses a regular visitation frequency estimator.
 
 - `transferentropy(pts, v::TEVars, binning_scheme::RectangularBinning, TransferOperatorGrid())` uses the transfer operator grid estimator.
 
-## Triangulation binnings
+### Triangulation binnings
 
 For computing transfer entropy from triangulations, first compute the invariant measure 
 over the triangulation, then superimpose a rectangular grid and compute the transfer 
