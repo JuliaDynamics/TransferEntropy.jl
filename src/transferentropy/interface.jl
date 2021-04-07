@@ -177,13 +177,11 @@ The `N` state vectors for each marginal are either
     we need ``\\omega_i \\leq 0`` for all ``\\omega_i`` to get present/past values, while ``\\omega_i > 0`` for all ``\\omega_i`` 
     is necessary to get future states when constructing ``\\mathcal{T}``.*
 
-In summary, The ``d_T``-dimensional, ``d_S``-dimensional and ``d_C``-dimensional state vectors 
-comprising ``T``, ``S`` and ``C`` are constructed with embedding lags ``\\tau_T``, 
-``\\tau_S``, and ``\\tau_C``, respectively. The ``d_{\\mathcal T}``-dimensional 
-future states ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})}``
-are constructed with prediction lag ``\\eta_{\\mathcal T}`` (i.e. predictions go from 
-present/past states to future states spanning a maximum of 
-``d_{\\mathcal T} \\eta_{\\mathcal T}`` time steps).
+In practice, the `dT`-dimensional, `d_S`-dimensional and `d_C`-dimensional state vectors 
+comprising ``T``, ``S`` and ``C`` are constructed with embedding lags `τT`, 
+`τS`, and `τC`, respectively. The `d𝒯`-dimensional future states ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})}``
+are constructed with prediction lag `η𝒯` (i.e. predictions go from present/past states to 
+future states spanning a maximum of `d𝒯*η𝒯` time steps).
 *Note: in Schreiber's paper, only the historical states are defined as 
 potentially higher-dimensional, while the future states are always scalar.*
 
