@@ -129,6 +129,77 @@ where `length(symb_s) == length(symb_t) == length(symb_c) == N - (est.m-1)*est.�
 memory allocations for repeated computations.
 
 See also [`SymbolicPermutation`](@ref).
+## Description
+
+Transfer entropy between two simultaneously measured scalar time series ``s(n)`` and ``t(n)``,  
+``s(n) = \\{ s_1, s_2, \\ldots, s_N \\} `` and ``t(n) = \\{ t_1, t_2, \\ldots, t_N \\} ``, is
+is defined as 
+
+```math 
+TE(s \\to t) = \\sum_i p(s_i, t_i, t_{i+\\eta}) \\log \\left( \\dfrac{p(t_{i+\\eta} | t_i, s_i)}{p(t_{i+\\eta} | t_i)} \\right)
+```
+
+### Generalized embeddings
+
+By defining the vector-valued time series
+
+- ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} = \\{t_i^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} \\}_{i=1}^{N}``, 
+-``T^{(d_T, \\tau_T)} = \\{t_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``, 
+- ``S^{(d_S, \\tau_S)} = \\{s_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``,  and 
+- ``C^{(d_C, \\tau_C)} = \\{s_i^{(d_C, \\tau_C)} \\}_{i=1}^{N}``,
+
+it is possible to include more than one historical/future value for each marginal.
+
+The ``d_T``-dimensional, ``d_S``-dimensional and ``d_C``-dimensional state vectors 
+comprising ``T``, ``S`` and ``C`` are constructed with embedding lags 
+``\\tau_T``, ``\\tau_S``, and ``\\tau_C``, respectively. 
+The ``d_{\\mathcal T}``-dimensional 
+future states ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})}``
+are constructed with prediction lag ``\\eta_{\\mathcal T}`` (i.e. predictions go from 
+present/past states to future states spanning a maximum of 
+``d_{\\mathcal T} \\eta_{\\mathcal T}`` time steps).
+*Note: in Schreiber's paper, only the historical states are defined as 
+potentially higher-dimensional, while the future states are always scalar.*
+
+The non-conditioned and conditioned generalized forms of the transfer entropy are then
+
+```math 
+TE(s \\to t) = \\sum_i p(S,T, \\mathcal{T}) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S)}{p(\\mathcal{T} | T)} \\right)
+```
+
+```math 
+TE(s \\to t | c) = \\sum_i p(S,T, \\mathcal{T}, C) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S, C)}{p(\\mathcal{T} | T, C)} \\right)
+```
+
+## Estimation 
+
+Transfer entropy is here estimated by rewriting the above expressions as a sum of marginal 
+entropies, and extending the definitions above to use Rényi generalized entropies of order 
+`q` as
+
+```math
+TE^{q}(s \\to t) = H^{q}(\\mathcal T, T) + H^{q}(T, S) - H^{q}(T) - H^{q}(\\mathcal T, T, S),
+```
+
+```math
+TE^{q}(s \\to t | c) = H^{q}(\\mathcal T, T, C) + H^{q}(T, S, C) - H^{q}(T, C) - H^{q}(\\mathcal T, T, S, C),
+```
+
+where ``H^{q}(\\cdot)`` is the generalized Renyi entropy of order ``q``. 
+
+### Uniform vs. non-uniform embeddings
+
+The `N` state vectors for each marginal are either 
+
+- uniform, of the form ``x_{i}^{(d_X, \\omega_X)} = (x_i, x_{i+\\omega}, x_{i+2\\omega}, \\ldots x_{i+(dX - 1)\\omega_X})``, 
+    with equally spaced state vector entries. *Remember: When constructing marginals for ``T``, ``S`` and ``C``, 
+    we need ``\\omega \\leq 0`` to get present/past values, while ``\\omega > 0`` is necessary to get future states 
+    when constructing ``\\mathcal{T}``.
+- non-uniform, of the form ``x_{i}^{(d_X, \\omega_X)} = (x_i, x_{i+\\omega_1}, x_{i+\\omega_2}, \\ldots x_{i+\\omega_{dX}})``,
+    with non-equally spaced state vector entries ``\\omega_1, \\omega_2, \\ldots, \\omega_{dX}``,
+    which can be freely chosen. *Remember: When constructing marginals for ``T``, ``S`` and ``C``, 
+    we need ``\\omega_i \\leq 0`` for all ``\\omega_i`` to get present/past values, while ``\\omega_i > 0`` for all ``\\omega_i`` 
+    is necessary to get future states when constructing ``\\mathcal{T}``.*
 
 ## Examples
 
@@ -168,68 +239,6 @@ x, y = rand(100), rand(100)
 est = NaiveKernel(0.3)
 transferentropy(x, y, est, base = MathConstants.e, q = 2) # TE in nats, order-2 Rényi entropy
 ```
-
-## Description
-
-Transfer entropy between two simultaneously measured scalar time series ``s(n)`` and ``t(n)``,  
-``s(n) = \\{ s_1, s_2, \\ldots, s_N \\} `` and ``t(n) = \\{ t_1, t_2, \\ldots, t_N \\} ``, is
-is defined as 
-
-```math 
-TE(s \\to t) = \\sum_i p(s_i, t_i, t_{i+\\eta}) \\log \\left( \\dfrac{p(t_{i+\\eta} | t_i, s_i)}{p(t_{i+\\eta} | t_i)} \\right)
-```
-
-Including more than one historical/future value can be done by defining the vector-valued
-time series
-``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} = \\{t_i^{(d_{\\mathcal T}, \\eta_{\\mathcal T})} \\}_{i=1}^{N}``, 
-``T^{(d_T, \\tau_T)} = \\{t_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``, 
-``S^{(d_S, \\tau_S)} = \\{s_i^{(d_T, \\tau_T)} \\}_{i=1}^{N}``,  and 
-``C^{(d_C, \\tau_C)} = \\{s_i^{(d_C, \\tau_C)} \\}_{i=1}^{N}``.
-
-The `N` state vectors for each marginal are either 
-- uniform, of the form ``x_{i}^{(d_X, \\tau_X)} = (x_i, x_{i-\\tau}, x_{i-2\\tau}, \\ldots x_{i-(dX - 1)\\tau_X})``, 
-    with equally spaced state vector entries.
-- non-uniform, of the form ``x_{i}^{(d_X, \\tau_X)} = (x_i, x_{i-\\tau_1}, x_{i-\\tau_2}, \\ldots x_{i-\\tau_{dX}})``,
-    with non-equally spaced state vector entries ``\\tau_1, \\tau_2, \\ldots, \\tau_{dX}``,
-    which can freely chosen.
-
-The 
-``d_T``-dimensional, ``d_S``-dimensional and ``d_C``-dimensional state vectors 
-comprising ``T``, ``S`` and ``C`` are constructed with embedding lags 
-``\\tau_T``, ``\\tau_S``, and ``\\tau_C``, respectively. 
-The ``d_{\\mathcal T}``-dimensional 
-future states ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})}``
-are constructed with prediction lag ``\\eta_{\\mathcal T}`` (i.e. predictions go from 
-present/past states to future states spanning a maximum of 
-``d_{\\mathcal T} \\eta_{\\mathcal T}`` time steps).
-*Note: in Schreiber's paper, only the historical states are defined as 
-potentially higher-dimensional, while the future states are always scalar.*
-
-The non-conditioned and conditioned generalized forms of the transfer entropy are then
-
-```math 
-TE(s \\to t) = \\sum_i p(S,T, \\mathcal{T}) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S)}{p(\\mathcal{T} | T)} \\right)
-```
-
-```math 
-TE(s \\to t | c) = \\sum_i p(S,T, \\mathcal{T}, C) \\log \\left( \\dfrac{p(\\mathcal{T} | T, S, C)}{p(\\mathcal{T} | T, C)} \\right)
-```
-
-## Estimation 
-
-Transfer entropy is here estimated by rewriting the above expressions as a sum of marginal 
-entropies, and extending the definitions above to use Rényi generalized entropies of order 
-`q` as
-
-```math
-TE^{q}(s \\to t) = H^{q}(\\mathcal T, T) + H^{q}(T, S) - H^{q}(T) - H^{q}(\\mathcal T, T, S),
-```
-
-```math
-TE^{q}(s \\to t | c) = H^{q}(\\mathcal T, T, C) + H^{q}(T, S, C) - H^{q}(T, C) - H^{q}(\\mathcal T, T, S, C),
-```
-
-where ``H^{q}(\\cdot)`` is the generalized Renyi entropy of order ``q``. 
 """
 function transferentropy end 
 function transferentropy! end
