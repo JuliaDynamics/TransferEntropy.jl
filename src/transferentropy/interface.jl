@@ -55,21 +55,28 @@ provided entropy/probability estimator `est` with logarithms to the given `base`
 on `c` and estimate the conditional transfer entropy ``TE^{q}(s \\to t | c)``. 
 
 Compute either Shannon transfer entropy (`q = 1`, which is the default) or the order-`q` 
-Rényi transfer entropy[^Jizba2012] by setting `q` different from 1. 
+Rényi transfer entropy[^Jizba2012] by setting `q` different from 1.
 
-Parameters for embedding lags `τT`, `τS`, `τC` (must be negative), the prediction lag `η𝒯` 
-(must be positive), and the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` have meanings as 
-explained above. Here, the convention is to use negative lags to indicate embedding delays 
-for past state vectors (for the ``T``, ``S`` and ``C`` marginals), and positive lags to 
-indicate embedding delays for future state vectors (for the ``\\mathcal T`` marginal). 
+## Generalized embedding parameters
 
-Default embedding values use scalar time series for each marginal. Hence, the value(s) of 
-`τT`, `τS` or `τC` affect the estimated ``TE`` only if the corresponding dimension(s) 
-`dT`, `dS` or `dC` are larger than `1`.
+Details on how generalized embeddings are constructed from the input time series is 
+outlined below. In short, the embedding lags `τT`, `τS`, `τC` must be negative, the 
+prediction lag `η𝒯` must be positive, and the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` 
+must be greater than or equal to 1. Thus, the convention is to use negative lags to 
+indicate embedding delays for past state vectors (for the ``T``, ``S`` and ``C`` marginals, 
+detailed below), and positive lags to indicate embedding delays for future state vectors 
+(for the ``\\mathcal T`` marginal, also detailed below). 
+
+The value(s) of `τT`, `τS` or `τC` affect the estimated ``TE`` only if the corresponding 
+dimension(s) `dT`, `dS` or `dC` are larger than `1`. The default behaviour is to use scalar 
+time series for each marginal (in that case, the `τT`, `τS` or `τC` does not affect the 
+analysis).
 
 ## Input data
 
 The input series `s`, `t`, and `c` must be equal-length real-valued vectors.
+
+# Estimation methods
 
 ## Binning based
 
@@ -205,7 +212,6 @@ TE^{q}(s \\to t | c) = H^{q}(\\mathcal T, T, C) + H^{q}(T, S, C) - H^{q}(T, C) -
 
 where ``H^{q}(\\cdot)`` is the generalized Rényi entropy of order ``q``. This is equivalent
 to the Rényi transfer entropy implementation in Jizba et al. (2012)[^Jizba2012].
-
 
 ## Examples
 
