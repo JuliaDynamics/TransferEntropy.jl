@@ -60,7 +60,7 @@ Rényi transfer entropy[^Jizba2012] by setting `q` different from 1.
 ## Generalized embedding parameters
 
 Details on how generalized embeddings are constructed from the input time series is 
-outlined below. In short, the embedding lags `τT`, `τS`, `τC` must be negative, the 
+outlined below. In short, the embedding lags `τT`, `τS`, `τC` must be zero or negative, the 
 prediction lag `η𝒯` must be positive, and the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` 
 must be greater than or equal to 1. Thus, the convention is to use negative lags to 
 indicate embedding delays for past state vectors (for the ``T``, ``S`` and ``C`` marginals, 
@@ -68,9 +68,9 @@ detailed below), and positive lags to indicate embedding delays for future state
 (for the ``\\mathcal T`` marginal, also detailed below). 
 
 The value(s) of `τT`, `τS` or `τC` affect the estimated ``TE`` only if the corresponding 
-dimension(s) `dT`, `dS` or `dC` are larger than `1`. The default behaviour is to use scalar 
-time series for each marginal (in that case, the `τT`, `τS` or `τC` does not affect the 
-analysis).
+dimension(s) `dT`, `dS` or `dC` are larger than `1`. If the dimension is 1, then the 
+scalar time series is used. The default behaviour is to use scalar time series for each 
+marginal (in that case, the `τT`, `τS` or `τC` does not affect the analysis).
 
 ## Input data
 
@@ -145,7 +145,7 @@ See also [`SymbolicPermutation`](@ref).
 
 ### Transfer entropy on scalar time series
 
-Transfer entropy between two simultaneously measured scalar time series ``s(n)`` and ``t(n)``,  
+Transfer entropy[^Schreiber2000] between two simultaneously measured scalar time series ``s(n)`` and ``t(n)``,  
 ``s(n) = \\{ s_1, s_2, \\ldots, s_N \\} `` and ``t(n) = \\{ t_1, t_2, \\ldots, t_N \\} ``, is
 is defined as 
 
