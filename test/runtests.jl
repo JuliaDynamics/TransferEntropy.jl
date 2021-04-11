@@ -18,6 +18,9 @@ using Test, TransferEntropy
     est = VisitationFrequency(RectangularBinning(0.2))
     @test mutualinfo(x, y, est) isa Real
     @test mutualinfo(x, y, est, q = 2) isa Real
+    @test mutualinfo(x, z, est) isa Real
+    @test mutualinfo(z, x) isa Real
+    @test mutualinfo(z, w) isa Real
 
     # Estimators for which Renyi entropies cannot be used
     est_kl = KozachenkoLeonenko()
@@ -27,15 +30,27 @@ using Test, TransferEntropy
 
     @test mutualinfo(x, y, est_kl) isa Real
     @test mutualinfo(x, y, est_kl, base = 2) isa Real
+    @test mutualinfo(x, z, est_kl) isa Real
+    @test mutualinfo(z, x, est_kl) isa Real
+    @test mutualinfo(z, w, est_kl) isa Real
 
     @test mutualinfo(x, y, est_k) isa Real
     @test mutualinfo(x, y, est_k, base = 2) isa Real
+    @test mutualinfo(x, z, est_k) isa Real
+    @test mutualinfo(z, x, est_k) isa Real
+    @test mutualinfo(z, w, est_k) isa Real
 
     @test mutualinfo(x, y, est_k1) isa Real
     @test mutualinfo(x, y, est_k1, base = 2) isa Real
+    @test mutualinfo(x, z, est_k1) isa Real
+    @test mutualinfo(z, x, est_k1) isa Real
+    @test mutualinfo(z, w, est_k1) isa Real
 
     @test mutualinfo(x, y, est_k2) isa Real
     @test mutualinfo(x, y, est_k2, base = 2) isa Real
+    @test mutualinfo(x, z, est_k2) isa Real
+    @test mutualinfo(z, x, est_k2) isa Real
+    @test mutualinfo(z, w, est_k2) isa Real
 end
 
 @testset "Transfer entropy" begin 
