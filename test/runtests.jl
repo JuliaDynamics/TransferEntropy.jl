@@ -19,8 +19,8 @@ using Test, TransferEntropy
     @test mutualinfo(x, y, est) isa Real
     @test mutualinfo(x, y, est, q = 2) isa Real
     @test mutualinfo(x, z, est) isa Real
-    @test mutualinfo(z, x) isa Real
-    @test mutualinfo(z, w) isa Real
+    @test mutualinfo(z, x, est) isa Real
+    @test mutualinfo(z, w, est) isa Real
 
     # Estimators for which Renyi entropies cannot be used
     est_kl = KozachenkoLeonenko()
