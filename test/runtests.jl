@@ -4,6 +4,9 @@
 
 #using CausalityToolsBase
 using Test, TransferEntropy
+KDTree = Entropies.Neighborhood.KDTree
+BruteForce = Entropies.Neighborhood.BruteForce
+
 #using Distances
 #using DelayEmbeddings
 #using StaticArrays
@@ -51,8 +54,8 @@ end
             Hilbert(source = Amplitude(), target = Amplitude(), est_vf),
             Hilbert(source = Phase(), target = Phase(), est_vf),
             Hilbert(source = Phase(), target = Phase(), cond = Amplitude(), est_vf),
-            NaiveKernel(0.5, TreeDistance()),
-            NaiveKernel(0.5, DirectDistance())
+            NaiveKernel(0.5, KDTree),
+            NaiveKernel(0.5, BruteForce)
         ]
 
         @testset "Generalized Renyi transfer entropy $(ests[i])"  for i in 1:length(ests)
