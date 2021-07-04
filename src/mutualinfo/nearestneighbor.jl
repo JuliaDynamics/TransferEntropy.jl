@@ -1,4 +1,5 @@
 export Kraskov1, Kraskov2
+using Neighborhood
 
 # naive application of estimators in Entropies.jl
 function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est::NearestNeighborEntropyEstimator; base = 2)
@@ -75,19 +76,21 @@ function mutualinfo(x::Vector_or_Dataset{D1, T}, y::Vector_or_Dataset{D2, T}, es
         base = MathConstants.e) where {D1, D2, T}
     @assert length(x) == length(y)
     z = Dataset(x, y)
-    X = Dataset(x)
-    Y = Dataset(y)
     N = length(z)
     
     # Common for both kraskov estimators
     tree_z = KDTree(z, est.metric_z)
-    tree_x = KDTree(X, est.metric_x)
-    tree_y = KDTree(Y, est.metric_y)
-    
     k = est.k
-    idxs_z, dists_z = knn(tree_z, z.data, k + 1, true)
-    idxs_x, dists_x = knn(tree_x, X.data, k + 1, true)
-    idxs_y, dists_y = knn(tree_y, Y.data, k + 1, true)
+    idxs_z, dists_z = bulksearch(tree_z, z.data, NeighborNumber(k + 1))
+    
+    # TODO: These quantities are never used in the subsequent code. I am therefore
+    # commenting them out...
+    # X = Dataset(x)
+    # Y = Dataset(y)
+    # tree_x = KDTree(X, est.metric_x)
+    # tree_y = KDTree(Y, est.metric_y)
+    # idxs_x, dists_x = bulksearch(tree_x, X.data, NeighborNumber(k + 1))
+    # idxs_y, dists_y = bulksearch(tree_y, Y.data, NeighborNumber(k + 1))
 
     kth_nns_z = [idx_z[k + 1] for idx_z in idxs_z]
     ϵs_z = [dz[k + 1] for dz in dists_z]
@@ -121,26 +124,30 @@ function mutualinfo(x::Vector_or_Dataset{D1, T}, y::Vector_or_Dataset{D2, T}, es
         base = MathConstants.e) where {D1, D2, T}
     @assert length(x) == length(y)
     z = Dataset(x, y)
-    X = Dataset(x)
-    Y = Dataset(y)
     N = length(z)
     
     # Common for both kraskov estimators
     tree_z = KDTree(z, est.metric_z)
-    tree_x = KDTree(X, est.metric_x)
-    tree_y = KDTree(Y, est.metric_y)
     
     k = est.k
-    idxs_z, dists_z = knn(tree_z, z.data, k + 1, true)
-    idxs_x, dists_x = knn(tree_x, X.data, k + 1, true)
-    idxs_y, dists_y = knn(tree_y, Y.data, k + 1, true)
-
+    idxs_z = bulkisearch(tree_z, z.data, NeighborNumber(k + 1))
+    
     kth_nns_z = [idx_z[k + 1] for idx_z in idxs_z]
-    ϵs_z = [dz[k + 1] for dz in dists_z]
     ϵs_x = zeros(Float64, N)
     ϵs_y = zeros(Float64, N)
     eval_dists_to_knns!(ϵs_x, x, kth_nns_z, est.metric_x)
     eval_dists_to_knns!(ϵs_y, y, kth_nns_z, est.metric_y)
+    
+    # TODO: The following quantities are never used in this code,
+    # so I am commenting them out...
+    # idxs_z, dists_z = bulksearch(tree_z, z.data, NeighborNumber(k + 1))
+    # X = Dataset(x)
+    # Y = Dataset(y)
+    # tree_x = KDTree(X, est.metric_x)
+    # tree_y = KDTree(Y, est.metric_y)
+    # idxs_x, dists_x = knn(tree_x, X.data, k + 1, true)
+    # idxs_y, dists_y = knn(tree_y, Y.data, k + 1, true)
+    # ϵs_z = [dz[k + 1] for dz in dists_z]
     
     # if the following equality holds for all points, then things are correct until this point
     #ϵ_maxes = [max(a, b) for (a, b) in zip(ϵs_x, ϵs_y)]
