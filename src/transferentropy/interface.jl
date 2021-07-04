@@ -105,13 +105,12 @@ See also [`Kraskov`](@ref), [`KozachenckoLeonenko`](@ref).
 
 ## Kernel density based 
 
-    transferentropy(s, t, [c], est::NaiveKernel{Union{TreeDistance, DirectDistance}}; 
+    transferentropy(s, t, [c], est::NaiveKernel; 
         base = 2, q = 1,  ...) → Float64
 
-Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using naive kernel density estimation of 
-probabilities.
+Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using the [`NaiveKernel`](@ref)
+estimation of probabilities.
 
-See also [`NaiveKernel`](@ref), [`TreeDistance`](@ref), [`DirectDistance`](@ref).
 
 ## Instantenous Hilbert amplitudes/phases 
 
@@ -258,18 +257,6 @@ transferentropy(x, y, est, base = MathConstants.e, q = 2) # TE in nats, order-2 
 function transferentropy end 
 function transferentropy! end
 
-# estimate transfer entropy from marginal entropies, as described in docstring
-function _transferentropy(joint, ST, T𝒯, T, est::Est; base = 2, q = 1)
-    te = genentropy(T𝒯, est, base = base, q = q) +
-        genentropy(ST, est, base = base, q = q) -
-        genentropy(T, est, base = base, q = q) -
-        genentropy(joint, est, base = base, q = q)
-end
-
-# TODO: estimate using mutual information decomposition, 
-# function transferentropy(marginal1, marginal2, est; base = 2, q = 1)
-
-
 # Estimate transfer entropy from time series by first embedding them and getting required 
 # marginals.
 function transferentropy(s, t, est::Est; base = 2, q = 1, 
@@ -296,6 +283,17 @@ transferentropy(s::AbstractVector{<:Real}, t::AbstractVector{<:Real}) =
 transferentropy(s::AbstractVector{<:Real}, t::AbstractVector{<:Real}, c::AbstractVector{<:Real}) = 
     error("Estimator missing. Please provide a valid estimator as the fourth argument.")
 
+
+# estimate transfer entropy from marginal entropies, as described in docstring
+function _transferentropy(joint, ST, T𝒯, T, est::Est; base = 2, q = 1)
+    te = genentropy(T𝒯, est, base = base, q = q) +
+        genentropy(ST, est, base = base, q = q) -
+        genentropy(T, est, base = base, q = q) -
+        genentropy(joint, est, base = base, q = q)
+end
+
+# TODO: estimate using mutual information decomposition, 
+# function transferentropy(marginal1, marginal2, est; base = 2, q = 1)
 
 include("symbolic.jl")
 include("binning_based.jl")

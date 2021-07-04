@@ -2,6 +2,3 @@
 DelayEmbeddings = "5732040d-69e3-5649-938a-b6b4f237613f"
 Entropies = "ed8fcbec-b94c-44b6-89df-898894ad9591"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[compat]
-Entropies = "0.11"

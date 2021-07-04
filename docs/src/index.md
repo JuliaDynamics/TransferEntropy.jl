@@ -23,8 +23,6 @@ RectangularBinning
 
 ```@docs
 NaiveKernel
-TreeDistance
-DirectDistance
 ```
 
 ### Nearest neighbor based
