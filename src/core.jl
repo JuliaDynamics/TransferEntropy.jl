@@ -1,5 +1,7 @@
 using Reexport
 @reexport using Entropies
+using Entropies: NearestNeighborEntropyEstimator 
+
 import DelayEmbeddings: AbstractDataset, Dataset
 export Dataset
 
