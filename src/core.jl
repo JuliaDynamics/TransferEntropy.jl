@@ -1,13 +1,5 @@
-import Entropies:
-    genentropy, ProbabilitiesEstimator, EntropyEstimator,
-    VisitationFrequency, RectangularBinning,
-    NaiveKernel, DirectDistance, TreeDistance,
-    NearestNeighborEntropyEstimator, KozachenkoLeonenko, Kraskov
-
-export VisitationFrequency, RectangularBinning, 
-    NaiveKernel, DirectDistance, TreeDistance,
-    KozachenkoLeonenko, Kraskov
-
+using Reexport
+@reexport using Entropies
 import DelayEmbeddings: AbstractDataset, Dataset
 export Dataset
 
