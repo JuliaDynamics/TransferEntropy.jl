@@ -45,100 +45,32 @@ for transfer entropy. """
 abstract type TransferEntropyEstimator <: EntropyEstimator end
 
 """
-# Transfer entropy
-
     transferentropy(s, t, [c], est; base = 2, q = 1, 
-        τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1]) → Float64
+        τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1]
+    )
 
 Estimate transfer entropy[^Schreiber2000] from source `s` to target `t`, ``TE^{q}(s \\to t)``, using the 
 provided entropy/probability estimator `est` with logarithms to the given `base`. Optionally, condition 
-on `c` and estimate the conditional transfer entropy ``TE^{q}(s \\to t | c)``. 
+on `c` and estimate the conditional transfer entropy ``TE^{q}(s \\to t | c)``.
+The input series `s`, `t`, and `c` must be equal-length real-valued vectors.
 
 Compute either Shannon transfer entropy (`q = 1`, which is the default) or the order-`q` 
 Rényi transfer entropy[^Jizba2012] by setting `q` different from 1.
 
-## Generalized embedding parameters
+All possible estimators that can be used are described in the online documentation.
 
-Details on how generalized embeddings are constructed from the input time series is 
-outlined below. In short, the embedding lags `τT`, `τS`, `τC` must be zero or negative, the 
+## Keyword Arguments
+Keyword arguments tune the embedding that will be done to each of the timeseries
+(with more details following below).
+In short, the embedding lags `τT`, `τS`, `τC` must be zero or negative, the 
 prediction lag `η𝒯` must be positive, and the embedding dimensions `dT`, `dS`, `dC`, `d𝒯` 
 must be greater than or equal to 1. Thus, the convention is to use negative lags to 
 indicate embedding delays for past state vectors (for the ``T``, ``S`` and ``C`` marginals, 
 detailed below), and positive lags to indicate embedding delays for future state vectors 
 (for the ``\\mathcal T`` marginal, also detailed below). 
 
-The value(s) of `τT`, `τS` or `τC` affect the estimated ``TE`` only if the corresponding 
-dimension(s) `dT`, `dS` or `dC` are larger than `1`. If the dimension is 1, then the 
-scalar time series is used. The default behaviour is to use scalar time series for each 
-marginal (in that case, the `τT`, `τS` or `τC` does not affect the analysis).
-
-## Input data
-
-The input series `s`, `t`, and `c` must be equal-length real-valued vectors.
-
-# Estimation methods
-
-## Binning based
-
-    transferentropy(s, t, [c], est::VisitationFrequency{RectangularBinning}; base = 2, q = 1, ...) → Float64
-
-Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using visitation frequencies over a rectangular binning.
-
-    transferentropy(s, t, [c], est::TransferOperator{RectangularBinning}; base = 2, q = 1, ...) → Float64
-
-Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using an approximation to the transfer operator over rectangular 
-binning.
-
-See also: [`VisitationFrequency`](@ref), [`RectangularBinning`](@ref).
-
-## Nearest neighbor based 
-
-    transferentropy(s, t, [c], est::Kraskov; base = 2, ...) → Float64
-    transferentropy(s, t, [c], est::KozachenkoLeonenko; base = 2, ...) → Float64
-
-Estimate ``TE^{1}(s \\to t)`` or ``TE^{1}(s \\to t | c)`` using naive nearest neighbor estimators.
-
-*Note: only Shannon entropy is possible to use for nearest neighbor estimators, so the 
-keyword `q` cannot be provided; it is hardcoded as `q = 1`*. 
-
-See also [`Kraskov`](@ref), [`KozachenckoLeonenko`](@ref).
-
-## Kernel density based 
-
-    transferentropy(s, t, [c], est::NaiveKernel; 
-        base = 2, q = 1,  ...) → Float64
-
-Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using the [`NaiveKernel`](@ref)
-estimation of probabilities.
-
-
-## Instantenous Hilbert amplitudes/phases 
-
-    transferentropy(s, t, [c], est::Hilbert; base = 2, q = 1,  ...) → Float64
-
-Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` by first applying the Hilbert transform 
-to `s`, `t` (`c`) and then estimating transfer entropy.
-
-See also [`Hilbert`](@ref), [`Amplitude`](@ref), [`Phase`](@ref).
-
-## Symbolic/permutation
-
-    transferentropy(s, t, [c], est::SymbolicPermutation; 
-        base = 2, q = 1, m::Int = 3, τ::Int = 1, ...) → Float64
-    transferentropy!(symb_s, symb_t, s, t, [c], est::SymbolicPermutation; 
-        base = 2, q = 1, m::Int = 3, τ::Int = 1, ...) → Float64
-
-Estimate ``TE^{q}(s \\to t)`` or ``TE^{q}(s \\to t | c)`` using permutation entropy. This is done 
-by first symbolizing the input series `s` and `t` (and `c`; all of length `N`) using motifs of 
-size `m` and a time delay of `τ`. The series of motifs are encoded as integer symbol time 
-series preserving the permutation information. These symbol time series are embedded as 
-usual, and transfer entropy is computed from marginal entropies of that generalized embedding.
-
-Optionally, provide pre-allocated (integer) symbol vectors `symb_s` and `symb_t` (and `symb_c`),
-where `length(symb_s) == length(symb_t) == length(symb_c) == N - (est.m-1)*est.τ`. This is useful for saving 
-memory allocations for repeated computations.
-
-See also [`SymbolicPermutation`](@ref).
+The default behaviour is to use scalar timeseries (no embedding, i.e., `d = 1` everywhere)
+for each marginal (in that case, the `τT`, `τS` or `τC` does not affect the analysis).
 
 ## Description
 
@@ -187,7 +119,7 @@ The `N` state vectors for each marginal are either
     we need ``\\omega_i \\leq 0`` for all ``\\omega_i`` to get present/past values, while ``\\omega_i > 0`` for all ``\\omega_i`` 
     is necessary to get future states when constructing ``\\mathcal{T}``.*
 
-In practice, the `dT`-dimensional, `d_S`-dimensional and `d_C`-dimensional state vectors 
+In practice, the `dT`-dimensional, `dS`-dimensional and `dC`-dimensional state vectors 
 comprising ``T``, ``S`` and ``C`` are constructed with embedding lags `τT`, 
 `τS`, and `τC`, respectively. The `d𝒯`-dimensional future states ``\\mathcal{T}^{(d_{\\mathcal T}, \\eta_{\\mathcal T})}``
 are constructed with prediction lag `η𝒯` (i.e. predictions go from present/past states to 
