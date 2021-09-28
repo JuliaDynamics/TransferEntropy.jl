@@ -69,8 +69,8 @@ indicate embedding delays for past state vectors (for the ``T``, ``S`` and ``C``
 detailed below), and positive lags to indicate embedding delays for future state vectors 
 (for the ``\\mathcal T`` marginal, also detailed below). 
 
-The default behaviour is to use scalar timeseries (no embedding, i.e., `d = 1` everywhere)
-for each marginal (in that case, the `τT`, `τS` or `τC` does not affect the analysis).
+The default behaviour is to use scalar timeseries for past state vectors
+(in that case, the `τT`, `τS` or `τC` does not affect the analysis).
 
 ## Description
 
@@ -228,6 +228,6 @@ end
 # function transferentropy(marginal1, marginal2, est; base = 2, q = 1)
 
 include("symbolic.jl")
-include("binning_based.jl")
 include("hilbert.jl")
 include("nearestneighbor.jl")
+include("transferoperator.jl")
