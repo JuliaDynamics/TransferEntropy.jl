@@ -22,7 +22,7 @@ keyword `q` cannot be provided; it is hardcoded as `q = 1`.
 
 ## Description
 
-Mutual information ``I`` between (potentially collections of) variables ``X`` and ``Y`` 
+Mutual information ``I`` between ``X`` and ``Y`` 
 is defined as 
 
 ```math
@@ -36,7 +36,8 @@ definition of ``I`` to use generalized Rényi entropies
 I^{q}(X; Y) = H^{q}(X) + H^{q}(Y) - H^{q}(X, Y),
 ```
 
-where ``H^{q}(\\cdot)`` is the generalized Renyi entropy of order ``q``.
+where ``H^{q}(\\cdot)`` is the generalized Renyi entropy of order ``q``, i.e., the
+`genentropy` function from Entropies.jl.
 """
 function mutualinfo end 
 

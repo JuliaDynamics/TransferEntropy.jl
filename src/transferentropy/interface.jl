@@ -45,7 +45,7 @@ for transfer entropy. """
 abstract type TransferEntropyEstimator <: EntropyEstimator end
 
 """
-    transferentropy(s, t, [c], est; base = 2, q = 1, 
+    transferentropy(s, t, [c,] est; base = 2, q = 1, 
         τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1, [τC = -1, dC = 1]
     )
 
