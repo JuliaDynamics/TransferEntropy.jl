@@ -40,6 +40,15 @@ Kraskov2
 SymbolicPermutation
 ```
 
+There is a possible performance optimization to be made with this method:
+```julia
+transferentropy!(symb_s, symb_t, s, t, [c], est::SymbolicPermutation; 
+        base = 2, q = 1, m::Int = 3, τ::Int = 1, ...) → Float64
+```
+You can optionally provide pre-allocated (integer) symbol vectors `symb_s` and `symb_t` (and `symb_c`),
+where `length(symb_s) == length(symb_t) == length(symb_c) == N - (est.m-1)*est.τ`. This is useful for saving 
+memory allocations for repeated computations.
+
 ### Hilbert
 
 ```@docs
