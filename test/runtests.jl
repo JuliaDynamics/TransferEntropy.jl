@@ -119,6 +119,13 @@ end
         end
     end
 
+    @testset "Automated estimators" begin
+        est = BBNUE(VisitationFrequency(RectangularBinning(3)))
+        te_stc, params_stc = transferentropy(s, t, c, est)
+        @test te_stc isa Float64
+        @test te_stc >= 0.0
+    end
+
     
 
 end

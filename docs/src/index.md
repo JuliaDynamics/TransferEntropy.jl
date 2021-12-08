@@ -56,3 +56,9 @@ Hilbert
 Amplitude
 Phase
 ```
+
+## Automated variable selection
+
+```@docs
+BBNUE
+```
