@@ -121,6 +121,7 @@ end
 
     @testset "Automated estimators" begin
         est = VisitationFrequency(RectangularBinning(3))
+        te_st, params_st = bbnue(s, t, est)
         te_stc, params_stc = bbnue(s, t, c, est)
         @test te_stc isa Float64
         @test te_stc >= 0.0
