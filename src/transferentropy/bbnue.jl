@@ -1,32 +1,35 @@
 using TimeseriesSurrogates
 
-export BBNUE
+export bbnue
 
-"""
-    BBNUE(est) <: TransferEntropyEstimator
+# Keep this for when a common interface for optimized variable selection methods has been established
+# """
+#export BBNUE
+#     BBNUE(est) <: TransferEntropyEstimator
 
-The bootstrap-based non-uniform embedding estimator (BB-NUE) for conditional transfer entropy (Montalto et al., 2014).
-Uses the estimator `est` to compute relevant marginal entropies. (e.g. `VisitationFrequency(RectangularBinning(3))`) 
+# The bootstrap-based non-uniform embedding estimator (BB-NUE) for conditional transfer entropy (Montalto et al., 2014).
+# Uses the estimator `est` to compute relevant marginal entropies. (e.g. `VisitationFrequency(RectangularBinning(3))`) 
 
-[^Montalto2014]: Montalto, A.; Faes, L.; Marinazzo, D. MuTE: A MATLAB toolbox to compare established and novel estimators of the multivariate transfer entropy. PLoS ONE 2014, 9, e109462.
-"""
-struct BBNUE{E} <: TransferEntropyEstimator
-    est::E
-end
+# [^Montalto2014]: Montalto, A.; Faes, L.; Marinazzo, D. MuTE: A MATLAB toolbox to compare established and novel estimators of the multivariate transfer entropy. PLoS ONE 2014, 9, e109462.
+# """
+# struct BBNUE{E} <: TransferEntropyEstimator
+#     est::E
+# end
 
 
 """ 
-    transferentropy(source, target, [cond], est::BBNUE; q = 0.95, η = 1, 
+    bbnue(source, target, [cond], est::BBNUE; q = 0.95, η = 1, 
         nsurr = 100, uq = 0.95, 
         include_instantaneous = true, 
         method_delay = "ac_min", 
         maxlag::Union{Int, Float64} = 0.05
         ) → te, js, τs, idxs_source, idxs_target, idxs_cond
 
-Estimate transfer entropy using the [`BBNUE`](@ref) estimator, which uses a bootstrap-based
-criterion to identify the most relevant and minimally redundant variables from the present/past of 
-`source`, present/past `cond` (if given) and the past of `target` that contribute most to `target`'s future. `η` is the 
-forward prediction lag. Multivariate `source`, `target` and `cond` (if given) are all possible.
+Estimate transfer entropy using the bootstrap-based non-uniform embedding (BBNUE) estimator, 
+which uses a bootstrap-basedcriterion to identify the most relevant and minimally redundant 
+variables from the present/past of `source`, present/past `cond` (if given) and the past of 
+`target` that contribute most to `target`'s future. `η` is the forward prediction lag. 
+Multivariate `source`, `target` and `cond` (if given) are all possible.
 
 For significance testing of a variable, `nsurr` circular shift surrogates are generated, 
 and if transfer entropy for the original variables exceeds the `uq`-quantile of that of the 
@@ -36,7 +39,7 @@ If `instantaneous` is `true`, then instantaneous interactions are also considere
 `source(t) → target(t)` are allowed.
 
 In this implementation, the maximum lag for each embedding variable is determined using `estimate_delay` 
-from `DelayEmbeddings.jl`. The keywords `method_delay` (default is "ac_min") controls the method 
+from `DelayEmbeddings`. The keywords `method_delay` (default is "ac_min") controls the method 
 for estimating the delay, and `maxlag` is the maximum allowed delay (if `maxlag ∈ [0, 1]` is a fraction, 
 then the maximum lag is that fraction of the input time series length, and if `maxlag` is an integer, 
 then the maximum lag is `maxlag`).
@@ -76,15 +79,15 @@ x, y = columns(orbit)
 # over the bins don't approach the uniform distribution (need enough points 
 # to fill bins).
 est = VisitationFrequency(RectangularBinning(3))
-te_xy, params_xy = transferentropy(x, y, BBNUE(est))
-te_yx, params_yx = transferentropy(y, x, BBNUE(est))
+te_xy, params_xy = bbnue(x, y, BBNUE(est))
+te_yx, params_yx = bbnue(y, x, BBNUE(est))
 
 te_xy, te_yx
 ```
 
 [^Montalto2014]: Montalto, A.; Faes, L.; Marinazzo, D. MuTE: A MATLAB toolbox to compare established and novel estimators of the multivariate transfer entropy. PLoS ONE 2014, 9, e109462.
 """
-function transferentropy(source, target, cond, est::BBNUE; q = 0.95, η = 1, nsurr = 100, uq = 0.95, 
+function bbnue(source, target, cond, est; q = 0.95, η = 1, nsurr = 100, uq = 0.95, 
         include_instantaneous = true, method_delay = "ac_min", maxlag::Union{Int, Float64} = 0.05)
 
     Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond = 
@@ -97,7 +100,7 @@ function transferentropy(source, target, cond, est::BBNUE; q = 0.95, η = 1, nsu
     return optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est, q = q, nsurr = 19, uq = uq)
 end
 
-function transferentropy(source, target, est::BBNUE; q = 0.95, η = 1, nsurr = 100, uq = 0.95, 
+function bbnue(source, target, est; q = 0.95, η = 1, nsurr = 100, uq = 0.95, 
         include_instantaneous = true, method_delay = "ac_min", maxlag::Union{Int, Float64} = 0.05)
 
     Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond = 

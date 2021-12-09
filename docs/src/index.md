@@ -59,6 +59,8 @@ Phase
 
 ## Automated variable selection
 
+### Boostrap-based non-uniform embedding (BBNUE)
+
 ```@docs
-BBNUE
+bbnue
 ```

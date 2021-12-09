@@ -168,13 +168,13 @@ function optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est;
             if k == 1 || length(𝒮) == 0
                 Cᵢ = Ω[i]
                 CMI_Y⁺_Cᵢ = 
-                    genentropy(Dataset(Y⁺, Dataset(Cᵢ)), est.est, q = q, base = base) - 
-                    genentropy(Dataset(Cᵢ), est.est, q = q, base = base)
+                    genentropy(Dataset(Y⁺, Dataset(Cᵢ)), est, q = q, base = base) - 
+                    genentropy(Dataset(Cᵢ), est, q = q, base = base)
             else
                 Cᵢ = [Ω[i], 𝒮...]
                 CMI_Y⁺_Cᵢ = 
-                    genentropy(Dataset(Y⁺, Dataset(Cᵢ...,)), est.est, q = q, base = base) - 
-                    genentropy(Dataset(Cᵢ...,), est.est, q = q, base = base)
+                    genentropy(Dataset(Y⁺, Dataset(Cᵢ...,)), est, q = q, base = base) - 
+                    genentropy(Dataset(Cᵢ...,), est, q = q, base = base)
             end
             CMIs_between_Y⁺_and_candidates[i] = CMI_Y⁺_Cᵢ
         end
@@ -194,24 +194,24 @@ function optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est;
 
             for i = 1:nsurr
                 surr_wₖ = s() # Surrogate version of Wₖ
-                CMI_permutations[i] = mutualinfo(Y⁺, surr_wₖ, est.est)
+                CMI_permutations[i] = mutualinfo(Y⁺, surr_wₖ, est)
             end
         else
             # Precompute terms that do not change during surrogate loop
-            H_Y⁺_𝒮 = genentropy(Dataset(Y⁺, Dataset(𝒮...,)), est.est, q = q, base = base)
+            H_Y⁺_𝒮 = genentropy(Dataset(Y⁺, Dataset(𝒮...,)), est, q = q, base = base)
             
             # ORIGIANL TE
-            H_𝒮 = genentropy(Dataset(𝒮...), est.est, q = q, base = base)
+            H_𝒮 = genentropy(Dataset(𝒮...), est, q = q, base = base)
             cmiₖ = H_Y⁺_𝒮 + 
-                    genentropy(Dataset([Wₖ, 𝒮...,]...,), est.est, q = q, base = base) - 
-                    genentropy(Dataset(Y⁺, Dataset([Wₖ, 𝒮...,]...,)), est.est, q = q, base = base) - 
+                    genentropy(Dataset([Wₖ, 𝒮...,]...,), est, q = q, base = base) - 
+                    genentropy(Dataset(Y⁺, Dataset([Wₖ, 𝒮...,]...,)), est, q = q, base = base) - 
                     H_𝒮
 
             for i = 1:nsurr
                 surr_wₖ = s() # Surrogate version of Wₖ
                 CMI_permutations[i] = H_Y⁺_𝒮 + 
-                    genentropy(Dataset([surr_wₖ, 𝒮...]...,), est.est, q = q, base = base) - 
-                    genentropy(Dataset(Y⁺, Dataset([surr_wₖ, 𝒮...]...,)), est.est, q = q, base = base) - 
+                    genentropy(Dataset([surr_wₖ, 𝒮...]...,), est, q = q, base = base) - 
+                    genentropy(Dataset(Y⁺, Dataset([surr_wₖ, 𝒮...]...,)), est, q = q, base = base) - 
                     H_𝒮
             end
             
@@ -252,11 +252,11 @@ function optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est;
         return 0.0, Int[], Int[], idxs_source, idxs_target, idxs_cond
     end
         
-    CE2 = genentropy(Dataset(Y⁺, Dataset(𝒮...,)), est.est, base = base, q = q) - 
-        genentropy(Dataset(𝒮...,), est.est, base = base, q = q)
+    CE2 = genentropy(Dataset(Y⁺, Dataset(𝒮...,)), est, base = base, q = q) - 
+        genentropy(Dataset(𝒮...,), est, base = base, q = q)
     
-    CE1 = genentropy(Dataset(Y⁺, Dataset(𝒮_nonX...,)), est.est, base = base, q = q) - 
-        genentropy(Dataset(𝒮_nonX...,), est.est, base = base, q = q)
+    CE1 = genentropy(Dataset(Y⁺, Dataset(𝒮_nonX...,)), est, base = base, q = q) - 
+        genentropy(Dataset(𝒮_nonX...,), est, base = base, q = q)
     
     CMI = CE1 - CE2
     return CMI, 𝒮_js, 𝒮_τs, idxs_source, idxs_target, idxs_cond
