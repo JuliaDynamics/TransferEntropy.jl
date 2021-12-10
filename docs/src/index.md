@@ -56,3 +56,11 @@ Hilbert
 Amplitude
 Phase
 ```
+
+## Automated variable selection
+
+### Boostrap-based non-uniform embedding (BBNUE)
+
+```@docs
+bbnue
+```

@@ -1,4 +1,5 @@
 include("utils.jl")
+include("autoutils.jl")
 
 export transferentropy, transferentropy!
 
@@ -231,3 +232,6 @@ include("symbolic.jl")
 include("hilbert.jl")
 include("nearestneighbor.jl")
 include("transferoperator.jl")
+
+# automated approaches
+include("bbnue.jl")
