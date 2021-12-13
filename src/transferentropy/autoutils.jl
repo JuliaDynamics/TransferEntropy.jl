@@ -18,9 +18,13 @@ the variables.
 
 If `maxlag` is an integer, `maxlag` is taken as the maximum allowed embedding lag. If `maxlag` is a float, 
 then the maximum embedding lag is taken as `maximum([length.(source); length.(target); length.(cond)])*maxlag`.
+
+If `exclude` is an integer, all variables whose embedding lag has absolute value equal to `exclude` will be 
+removed from the 
 """
 function construct_candidate_variables(source, target, cond;
-        k::Int = 1, 
+        k::Int = 1,
+        exclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
         method_delay = "ac_min",
         maxlag::Union{Int, Float64} = 0.05)
@@ -42,6 +46,7 @@ function construct_candidate_variables(source, target, cond;
      
     # Generate candidate set
     startlag = include_instantaneous ? 0 : -1
+
     τs_source = [[startlag:-1:-τ...,] for τ in τsmax_source]
     τs_target = [[startlag:-1:-τ...,] for τ in τsmax_target]
     τs_cond = [[startlag:-1:-τ...,] for τ in τsmax_cond]
@@ -53,6 +58,20 @@ function construct_candidate_variables(source, target, cond;
         
     return [τs..., ks_targetfuture], [js..., js_targetfuture]
 end
+
+# Usaully, we use all lags from startlag:-\tau_max.  These functions are used to exclude some lags
+# in those ranges, if necessary.
+exclude_lags(τs::AbstractVector{Int}, js::AbstractVector{Int}, exclude::Int) = 
+    [τ for τ in τs if abs(τ) != abs.(exclude)]
+
+function exclude_lags(τs::AbstractVector{Int}, js::AbstractVector{Int}, exclude::AbstractVector{Int})
+    if isempty(exclude)
+        return τs
+    else
+        return [τ for τ in τs if abs(x) ∉ abs.(exclude)]
+    end
+end
+exclude_lags(τs::Vector{AbstractVector{Int}}, exclude) = [exclude_lags(l, exclude) for l in τs]
 
 # source & target variant 
 function construct_candidate_variables(source, target; 
