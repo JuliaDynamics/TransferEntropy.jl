@@ -4,8 +4,9 @@ using DelayEmbeddings, Statistics
     construct_candidate_variables(
         source::Vector{AbstractVector}, 
         target::Vector{AbstractVector}, 
-        cond::Vector{AbstractVector};
+        [cond::Vector{AbstractVector}];
         k::Int = 1, include_instantaneous = true,
+        τexclude::Union{Int, Nothing} = nothing,
         maxlag::Union{Int, Float64} = 0.05
     ) → ([τs_source, τs_target, τs_cond, ks_targetfuture], [js_source, js_target, js_cond, js_targetfuture])
 
@@ -19,7 +20,7 @@ the variables.
 If `maxlag` is an integer, `maxlag` is taken as the maximum allowed embedding lag. If `maxlag` is a float, 
 then the maximum embedding lag is taken as `maximum([length.(source); length.(target); length.(cond)])*maxlag`.
 
-If `exclude` is an integer, all variables whose embedding lag has absolute value equal to `exclude` will be 
+If `τexclude` is an integer, all variables whose embedding lag has absolute value equal to `exclude` will be 
 excluded.
 """
 function construct_candidate_variables(source, target, cond;
