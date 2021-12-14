@@ -120,12 +120,11 @@ end
 # source, target & cond variant
 function embed_candidate_variables(source, target, cond;
         η::Int = 1, 
-        τexclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
         method_delay = "mi_min",
         maxlag::Union{Int, Float64} = 0.05)
     
-    τs, js = construct_candidate_variables(source, target, cond, k = η, τexclude = τexclude)
+    τs, js = construct_candidate_variables(source, target, cond, k = η)
 
     # TODO: This is more efficient if not using datasets. Re-do manually.
     data = Dataset([source..., target..., cond...,]...,)
@@ -150,12 +149,11 @@ end
 # source & target variant
 function embed_candidate_variables(source, target; 
         η::Int = 1, 
-        τexclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
         method_delay = "mi_min",
         maxlag::Union{Int, Float64} = 0.05)
     
-    τs, js = construct_candidate_variables(source, target, k = η, τexclude = τexclude)
+    τs, js = construct_candidate_variables(source, target, k = η)
     
     # TODO: This is more efficient if not using datasets. Re-do manually.
     data = Dataset([source..., target...,]...,)
