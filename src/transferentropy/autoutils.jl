@@ -24,7 +24,7 @@ removed from the
 """
 function construct_candidate_variables(source, target, cond;
         k::Int = 1,
-        exclude::Union{Int, Nothing} = nothing,
+        τexclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
         method_delay = "ac_min",
         maxlag::Union{Int, Float64} = 0.05)
@@ -43,7 +43,7 @@ function construct_candidate_variables(source, target, cond;
     τsmax_source = [estimate_delay(s, method_delay, τs) for s in source]
     τsmax_target = [estimate_delay(t, method_delay, τs) for t in target]
     τsmax_cond = [estimate_delay(c, method_delay, τs) for c in cond]
-     
+    
     # Generate candidate set
     startlag = include_instantaneous ? 0 : -1
 
@@ -55,27 +55,29 @@ function construct_candidate_variables(source, target, cond;
     js_targetfuture = [i for i in length(τs_source)+1:length(τs_source)+length(τs_target)]
     τs = [τs_source..., τs_target..., τs_cond...]
     js = [[i for x in 1:length(τs[i])] for i = 1:length(τs)]
-        
+
+    # Variable filtering, if desired
+    if τexclude isa Int
+        τs = [filtered_τs(τsᵢ, jsᵢ, τexclude) for (τsᵢ, jsᵢ) in zip(τs, js)]
+        js = [filtered_js(τsᵢ, jsᵢ, τexclude) for (τsᵢ, jsᵢ) in zip(τs, js)]
+    end
     return [τs..., ks_targetfuture], [js..., js_targetfuture]
 end
 
-# Usaully, we use all lags from startlag:-\tau_max.  These functions are used to exclude some lags
-# in those ranges, if necessary.
-exclude_lags(τs::AbstractVector{Int}, js::AbstractVector{Int}, exclude::Int) = 
-    [τ for τ in τs if abs(τ) != abs.(exclude)]
-
-function exclude_lags(τs::AbstractVector{Int}, js::AbstractVector{Int}, exclude::AbstractVector{Int})
-    if isempty(exclude)
-        return τs
-    else
-        return [τ for τ in τs if abs(x) ∉ abs.(exclude)]
-    end
+# Usaully, we use all lags from startlag:-\tau_max to construct variables. In some situations,
+# we may want to exclude som of those variables. 
+function filtered_τs(τs::AbstractVector{Int}, js::AbstractVector{Int}, τexclude::Int)
+    [τ for τ in τs if abs(τ) != abs.(τexclude)]
 end
-exclude_lags(τs::Vector{AbstractVector{Int}}, exclude) = [exclude_lags(l, exclude) for l in τs]
+
+function filtered_js(τs::AbstractVector{Int}, js::AbstractVector{Int}, τexclude::Int)
+    [j for (τ, j) in zip(τs, js) if abs(τ) != abs.(τexclude)]
+end
 
 # source & target variant 
 function construct_candidate_variables(source, target; 
         k::Int = 1, 
+        τexclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
         method_delay = "mi_min",
         maxlag::Union{Int, Float64} = 0.05)
@@ -93,7 +95,7 @@ function construct_candidate_variables(source, target;
     # Find the maximum allowed embedding lag for each of the candidates.
     τsmax_source = [estimate_delay(s, method_delay, τs) for s in source]
     τsmax_target = [estimate_delay(t, method_delay, τs) for t in target]
-    
+
     # Generate candidate set
     startlag = include_instantaneous ? 0 : -1
     τs_source = [[startlag:-1:-τ...,] for τ in τsmax_source]
@@ -103,6 +105,12 @@ function construct_candidate_variables(source, target;
     js_targetfuture = [i for i in length(τs_source)+1:length(τs_source)+length(τs_target)]
     τs = [τs_source..., τs_target...,]
     js = [[i for x in 1:length(τs[i])] for i = 1:length(τs)]
+
+    # Variable filtering, if desired
+    if τexclude isa Int
+        τs = [filtered_τs(τsᵢ, jsᵢ, τexclude) for (τsᵢ, jsᵢ) in zip(τs, js)]
+        js = [filtered_js(τsᵢ, jsᵢ, τexclude) for (τsᵢ, jsᵢ) in zip(τs, js)]
+    end
         
     return [τs..., ks_targetfuture], [js..., js_targetfuture]
 end
