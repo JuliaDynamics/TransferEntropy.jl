@@ -20,7 +20,7 @@ If `maxlag` is an integer, `maxlag` is taken as the maximum allowed embedding la
 then the maximum embedding lag is taken as `maximum([length.(source); length.(target); length.(cond)])*maxlag`.
 
 If `exclude` is an integer, all variables whose embedding lag has absolute value equal to `exclude` will be 
-removed from the 
+excluded.
 """
 function construct_candidate_variables(source, target, cond;
         k::Int = 1,
@@ -43,7 +43,7 @@ function construct_candidate_variables(source, target, cond;
     τsmax_source = [estimate_delay(s, method_delay, τs) for s in source]
     τsmax_target = [estimate_delay(t, method_delay, τs) for t in target]
     τsmax_cond = [estimate_delay(c, method_delay, τs) for c in cond]
-    
+
     # Generate candidate set
     startlag = include_instantaneous ? 0 : -1
 
@@ -79,7 +79,7 @@ function construct_candidate_variables(source, target;
         k::Int = 1, 
         τexclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
-        method_delay = "mi_min",
+        method_delay = "ac_min",
         maxlag::Union{Int, Float64} = 0.05)
     
     # Ensure all time series are of the same length.
