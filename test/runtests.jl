@@ -131,19 +131,19 @@ end
 
             τexclude = 1
             vars = TransferEntropy.construct_candidate_variables([s], [t], τexclude = nothing)
-            var_exclude = TransferEntropy.construct_candidate_variables([s], [t], τexclude = τexclude)
+            vars_ex = TransferEntropy.construct_candidate_variables([s], [t], τexclude = τexclude)
             fvars = Iterators.flatten(vars[1][1:end-1]) |> collect
             fvars_ex = Iterators.flatten(vars_ex[1][1:end-1]) |> collect
-            @test τexclude ∈ fvars
-            @test τexclude ∉ fvars
+            @test τexclude ∈ abs.(fvars)
+            @test τexclude ∉ abs.(fvars_ex)
             @test length(fvars) > length(fvars_ex)
 
             vars = TransferEntropy.construct_candidate_variables([s], [t], [c], τexclude = nothing)
-            var_exclude = TransferEntropy.construct_candidate_variables([s], [t], [c], τexclude = τexclude)
+            vars_ex = TransferEntropy.construct_candidate_variables([s], [t], [c], τexclude = τexclude)
             fvars = Iterators.flatten(vars[1][1:end-1]) |> collect
             fvars_ex = Iterators.flatten(vars_ex[1][1:end-1]) |> collect
-            @test τexclude ∈ fvars
-            @test τexclude ∉ fvars
+            @test τexclude ∈ abs.(fvars)
+            @test τexclude ∉ abs.(fvars_ex)
             @test length(fvars) > length(fvars_ex)
         end
 
