@@ -1,7 +1,7 @@
 import DelayEmbeddings: genembed, AbstractDataset, Dataset
 export EmbeddingTE
 
-function rc(x::Union{AbstractDataset, Vector{T}, Vector{Vector{T}}},
+function rc(x::Union{AbstractDataset, AbstractVector{T}, AbstractVector{AbstractVector{T}}},
         dim::Union{Int, AbstractVector{Int}}, 
         τ::Union{Int, AbstractVector{Int}}, forward = false) where T <: Number
     
