@@ -1,11 +1,11 @@
 import DelayEmbeddings: genembed, AbstractDataset, Dataset
 export EmbeddingTE
 
-function rc(x::Union{AbstractDataset, AbstractVector{T}, AbstractVector{AbstractVector{T}}},
+function rc(x::Union{AbstractDataset, AbstractVector{T}},
         dim::Union{Int, AbstractVector{Int}}, 
-        τ::Union{Int, AbstractVector{Int}}, forward = false) where T <: Number
-    
-    if x isa Vector{T} where T <: Number
+        τ::Union{Int, AbstractVector{Int}}, forward = false) where T <: Union{Number, AbstractVector}
+
+    if typeof(x) <: AbstractVector{T} where T <: Number
         # Fixed dimension, fixed lag
         if dim isa Int && τ isa Int            
             pos = [1 for x in dim:-1:1]
@@ -28,10 +28,10 @@ function rc(x::Union{AbstractDataset, AbstractVector{T}, AbstractVector{Abstract
     end
 
     # Multiple time series input
-    if (x isa Vector{Vector{T}} where T <: Number) || (x isa AbstractDataset)
+    if (x isa AbstractVector{T} where T <: AbstractVector{N} where N <: Number) || (x isa AbstractDataset)
         if x isa AbstractDataset 
             N = length(x)
-        elseif x isa Vector{Vector{T}} where T <: Number
+        elseif x isa AbstractVector
             N = size(x, 1)
         end
 
