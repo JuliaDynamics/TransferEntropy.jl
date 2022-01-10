@@ -1,4 +1,4 @@
-using DelayEmbeddings, Statistics
+using DelayEmbeddings, Statistics, TimeseriesSurrogates
 
 """
     construct_candidate_variables(
@@ -45,17 +45,30 @@ function construct_candidate_variables(source, target, cond;
     τsmax_target = [estimate_delay(t, method_delay, τs) for t in target]
     τsmax_cond = [estimate_delay(c, method_delay, τs) for c in cond]
 
-    # Generate candidate set
-    startlag = include_instantaneous ? 0 : -1
+    # The set of candidate variables generated from the target 
+    # time series must not overlap with the prediction variables,
+    # so the k-th lag variable is never included in the candidate set.
+    τs_target = [[0:-1:-τ...,] for τ in τsmax_target]
 
-    τs_source = [[startlag:-1:-τ...,] for τ in τsmax_source]
-    τs_target = [[startlag:-1:-τ...,] for τ in τsmax_target]
-    τs_cond = [[startlag:-1:-τ...,] for τ in τsmax_cond]
-    
-    ks_targetfuture = [k for i in 1:length(target)]
-    js_targetfuture = [i for i in length(τs_source)+1:length(τs_source)+length(τs_target)]
+    # Source and conditional variables may have instantaneous
+    # interactions with target, so include lag `k` (if desired)
+    # in the set of candidate variables.
+    if include_instantaneous
+        τs_source = [[k; [0:-1:-τ...,]] for τ in τsmax_source]
+        τs_cond = [[k; [0:-1:-τ...,]] for τ in τsmax_cond]
+    else
+        τs_source = [[0:-1:-τ...,] for τ in τsmax_source]
+        τs_cond = [[0:-1:-τ...,] for τ in τsmax_cond]
+    end
+
     τs = [τs_source..., τs_target..., τs_cond...]
+
+    # Embedding variables
     js = [[i for x in 1:length(τs[i])] for i = 1:length(τs)]
+    js_targetfuture = [i for i in length(τs_source)+1:length(τs_source)+length(τs_target)]
+
+    # Prediction variables
+    ks_targetfuture = [k for i in 1:length(target)] 
 
     # Variable filtering, if desired
     if τexclude isa Int
@@ -97,10 +110,21 @@ function construct_candidate_variables(source, target;
     τsmax_source = [estimate_delay(s, method_delay, τs) for s in source]
     τsmax_target = [estimate_delay(t, method_delay, τs) for t in target]
 
-    # Generate candidate set
-    startlag = include_instantaneous ? 0 : -1
-    τs_source = [[startlag:-1:-τ...,] for τ in τsmax_source]
-    τs_target = [[startlag:-1:-τ...,] for τ in τsmax_target]
+    # The set of candidate variables generated from the target 
+    # time series must not overlap with the prediction variables,
+    # so the k-th lag variable is never included in the candidate set.
+    τs_target = [[0:-1:-τ...,] for τ in τsmax_target]
+
+    # Source variables may have instantaneous
+    # interactions with target, so include lag `k` (if desired)
+    # in the set of candidate variables.
+    if include_instantaneous
+        τs_source = [[k; [0:-1:-τ...,]] for τ in τsmax_source]
+    else
+        τs_source = [[0:-1:-τ...,] for τ in τsmax_source]
+    end
+
+    τs = [τs_source..., τs_target...]
     
     ks_targetfuture = [k for i in 1:length(target)]
     js_targetfuture = [i for i in length(τs_source)+1:length(τs_source)+length(τs_target)]
@@ -118,14 +142,20 @@ end
 
 
 # source, target & cond variant
-function embed_candidate_variables(source, target, cond;
+function candidate_embedding(source, target, cond;
         η::Int = 1, 
         τexclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
         method_delay = "mi_min",
         maxlag::Union{Int, Float64} = 0.05)
     
-    τs, js = construct_candidate_variables(source, target, cond, k = η, τexclude = τexclude)
+    τs, js = construct_candidate_variables(
+        source, target, cond,
+        k = η, 
+        τexclude = τexclude,
+        method_delay = method_delay,
+        maxlag = maxlag,
+        include_instantaneous = include_instantaneous)
 
     # TODO: This is more efficient if not using datasets. Re-do manually.
     data = Dataset([source..., target..., cond...,]...,)
@@ -148,14 +178,20 @@ function embed_candidate_variables(source, target, cond;
 end
 
 # source & target variant
-function embed_candidate_variables(source, target; 
+function candidate_embedding(source, target; 
         η::Int = 1, 
         τexclude::Union{Int, Nothing} = nothing,
         include_instantaneous = true,
         method_delay = "mi_min",
         maxlag::Union{Int, Float64} = 0.05)
     
-    τs, js = construct_candidate_variables(source, target, k = η, τexclude = τexclude)
+    τs, js = construct_candidate_variables(
+        source, target,
+        k = η, 
+        τexclude = τexclude,
+        method_delay = method_delay,
+        maxlag = maxlag,
+        include_instantaneous = include_instantaneous)
     
     # TODO: This is more efficient if not using datasets. Re-do manually.
     data = Dataset([source..., target...,]...,)
@@ -174,13 +210,15 @@ function embed_candidate_variables(source, target;
     return Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond
 end
 
+
+
 function optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est; 
-        uq = 0.95, nsurr = 100, q = 1, base = 2)
+        q = 1, base = 2, 
+        α = 0.05, nsurr = 100, surr::Surrogate = RandomShuffle())
     
     τs_comb = [(τs...)...,]
     js_comb = [(js...)...,]
     
-    npts = length(Y⁺)
     n_candidate_variables = length(Ω)
     
     𝒮 = Vector{Vector{Float64}}(undef, 0)
@@ -210,67 +248,64 @@ function optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est;
         end
         
         idx = findfirst(x -> x == minimum(CMIs_between_Y⁺_and_candidates), CMIs_between_Y⁺_and_candidates)
-        Wₖ = Ω[idx]
+        cₖ = Ω[idx]
                 
-        # Test significance of this candidate by using a random permutation test
+        # Test the significance of this candidate by using a permutation test. The type of surrogate
+        # is given by `surr`, and we will use `nsurr` surrogate realizations.
         CMI_permutations = zeros(nsurr)
+        s = surrogenerator(cₖ, surr)
         
-        # A circular shift surrogate generator, to exclude effects of autocorrelation
-        s = surrogenerator(Wₖ, CircShift(collect(1:npts - 1)))
-        #s = surrogenerator(Wₖ, RandomShuffle())
-        
+        # If k == 1, no candidates have been selected, so CMI reduces to MI
         if k == 1
             cmiₖ = CMIs_between_Y⁺_and_candidates[idx]
 
             for i = 1:nsurr
-                surr_wₖ = s() # Surrogate version of Wₖ
-                CMI_permutations[i] = mutualinfo(Y⁺, surr_wₖ, est)
+                surr_cₖ = s() # Surrogate version of cₖ
+                CMI_permutations[i] = mutualinfo(Y⁺, surr_cₖ, est)
             end
+        # If k > 1, at least one candidate has been selected, so we compute CMI
         else
             # Precompute terms that do not change during surrogate loop
             H_Y⁺_𝒮 = genentropy(Dataset(Y⁺, Dataset(𝒮...,)), est, q = q, base = base)
-            
-            # ORIGIANL TE
             H_𝒮 = genentropy(Dataset(𝒮...), est, q = q, base = base)
+
+            # Original TE
             cmiₖ = H_Y⁺_𝒮 + 
-                    genentropy(Dataset([Wₖ, 𝒮...,]...,), est, q = q, base = base) - 
-                    genentropy(Dataset(Y⁺, Dataset([Wₖ, 𝒮...,]...,)), est, q = q, base = base) - 
+                    genentropy(Dataset([cₖ, 𝒮...,]...,), est, q = q, base = base) - 
+                    genentropy(Dataset(Y⁺, Dataset([cₖ, 𝒮...,]...,)), est, q = q, base = base) - 
                     H_𝒮
 
             for i = 1:nsurr
-                surr_wₖ = s() # Surrogate version of Wₖ
+                surr_cₖ = s() # Surrogate version of cₖ
                 CMI_permutations[i] = H_Y⁺_𝒮 + 
-                    genentropy(Dataset([surr_wₖ, 𝒮...]...,), est, q = q, base = base) - 
-                    genentropy(Dataset(Y⁺, Dataset([surr_wₖ, 𝒮...]...,)), est, q = q, base = base) - 
+                    genentropy(Dataset([surr_cₖ, 𝒮...]...,), est, q = q, base = base) - 
+                    genentropy(Dataset(Y⁺, Dataset([surr_cₖ, 𝒮...]...,)), est, q = q, base = base) - 
                     H_𝒮
             end
-            
         end
-       # If the candidate passes the significance test
-        if cmiₖ > quantile(CMI_permutations, uq)
-            # Add the candidate to list of selected candidates
-            push!(𝒮, Wₖ)
+
+        # If the candidate passes the significance test, add it to list of selected candidates 
+        # and remove it from list of remaining candidates.
+        if cmiₖ > quantile(CMI_permutations, 1 - α)
+            push!(𝒮, cₖ)
             push!(𝒮_τs, τs_comb[idx])
             push!(𝒮_js, js_comb[idx])
-            
-            # Delete the candidate from the list of remaining candidates
             deleteat!(Ω, idx)
             deleteat!(τs_comb, idx)
             deleteat!(js_comb, idx)
-
             k = k + 1
+        # If the candidate does not pass significance test, terminate.
         else 
             k = n_candidate_variables + 1
         end
     end
     
-    
-    # No variables were selected
+    # No variables were selected at all.
     if length(𝒮) == 0
         return 0.0, Int[], Int[], idxs_source, idxs_target, idxs_cond
     end
     
-    # No variables were selected from the source process
+    # If no variables were selected from the source process, then TE is not well-defined.
     n_source_vars_picked = count(x -> x ∈ idxs_source, 𝒮_js)
     if n_source_vars_picked == 0
         return 0.0, Int[], Int[], idxs_source, idxs_target, idxs_cond
@@ -290,8 +325,8 @@ function optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est;
     
     CMI = CE1 - CE2
     return CMI, 𝒮_js, 𝒮_τs, idxs_source, idxs_target, idxs_cond
-    
 end
 
-process_input(ts::Vector{T}) where T <: Real = [ts]
-process_input(ts::AbstractVector{Vector{T}}) where T <: Real = ts
+process_input(ts::Vector{T}) where T <: Number = [ts]
+process_input(ts::AbstractVector{V}) where V <: Vector{N} where N <: Number = ts
+process_input(ts::Dataset) = [columns(ts)...,]
