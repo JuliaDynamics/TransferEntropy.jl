@@ -26,11 +26,22 @@ export bbnue
 
 Estimate transfer entropy (TE) from `source` to `target` (conditioned on `cond` if given)
 for prediction lag `η`, using the bootstrap-based non-uniform embedding (BBNUE) 
-method from Montalta et al. (2004) [^Montalto2014] (see implementation details below).
+method from Montalta et al. (2004) [^Montalto2014].
+
+## Implementation details
 
 The BBNUE method uses a bootstrap-based criterion to identify the most relevant and 
 minimally redundant variables from the the past of `target`, present/past of `source`, 
 and (if given) the present/past of `cond`, that contribute most to `target`'s future. 
+
+This implementation uses a conditional entropy minimization criterion for selecting variables,
+which is what Montalto et al. (2014)[^Montalto2014] uses for their bin-estimator. Here, any 
+estimator can be used, but variables will be selected using conditional entropy minimization 
+regardless of the choice of estimator.
+
+Montalto et al.'s bin-estimator corresponds to using the `VisitationFrequency` estimator with bins 
+whose sides are equal-length, e.g. `VisitationFrequency(RectangularBinning(0.5))`. 
+In this implementation, any rectangular binning can be used.
 
 ## Input data
 
@@ -73,17 +84,6 @@ to the future of `target` and is included in the set of selected variables.
 
 If no relevant variables pass the permutation test, then TE is not well-defined, and a value of `0.0`
 is returned.
-
-## Implementation details
-
-This implementation uses a conditional entropy minimization criterion for selecting variables,
-which is what Montalto et al. (2014)[^Montalto2014] uses for their bin-estimator. Here, any 
-estimator can be used, but variables will be selected using conditional entropy minimization 
-regardless of the choice of estimator.
-
-Montalto et al.'s bin-estimator corresponds to using the `VisitationFrequency` estimator with bins 
-whose sides are equal-length, e.g. `VisitationFrequency(RectangularBinning(0.5))`. 
-In this implementation, any rectangular binning can be used.
 
 ## Returns
 
