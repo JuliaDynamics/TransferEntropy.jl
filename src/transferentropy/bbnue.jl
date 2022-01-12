@@ -54,7 +54,7 @@ potentially conditioned on many different variables, you can do the following:
 
 ```julia
 n = 1000
-# Source and target varibles
+# Source and target variables
 s, t = rand(n), rand(n)
 
 # Variables that might potentially influence `t` along with `s`
@@ -67,7 +67,7 @@ bbnue(s, t, Dataset([c1, c2, c3]), est)
 ## Variable selection and significance testing
 
 In this implementation, the maximum lag for each embedding variable is determined using `estimate_delay` 
-from `DelayEmbeddings`. The keywords `method_delay` (default is "ac_min") controls the method 
+from `DelayEmbeddings`. The keywords `method_delay` (the default is `"ac_min"`) controls the method 
 for estimating the delay, and `maxlag` is the maximum allowed delay (if `maxlag ∈ [0, 1]` is a fraction, 
 then the maximum lag is that fraction of the input time series length, and if `maxlag` is an integer, 
 then the maximum lag is `maxlag`).
@@ -107,7 +107,7 @@ x, y = columns(orbit)
 # to keep computation costs low and to ensure the probability distributions 
 # over the bins don't approach the uniform distribution (need enough points 
 # to fill bins).
-est = VisitationFrequency(RectangularBinning(3))
+est = NaiveKernel(0.3)
 te_xy = bbnue(x, y, est, surr = RandomShuffle(), nsurr = 100, include_instantaneous = true)
 te_yx = bbnue(y, x, est, surr = RandomShuffle(), nsurr = 100, include_instantaneous = true)
 
