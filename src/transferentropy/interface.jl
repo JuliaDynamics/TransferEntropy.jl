@@ -61,6 +61,7 @@ Rényi transfer entropy[^Jizba2012] by setting `q` different from 1.
 All possible estimators that can be used are described in the online documentation.
 
 ## Keyword Arguments
+
 Keyword arguments tune the embedding that will be done to each of the timeseries
 (with more details following below).
 In short, the embedding lags `τT`, `τS`, `τC` must be zero or negative, the 

@@ -18,25 +18,53 @@ export bbnue
 
 
 """ 
-    bbnue(source, target, [cond], est::BBNUE; q = 0.95, η = 1, 
-        nsurr = 100, uq = 0.95, 
-        include_instantaneous = true, 
-        method_delay = "ac_min", 
-        maxlag::Union{Int, Float64} = 0.05
+    bbnue(source, target, [cond], est; 
+        η = 1, include_instantaneous = true, 
+        method_delay = "ac_min", maxlag::Union{Int, Float64} = 0.05,
+        surr::Surrogate = RandomShuffle(), nsurr = 100, α = 0.05)
         ) → te, js, τs, idxs_source, idxs_target, idxs_cond
 
-Estimate transfer entropy using the bootstrap-based non-uniform embedding (BBNUE) estimator, 
-which uses a bootstrap-basedcriterion to identify the most relevant and minimally redundant 
-variables from the present/past of `source`, present/past `cond` (if given) and the past of 
-`target` that contribute most to `target`'s future. `η` is the forward prediction lag. 
-Multivariate `source`, `target` and `cond` (if given) are all possible.
+Estimate transfer entropy (TE) from `source` to `target` (conditioned on `cond` if given)
+for prediction lag `η`, using the bootstrap-based non-uniform embedding (BBNUE) 
+method from Montalta et al. (2004) [^Montalto2014].
 
-For significance testing of a variable, `nsurr` circular shift surrogates are generated, 
-and if transfer entropy for the original variables exceeds the `uq`-quantile of that of the 
-surrogate ensemble, then the variable is included.
+## Implementation details
 
-If `instantaneous` is `true`, then instantaneous interactions are also considered, i.e. effects like 
-`source(t) → target(t)` are allowed.
+The BBNUE method uses a bootstrap-based criterion to identify the most relevant and 
+minimally redundant variables from the the past of `target`, present/past of `source`, 
+and (if given) the present/past of `cond`, that contribute most to `target`'s future. 
+
+This implementation uses a conditional entropy minimization criterion for selecting variables,
+which is what Montalto et al. (2014)[^Montalto2014] uses for their bin-estimator. Here, any 
+estimator can be used, but variables will be selected using conditional entropy minimization 
+regardless of the choice of estimator.
+
+Montalto et al.'s bin-estimator corresponds to using the `VisitationFrequency` estimator with bins 
+whose sides are equal-length, e.g. `VisitationFrequency(RectangularBinning(0.5))`. 
+In this implementation, any rectangular binning can be used.
+
+## Input data
+
+Multivariate `source`, `target` and `cond` (if given) can be given as univariate 
+`AbstractVector`s or as multivariate `Dataset`s or `Vector{AbstractVector}`. 
+
+For example, if you want to compute 
+the BBNUE-transfer entropy from a univariate source to a univariate target, 
+potentially conditioned on many different variables, you can do the following:
+
+```julia
+n = 1000
+# Source and target varibles
+s, t = rand(n), rand(n)
+
+# Variables that might potentially influence `t` along with `s`
+c1, c2, c3 = rand(n), rand(n), rand(n)
+
+est = NaiveKernel(0.3)
+bbnue(s, t, Dataset([c1, c2, c3]), est)
+```
+
+## Variable selection and significance testing
 
 In this implementation, the maximum lag for each embedding variable is determined using `estimate_delay` 
 from `DelayEmbeddings`. The keywords `method_delay` (default is "ac_min") controls the method 
@@ -44,22 +72,23 @@ for estimating the delay, and `maxlag` is the maximum allowed delay (if `maxlag 
 then the maximum lag is that fraction of the input time series length, and if `maxlag` is an integer, 
 then the maximum lag is `maxlag`).
 
-## Implementation details
+If `instantaneous` is `true`, then instantaneous interactions are also considered, i.e. effects like 
+`source(t) → target(t)` are allowed. `η` is the forward prediction lag. 
 
-Currently, only this implementation is optimized for the bin-estimator approach from 
-Montalto et al. (2014)[^Montalto2014], which uses a conditional entropy minimization criterion for 
-select variables.  Their bin-estimator approach corresponds to using 
-the `VisitationFrequency` estimator with bins whose sides are equal-length, e.g. 
-`VisitationFrequency(RectangularBinning(0.5))`. Here, you can use any desired rectangular binning.
+Significance testing is performed using a permutation test. At each iteration of the 
+variable selection routine, we first compute the transfer entropy using the new candidate 
+``c_k``. Then, the computation is repeated `nsurr` times, at each iteration replacing ``c_k`` 
+with a surrogate of type `surr`. If transfer entropy using the original ``c_k`` exceeds the 
+the `1 - α`-quantile of that of the surrogate ensemble, then ``c_k`` is deemed significant 
+to the future of `target` and is included in the set of selected variables.
 
-It is also possible to use other entropy estimators than `VisitationFrequency` to compute entropies, 
-but this implementation will use conditional entropy minimization regardless of the choice of 
-estimator.
+If no relevant variables pass the permutation test, then TE is not well-defined, and a value of `0.0`
+is returned.
 
 ## Returns
 
 A 6-tuple is returned, consisting of:
-- `te`: The computed transfer entropy value. If no relevant variables were selected, then `te = 0.0`.
+- `te`: The computed transfer entropy value. 
 - `js`: The indices of the selected variables. `js[i]` is the `i`-th entry in the array `[idxs_source..., idxs_target..., idxs_cond...,]`.
 - `τs`: The embedding lags of the selected variables. `τs[i]` corresponds to `js[i]`.
 - `idxs_source`: The indices of the source variables.
@@ -70,7 +99,7 @@ A 6-tuple is returned, consisting of:
 
 ```julia
 using CausalityTools, DynamicalSystems
-sys = ExampleSystems.logistic2_unidir(c_xy = 1.5)
+sys = ExampleSystems.logistic2_unidir(c_xy = 0.8, r₁ = 3.78, r₂ = 3.92)
 orbit = trajectory(sys, 10000, Ttr = 10000)
 x, y = columns(orbit)
 
@@ -79,32 +108,47 @@ x, y = columns(orbit)
 # over the bins don't approach the uniform distribution (need enough points 
 # to fill bins).
 est = VisitationFrequency(RectangularBinning(3))
-te_xy, params_xy = bbnue(x, y, BBNUE(est))
-te_yx, params_yx = bbnue(y, x, BBNUE(est))
+te_xy = bbnue(x, y, est, surr = RandomShuffle(), nsurr = 100, include_instantaneous = true)
+te_yx = bbnue(y, x, est, surr = RandomShuffle(), nsurr = 100, include_instantaneous = true)
 
 te_xy, te_yx
 ```
 
 [^Montalto2014]: Montalto, A.; Faes, L.; Marinazzo, D. MuTE: A MATLAB toolbox to compare established and novel estimators of the multivariate transfer entropy. PLoS ONE 2014, 9, e109462.
 """
-function bbnue(source, target, cond, est; q = 0.95, η = 1, nsurr = 100, uq = 0.95, 
-        include_instantaneous = true, method_delay = "ac_min", maxlag::Union{Int, Float64} = 0.05)
+function bbnue(source, target, cond, est; q = 1, base = 2,
+        η = 1, include_instantaneous = true, 
+        method_delay = "ac_min", maxlag::Union{Int, Float64} = 0.05,
+        α = 0.05, nsurr = 19, surr::TimeseriesSurrogates.Surrogate = RandomShuffle())
 
     Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond = 
-        embed_candidate_variables(
+        candidate_embedding(
             process_input(source), 
             process_input(target), 
-            process_input(cond), 
-            η = η)
+            process_input(cond),
+            η = η,
+            include_instantaneous = include_instantaneous, 
+            method_delay = method_delay,
+            maxlag = maxlag)
 
-    return optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est, q = q, nsurr = 19, uq = uq)
+    return optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est, 
+        q = q, base = base, α = α, nsurr = nsurr, surr = surr)
 end
 
-function bbnue(source, target, est; q = 0.95, η = 1, nsurr = 100, uq = 0.95, 
-        include_instantaneous = true, method_delay = "ac_min", maxlag::Union{Int, Float64} = 0.05)
-
+function bbnue(source, target, est; q = 1, base = 2,
+        η = 1, include_instantaneous = true, 
+        method_delay = "ac_min", maxlag::Union{Int, Float64} = 0.05,
+        α = 0.05, nsurr = 19, surr::TimeseriesSurrogates.Surrogate = RandomShuffle())
+    
     Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond = 
-        embed_candidate_variables(process_input(source), process_input(target), η = η)
+        candidate_embedding(
+            process_input(source), 
+            process_input(target),
+            η = η,
+            include_instantaneous = include_instantaneous, 
+            method_delay = method_delay,
+            maxlag = maxlag)
 
-    return optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est, q = q, nsurr = 19, uq = uq)
+    return optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est, 
+        q = q, base = base, α = α, nsurr = nsurr, surr = surr)
 end
