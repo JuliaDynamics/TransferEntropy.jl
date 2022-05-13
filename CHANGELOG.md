@@ -1,5 +1,9 @@
 # Changelog
 
+## Release v1.7
+
+- Bug fix in `mutualinfo` for naive estimators from Entropies.jl.
+
 ## Release v1.1.4
 
 - Release process updated.

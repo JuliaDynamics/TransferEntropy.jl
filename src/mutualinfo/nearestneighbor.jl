@@ -3,9 +3,11 @@ using Neighborhood
 
 # naive application of estimators in Entropies.jl
 function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est::NearestNeighborEntropyEstimator; base = 2)
-    X = genentropy(Dataset(x), est; base = base)
-    Y = genentropy(Dataset(y), est; base = base)
-    XY = genentropy(Dataset(x, y), est; base = base)
+    Hx = genentropy(Dataset(x), est; base = base)
+    Hy = genentropy(Dataset(y), est; base = base)
+    Hxy = genentropy(Dataset(x, y), est; base = base)
+
+    return Hx + Hy - Hxy
 end
 
 abstract type KNNMutualInformationEstimator <: MutualInformationEstimator end
