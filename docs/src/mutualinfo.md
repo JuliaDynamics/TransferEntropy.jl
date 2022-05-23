@@ -1,4 +1,5 @@
 
 ```@docs
 mutualinfo
+cmi
 ```

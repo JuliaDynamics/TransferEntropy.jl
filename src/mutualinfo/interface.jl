@@ -1,4 +1,4 @@
-export mutualinfo, Kraskov1, Kraskov2
+export mutualinfo, cmi, Kraskov1, Kraskov2
 
 abstract type MutualInformationEstimator <: EntropyEstimator end
 
@@ -49,6 +49,19 @@ function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est; base = 2, q
     Y = genentropy(Dataset(y), est; base = base, q = q)
     XY = genentropy(Dataset(x, y), est; base = base, q = q)
     MI = X + Y - XY 
-end 
+end
+
+"""
+    cmi(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, est; 
+        base = 2, q = 1)
+    
+Compute the conditional mutual information (CMI), ``I(X; Y | Z)``, between variables
+`x`, `y`, and `z` (each either a univariate `Vector` or multivariate `Dataset`).
+"""
+function cmi(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, est; 
+        base = 2, q = 1)
+    mutualinfo(x, Dataset(y, z), est; base = base, q = q) -
+        mutualinfo(x, z, est; base = base, q = q)
+end
 
 include("nearestneighbor.jl")
