@@ -6,13 +6,14 @@ abstract type MutualInformationEstimator <: EntropyEstimator end
     mutualinfo(x, y, est; base = 2, q = 1)
 
 Estimate mutual information between `x` and `y`, ``I^{q}(x; y)``, using the provided 
-entropy/probability estimator `est` from Entropies.jl, and Rényi entropy of order `q`
+entropy/probability estimator `est` from Entropies.jl or specialized estimator from 
+TransferEntropy.jl (e.g. [`Kraskov1`](@ref)), and Rényi entropy of order `q`
 (defaults to `q = 1`, which is the Shannon entropy), with logarithms to the given `base`.
 
 Both `x` and `y` can be vectors or (potentially multivariate) [`Dataset`](@ref)s.
 
 Worth highlighting here are the estimators that compute entropies _directly_, e.g.
-nearest-neighbor based methhods. The choice is between naive 
+nearest-neighbor based methods. The choice is between naive 
 estimation using the [`KozachenkoLeonenko`](@ref) or [`Kraskov`](@ref) entropy estimators, 
 or the improved [`Kraskov1`](@ref) and [`Kraskov2`](@ref) dedicated ``I`` estimators. The 
 latter estimators reduce bias compared to the naive estimators.
@@ -52,11 +53,17 @@ function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est; base = 2, q
 end
 
 """
-    cmi(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, est; 
-        base = 2, q = 1)
-    
-Compute the conditional mutual information (CMI), ``I(X; Y | Z)``, between variables
-`x`, `y`, and `z` (each either a univariate `Vector` or multivariate `Dataset`).
+    cmi(x, y, z, est; base = 2, q = 1)
+
+Estimate, ``I^{q}(x; y | z)``, the conditional mutual information between `x`, `y` and `z`,
+using the provided entropy/probability estimator `est` from Entropies.jl or specialized 
+estimator from TransferEntropy.jl (e.g. [`Kraskov1`](@ref)), and Rényi entropy of order `q` 
+(defaults to `q = 1`, which is the Shannon entropy), with logarithms to the given 
+`base`.
+
+As for [`mutualinfo`](@ref), the variables `x`, `y` and `z` can be vectors or potentially 
+multivariate) [`Dataset`](@ref)s, and the keyword `q` cannot be provided for 
+nearest-neighbor estimators (it is hard-coded to `q = 1`).
 """
 function cmi(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, est; 
         base = 2, q = 1)
