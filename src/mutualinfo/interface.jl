@@ -55,8 +55,8 @@ end
 """
     cmi(x, y, z, est; base = 2, q = 1)
 
-Estimate, ``I^{q}(x; y | z)``, the conditional mutual information between `x`, `y` and `z`,
-using the provided entropy/probability estimator `est` from Entropies.jl or specialized 
+Estimate, ``I^{q}(x; y | z)``, the conditional mutual information between `x`, `y` given 
+`z`, using the provided entropy/probability estimator `est` from Entropies.jl or specialized 
 estimator from TransferEntropy.jl (e.g. [`Kraskov1`](@ref)), and Rényi entropy of order `q` 
 (defaults to `q = 1`, which is the Shannon entropy), with logarithms to the given 
 `base`.
