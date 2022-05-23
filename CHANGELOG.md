@@ -1,5 +1,9 @@
 # Changelog
 
+## Release v1.8
+
+- New function `cmi`, which computes conditional mutual information.
+
 ## Release v1.7
 
 - Bug fix in `mutualinfo` for naive estimators from Entropies.jl.
