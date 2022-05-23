@@ -1,5 +1,5 @@
 
 ```@docs
 mutualinfo
-cmi
+conditional_mutualinfo
 ```

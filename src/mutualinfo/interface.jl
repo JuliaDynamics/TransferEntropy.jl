@@ -1,4 +1,4 @@
-export mutualinfo, cmi, Kraskov1, Kraskov2
+export mutualinfo, conditional_mutualinfo, Kraskov1, Kraskov2
 
 abstract type MutualInformationEstimator <: EntropyEstimator end
 
@@ -53,7 +53,7 @@ function mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, est; base = 2, q
 end
 
 """
-    cmi(x, y, z, est; base = 2, q = 1)
+    conditional_mutualinfo(x, y, z, est; base = 2, q = 1)
 
 Estimate, ``I^{q}(x; y | z)``, the conditional mutual information between `x`, `y` given 
 `z`, using the provided entropy/probability estimator `est` from Entropies.jl or specialized 
@@ -65,7 +65,7 @@ As for [`mutualinfo`](@ref), the variables `x`, `y` and `z` can be vectors or po
 multivariate) [`Dataset`](@ref)s, and the keyword `q` cannot be provided for 
 nearest-neighbor estimators (it is hard-coded to `q = 1`).
 """
-function cmi(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, est; 
+function conditional_mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, est; 
         base = 2, q = 1)
     mutualinfo(x, Dataset(y, z), est; base = base, q = q) -
         mutualinfo(x, z, est; base = base, q = q)

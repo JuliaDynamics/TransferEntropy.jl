@@ -57,23 +57,23 @@ end
     est_knn = Kraskov1(2)
     est_bin = RectangularBinning(3)
     # binning estimator yields non-negative values
-    @test cmi(s, t, c, est_bin, q = 2) isa Real
-    @test cmi(s, t, c, est_bin, q = 2) >= 0.0
+    @test conditional_mutualinfo(s, t, c, est_bin, q = 2) isa Real
+    @test conditional_mutualinfo(s, t, c, est_bin, q = 2) >= 0.0
     # verify formula I(X, Y | Z) = I(X; Y, Z) - I(X, Z)
-    @test cmi(s, t, c, est_bin, base = 2) ≈ 
+    @test conditional_mutualinfo(s, t, c, est_bin, base = 2) ≈ 
     mutualinfo(s, Dataset(t, c), est_bin, base = 2) - mutualinfo(s, c, est_bin, base = 2)
 
-    @test cmi(s, t, c, est_knn) isa Real
-    @test cmi(s, t, c, est_knn, base = 2) ≈ 
+    @test conditional_mutualinfo(s, t, c, est_knn) isa Real
+    @test conditional_mutualinfo(s, t, c, est_knn, base = 2) ≈ 
         mutualinfo(s, Dataset(t, c), est_knn, base = 2) - mutualinfo(s, c, est_knn, base = 2)
    
     # Different types of input
-    @test cmi(s, Dataset(t, c), c, est_bin) isa Real
-    @test cmi(Dataset(s, t), Dataset(t, c), c, est_bin) isa Real
-    @test cmi(Dataset(s, t), Dataset(t, c), Dataset(c, s), est_bin) isa Real
-    @test cmi(s, Dataset(t, c), Dataset(c, s), est_bin) isa Real
-    @test cmi(s, t, Dataset(c, s), est_bin) isa Real
-    @test cmi(Dataset(s, t), t, c, est_bin) isa Real
+    @test conditional_mutualinfo(s, Dataset(t, c), c, est_bin) isa Real
+    @test conditional_mutualinfo(Dataset(s, t), Dataset(t, c), c, est_bin) isa Real
+    @test conditional_mutualinfo(Dataset(s, t), Dataset(t, c), Dataset(c, s), est_bin) isa Real
+    @test conditional_mutualinfo(s, Dataset(t, c), Dataset(c, s), est_bin) isa Real
+    @test conditional_mutualinfo(s, t, Dataset(c, s), est_bin) isa Real
+    @test conditional_mutualinfo(Dataset(s, t), t, c, est_bin) isa Real
 end
 
 @testset "Transfer entropy" begin 

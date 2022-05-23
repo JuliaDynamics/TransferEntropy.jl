@@ -172,7 +172,7 @@ function mutualinfo(x::Vector_or_Dataset{D1, T}, y::Vector_or_Dataset{D2, T}, es
 end
 
 # knn estimators don't have the `q` keyword, so need specialized method
-function cmi(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, 
+function conditional_mutualinfo(x::Vector_or_Dataset, y::Vector_or_Dataset, z::Vector_or_Dataset, 
         est::KNNMutualInformationEstimator; base = MathConstants.e)
     mutualinfo(x, Dataset(y, z), est; base = base) -
         mutualinfo(x, z, est; base = base)
