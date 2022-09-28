@@ -1,38 +1,39 @@
 using DSP
-export Amplitude, Phase, Hilbert
+using Entropies: Entropy
 
+export Amplitude, Phase, Hilbert
 abstract type InstantaneousSignalProperty end
 
-""" 
+"""
     Amplitude <: InstantaneousSignalProperty
 
 Indicates that the instantaneous amplitudes of a signal should be used. """
-struct Amplitude <: InstantaneousSignalProperty end 
+struct Amplitude <: InstantaneousSignalProperty end
 
-""" 
+"""
     Phase <: InstantaneousSignalProperty
 
 Indicates that the instantaneous phases of a signal should be used. """
-struct Phase <: InstantaneousSignalProperty end 
+struct Phase <: InstantaneousSignalProperty end
 
 """
-    Hilbert(est; 
+    Hilbert(est;
         source::InstantaneousSignalProperty = Phase(),
         target::InstantaneousSignalProperty = Phase(),
         cond::InstantaneousSignalProperty = Phase())
     ) <: TransferEntropyEstimator
 
-Compute transfer entropy on instantaneous phases/amplitudes of relevant signals, which are 
-obtained by first applying the Hilbert transform to each signal, then extracting the 
-phases/amplitudes of the resulting complex numbers[^Palus2014]. Original time series are 
-thus transformed to instantaneous phase/amplitude time series. Transfer 
-entropy is then estimated using the provided `est` on those phases/amplitudes (use e.g. 
+Compute transfer entropy on instantaneous phases/amplitudes of relevant signals, which are
+obtained by first applying the Hilbert transform to each signal, then extracting the
+phases/amplitudes of the resulting complex numbers[^Palus2014]. Original time series are
+thus transformed to instantaneous phase/amplitude time series. Transfer
+entropy is then estimated using the provided `est` on those phases/amplitudes (use e.g.
 [`VisitationFrequency`](@ref), or [`SymbolicPermutation`](@ref)).
 
 !!! info
-    Details on estimation of the transfer entropy (conditional mutual information) 
-    following the phase/amplitude extraction step is not given in Palus (2014). Here, 
-    after instantaneous phases/amplitudes have been obtained, these are treated as regular 
+    Details on estimation of the transfer entropy (conditional mutual information)
+    following the phase/amplitude extraction step is not given in Palus (2014). Here,
+    after instantaneous phases/amplitudes have been obtained, these are treated as regular
     time series, from which transfer entropy is then computed as usual.
 
 See also: [`Phase`](@ref), [`Amplitude`](@ref).
@@ -44,7 +45,7 @@ struct Hilbert <: TransferEntropyEstimator
     target::InstantaneousSignalProperty
     cond::InstantaneousSignalProperty
     est
-    
+
     function Hilbert(est::VisitationFrequency;
             source::InstantaneousSignalProperty = Phase(),
             target::InstantaneousSignalProperty = Phase(),
@@ -53,13 +54,10 @@ struct Hilbert <: TransferEntropyEstimator
     end
 end
 
-
-function transferentropy(source, target, est::Hilbert; base = 2, q = 1, 
-        τT = -1, τS = -1, η𝒯 = 1, dT = 1, dS = 1, d𝒯 = 1)
-        
+function transferentropy(e::Entropy, source, target, est::Hilbert; kwargs...)
     hil_s = DSP.hilbert(source)
     hil_t = DSP.hilbert(target)
-    
+
     if est.source isa Phase
         s = angle.(hil_s)
     elseif est.source isa Amplitude
@@ -67,7 +65,7 @@ function transferentropy(source, target, est::Hilbert; base = 2, q = 1,
     else
         error("est.source must be either Phase or Amplitude instance")
     end
-    
+
     if est.target isa Phase
         t = angle.(hil_t)
     elseif est.target isa Amplitude
@@ -75,15 +73,16 @@ function transferentropy(source, target, est::Hilbert; base = 2, q = 1,
     else
         error("est.target must be either Phase or Amplitude instance")
     end
-    
+
     # Now, estimate transfer entropy on the phases/amplitudes with the given estimator.
-    transferentropy(s, t, est.est, τT = τT, τS = τS, η𝒯 = η𝒯, dT = dT, dS = dS, d𝒯 = d𝒯)
+    transferentropy(e, s, t, est.est; kwargs...)
 end
 
+transferentropy(source, target, est::Hilbert; base = 2, kwargs...) =
+    transferentropy(Shannon(; base), source, target, est; kwargs...)
 
-function transferentropy(source, target, cond, est::Hilbert; base = 2, q = 1,
-        τT = -1, τS = -1, τC = -1, η𝒯 = 1, dT = 1, dS = 1, dC = 1, d𝒯 = 1)
-        
+function transferentropy(e::Entropy, source, target, cond, est::Hilbert; kwargs...)
+
     hil_s = DSP.hilbert(source)
     hil_t = DSP.hilbert(target)
     hil_c = DSP.hilbert(cond)
@@ -95,7 +94,7 @@ function transferentropy(source, target, cond, est::Hilbert; base = 2, q = 1,
     else
         error("est.source must be either Phase or Amplitude instance")
     end
-    
+
     if est.target isa Phase
         t = angle.(hil_t)
     elseif est.target isa Amplitude
@@ -111,7 +110,9 @@ function transferentropy(source, target, cond, est::Hilbert; base = 2, q = 1,
     else
         error("est.cond must be either Phase or Amplitude instance")
     end
-    
-    transferentropy(s, t, c, est.est, 
-        τT = τT, τS = τS, τC = τC, η𝒯 = η𝒯, dT = dT, dS = dS, dC = dC, d𝒯 = d𝒯)
+
+    transferentropy(e, s, t, c, est.est; kwargs...)
 end
+
+transferentropy(source, target, cond, est::Hilbert; kwargs...) =
+    transferentropy(Shannon(; base), source, target, cond, est; kwargs...)
