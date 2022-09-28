@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../Entropies.jl"
+		},
+		{
+			"path": "../../../../../CausalityTools.jl"
+		}
+	],
+	"settings": {}
+}
