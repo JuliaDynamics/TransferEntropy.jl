@@ -31,13 +31,14 @@ ENV["JULIA_DEBUG"] = "Documenter"
 
 PAGES = [
     "TransferEntropy.jl" => "index.md",
+    "Probabilities" => "probabilities.md",
+    "Entropies" => "entropies.md",
     "Mutual information" => "mutualinfo.md",
-    "Transfer entropy" => "transferentropy.md",
-    "Datasets" => "dataset.md"
+    "Conditional mutual information" => "conditional_mutualinfo.md"
 ]
 
 makedocs(
-    modules = [TransferEntropy, Entropies, DelayEmbeddings],
+    modules = [TransferEntropy, Entropies],
     format = Documenter.HTML(
         prettyurls = CI,
         assets = [
