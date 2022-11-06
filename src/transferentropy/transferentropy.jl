@@ -1,49 +1,26 @@
 include("utils.jl")
-include("autoutils.jl")
-using Entropies
+using Entropies: ProbabilitiesEstimator, Entropy, IndirectEntropy
 export transferentropy, transferentropy!
-
-function get_marginals(s, t, emb::EmbeddingTE)
-    pts, vars, τs, js = te_embed(s, t, emb)
-
-    # Get marginals
-    ST = pts[:, [vars.S; vars.T]]
-    T𝒯 = pts[:, [vars.𝒯; vars.T]]
-    T = pts[:, vars.T]
-    joint = pts
-
-    return joint, ST, T𝒯, T
-end
-
-function get_marginals(s, t, c, emb::EmbeddingTE)
-    pts, vars, τs, js = te_embed(s, t, c, emb)
-
-    # Get marginals
-    ST = pts[:, [vars.S; vars.T; vars.C]]
-    T𝒯 = pts[:, [vars.𝒯; vars.T; vars.C]]
-    T = pts[:, [vars.T; vars.C]]
-    joint = pts
-
-    return joint, ST, T𝒯, T
-end
-
-# map a set of pre-embedded points to the correct marginals for transfer entropy computation
-function get_marginals(pts, emb::TEVars)
-    # Get marginals
-    ST = pts[:, [vars.S; vars.T]]
-    T𝒯 = pts[:, [vars.𝒯; vars.T]]
-    T = pts[:, vars.T]
-    joint = pts
-
-    return joint, ST, T𝒯, T
-end
-
+using DelayEmbeddings: AbstractDataset
 
 """
 Abstract types for transfer entropy estimators that are not already implemented as basic
 entropy estimators in Entropies.jl, but needs some kind of special treatment to  work
 for transfer entropy. """
 abstract type TransferEntropyEstimator end
+
+function estimate_from_marginals(measure::TE, e::IndirectEntropy, args...;
+        kwargs...) where I <: InformationCausalityMeasure
+    msg = "Marginal estimation of $I is not implemented for indirect entropy $(typeof(e))"
+    throw(ArgumentError(msg))
+end
+
+function estimate_from_marginals(measure::TE, e::Entropy, est::ProbabilitiesEstimator,
+        args...; kwargs...) where I <: InformationCausalityMeasure
+    combo = "$typeof(e) entropy, with probabilities estimated using $(typeof(est))"
+    msg = "Marginal estimation of $I is not implemented for $combo)"
+    throw(ArgumentError(msg))
+end
 
 """
     transferentropy([e::Entropy], s, t, [c,] est;
@@ -192,55 +169,89 @@ transferentropy(x, y, est, base = MathConstants.e, q = 2) # TE in nats, order-2 
 [^Schreiber2000]: Schreiber, T. (2000). Measuring information transfer. Physical review letters, 85(2), 461.
 [^Jizba2012]: Jizba, P., Kleinert, H., & Shefaat, M. (2012). Rényi’s information transfer between financial time series. Physica A: Statistical Mechanics and its Applications, 391(10), 2971-2989.
 """
-function transferentropy end
-function transferentropy! end
+# function transferentropy end
+# function transferentropy! end
 
-# Estimate transfer entropy from time series by first embedding them and getting required
-# marginals.
-function transferentropy(e::Entropy, s, t, est::Est; kwargs...)
+"""
+    transferentropy([e::Entropy,] est::ProbabilitiesEstimator, s, t, [c])
+    transferentropy(]e::Entropy,] est::TransferEntropyEstimator, s, t, [c])
 
-    emb = EmbeddingTE(; kwargs...)
-    joint, ST, T𝒯, T = get_marginals(s, t, emb)
+Estimate transfer entropy from `s` to `t`, optionally conditioning on `c`,
+by a sum of marginal entropies.
 
-    _transferentropy(e, joint, ST, T𝒯, T, est)
+# Arguments
+
+- `e::Entropy`. The type of entropy to compute. Optional. Defaults to `Shannon(; base = 2)`
+    if not specified. The unit of the transfer entropy is controlled by the logarithm base,
+    which must be provided as a keyword to `e`.
+- `est`. Either a [`ProbabilitiesEstimator`](@ref) or a [`TransferEntropyEstimator`](@ref),
+    which controls how probabilities and entropies are estimated for each marginal.
+- `s::AbstractVector`: The source time series
+- `t::AbstractVector`: The target time series
+- `c::AbstractVector`: An optional time series to condition on.
+
+See also: [`Entropy`](@ref), [`ProbabilitiesEstimator`](@ref).
+"""
+function transferentropy(e::Entropy, est::ProbabilitiesEstimator, args...; kwargs...)
+    joint, ST, T𝒯, T = get_marginals(TE(), args...; emb = EmbeddingTE(; kwargs...))
+    estimate_from_marginals(TE(), e, est, joint, ST, T𝒯, T)
 end
 
-function transferentropy(e::Entropy, s, t, c, est::Est; kwargs...)
+transferentropy(est::ProbabilitiesEstimator, args...; base = 2, kwargs...) =
+    transferentropy(Shannon(; base), est, args...; kwargs...)
+transferentropy(est::TransferEntropyEstimator, args...; base = 2, kwargs...) =
+    transferentropy(Shannon(; base), est, args...; kwargs...)
 
-    emb = EmbeddingTE(; kwargs...)
-    joint, ST, T𝒯, T = get_marginals(s, t, c, emb)
+"""
+    transferentropy(e::IndirectEntropy, s, t, [c])
 
-    _transferentropy(e, joint, ST, T𝒯, T, est)
+Estimate Shannon transfer entropy from `s` to `t`, optionally conditioning on `c`,
+by a sum of marginal entropies, using an [`IndirectEntropy`](@ref) estimator from
+[Entropies.jl](https://github.com/JuliaDynamics/Entropies.jl).
+
+These methods estimate entropies using some procedure that doesn't explicitly construct a
+probability distribution.
+"""
+function transferentropy(e::IndirectEntropy, args...; kwargs...)
+    joint, ST, T𝒯, T = get_marginals(TE(), args...; emb = EmbeddingTE(; kwargs...))
+    estimate_from_marginals(TE(), e, joint, ST, T𝒯, T)
 end
 
-transferentropy(e::Entropy, s::AbstractVector{<:Real}, t::AbstractVector{<:Real}) =
-    error("Estimator missing. Please provide a valid estimator as the third argument.")
+"""
+    estimate_from_marginals(e::IndirectEntropy, joint, ST, T𝒯, T)
+    estimate_from_marginals(e::Entropy, joint, ST, T𝒯, T, est::ProbabilitiesEstimator)
+"""
+function estimate_from_marginals(measure::TE, e::IndirectEntropy,
+    joint::AbstractDataset,
+    ST::AbstractDataset,
+    T𝒯::AbstractDataset,
+    T::AbstractDataset
+)
+    te = entropy(e, T𝒯) +
+        entropy(e, ST) -
+        entropy(e, T) -
+        entropy(e, joint)
+end
 
-transferentropy(e::Entropy, s::AbstractVector{<:Real}, t::AbstractVector{<:Real}, c::AbstractVector{<:Real}) =
-    error("Estimator missing. Please provide a valid estimator as the fourth argument.")
+function estimate_from_marginals(measure::TE, e::Entropy, est::ProbabilitiesEstimator,
+    joint::AbstractDataset,
+    ST::AbstractDataset,
+    T𝒯::AbstractDataset,
+    T::AbstractDataset,
+)
 
-
-# estimate transfer entropy from marginal entropies, as described in docstring
-function _transferentropy(e::Entropy, joint, ST, T𝒯, T, est::Est)
     te = entropy(e, T𝒯, est) +
         entropy(e, ST, est) -
         entropy(e, T, est) -
         entropy(e, joint, est)
 end
 
-function _transferentropy(joint, ST, T𝒯, T, est::Est; base = 2)
-    _transferentropy(Shannon(; base), joint, ST, T𝒯, T, est)
-end
-
-# TODO: estimate using mutual information decomposition,
-# function transferentropy(marginal1, marginal2, est; base = 2, q = 1)
-include("symbolic.jl")
-include("hilbert.jl")
-include("nearestneighbor.jl")
-include("transferoperator.jl")
+include("symbolic/symbolic.jl")
+include("hilbert/hilbert.jl")
+include("transfer_operator/transferoperator.jl")
 
 # automated approaches
-include("bbnue.jl")
+include("bbnue/bbnue.jl")
 
 # Continuous-time
 include("spike/spike.jl")
