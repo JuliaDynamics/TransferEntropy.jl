@@ -21,7 +21,7 @@ function conditional_mutualinfo(e::Entropy, est::ProbabilitiesEstimator,
         z::Vector_or_Dataset)
     mutualinfo(e, est, x, Dataset(y, z)) - mutualinfo(e, est, x, z)
 end
-conditional_mutualinfo(e::Entropy, est::ProbabilitiesEstimator, args...; kwargs...) =
+conditional_mutualinfo(est::ProbabilitiesEstimator, args...; kwargs...) =
     conditional_mutualinfo(Shannon(; base = 2), est, args...; kwargs...)
 conditional_mutualinfo(e::Entropy, x::Vector_or_Dataset, y::Vector_or_Dataset,
     z::Vector_or_Dataset) =
