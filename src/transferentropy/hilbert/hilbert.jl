@@ -54,7 +54,7 @@ struct Hilbert <: TransferEntropyEstimator
     end
 end
 
-function transferentropy(e::Entropy, source, target, est::Hilbert; kwargs...)
+function transferentropy(e::Entropy, est::Hilbert, source, target)
     hil_s = DSP.hilbert(source)
     hil_t = DSP.hilbert(target)
 
@@ -75,14 +75,10 @@ function transferentropy(e::Entropy, source, target, est::Hilbert; kwargs...)
     end
 
     # Now, estimate transfer entropy on the phases/amplitudes with the given estimator.
-    transferentropy(e, s, t, est.est; kwargs...)
+    transferentropy(e, est.est, s, t)
 end
 
-transferentropy(source, target, est::Hilbert; base = 2, kwargs...) =
-    transferentropy(Shannon(; base), source, target, est; kwargs...)
-
-function transferentropy(e::Entropy, source, target, cond, est::Hilbert; kwargs...)
-
+function transferentropy(e::Entropy, est::Hilbert, source, target, cond)
     hil_s = DSP.hilbert(source)
     hil_t = DSP.hilbert(target)
     hil_c = DSP.hilbert(cond)
@@ -111,8 +107,11 @@ function transferentropy(e::Entropy, source, target, cond, est::Hilbert; kwargs.
         error("est.cond must be either Phase or Amplitude instance")
     end
 
-    transferentropy(e, s, t, c, est.est; kwargs...)
+    transferentropy(e, est.est, s, t, c)
 end
 
-transferentropy(source, target, cond, est::Hilbert; kwargs...) =
-    transferentropy(Shannon(; base), source, target, cond, est; kwargs...)
+
+transferentropy(est::Hilbert, source, target) =
+    transferentropy(Shannon(; base), est, source, target)
+transferentropy(est::Hilbert, source, target, cond) =
+    transferentropy(Shannon(; base), est, source, target, cond)

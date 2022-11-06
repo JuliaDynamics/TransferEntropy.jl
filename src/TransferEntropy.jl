@@ -1,5 +1,6 @@
 module TransferEntropy
 include("core.jl")
-include("mutualinfo/interface.jl")
-include("transferentropy/interface.jl")
+include("mutualinfo/mutualinfo.jl")
+include("conditional_mutualinfo/conditional_mutualinfo.jl")
+include("transferentropy/transferentropy.jl")
 end # module

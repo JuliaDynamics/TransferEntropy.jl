@@ -64,7 +64,7 @@ function construct_candidate_variables(source, target, cond;
     τs = [τs_source..., τs_target..., τs_cond...]
 
     # Embedding variables
-    js = [[i for x in 1:length(τs[i])] for i = 1:length(τs)]
+    js = [[i for x in 1:length(τs[i])] for i in eachindex(τs)]
     js_targetfuture = [i for i in length(τs_source)+1:length(τs_source)+length(τs_target)]
 
     # Prediction variables
@@ -129,7 +129,7 @@ function construct_candidate_variables(source, target;
     ks_targetfuture = [k for i in 1:length(target)]
     js_targetfuture = [i for i in length(τs_source)+1:length(τs_source)+length(τs_target)]
     τs = [τs_source..., τs_target...,]
-    js = [[i for x in 1:length(τs[i])] for i = 1:length(τs)]
+    js = [[i for x in 1:length(τs[i])] for i in eachindex(τs)]
 
     # Variable filtering, if desired
     if τexclude isa Int
@@ -234,13 +234,13 @@ function optim_te(e::Entropy, Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_
             if k == 1 || length(𝒮) == 0
                 Cᵢ = Ω[i]
                 CMI_Y⁺_Cᵢ =
-                    entropy(e, Dataset(Y⁺, Dataset(Cᵢ)), est) -
-                    entropy(e, Dataset(Cᵢ), est)
+                    entropy(e, est, Dataset(Y⁺, Dataset(Cᵢ))) -
+                    entropy(e, est, Dataset(Cᵢ))
             else
                 Cᵢ = [Ω[i], 𝒮...]
                 CMI_Y⁺_Cᵢ =
-                    entropy(e, Dataset(Y⁺, Dataset(Cᵢ...,)), est) -
-                    entropy(e, Dataset(Cᵢ...,), est)
+                    entropy(e, est, Dataset(Y⁺, Dataset(Cᵢ...,))) -
+                    entropy(e, est, Dataset(Cᵢ...,))
             end
             CMIs_between_Y⁺_and_candidates[i] = CMI_Y⁺_Cᵢ
         end
@@ -259,25 +259,25 @@ function optim_te(e::Entropy, Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_
 
             for i = 1:nsurr
                 surr_cₖ = s() # Surrogate version of cₖ
-                CMI_permutations[i] = mutualinfo(Y⁺, surr_cₖ, est)
+                CMI_permutations[i] = mutualinfo(est, Y⁺, surr_cₖ)
             end
         # If k > 1, at least one candidate has been selected, so we compute CMI
         else
             # Precompute terms that do not change during surrogate loop
-            H_Y⁺_𝒮 = entropy(e, Dataset(Y⁺, Dataset(𝒮...,)), est)
-            H_𝒮 = entropy(e, Dataset(𝒮...), est)
+            H_Y⁺_𝒮 = entropy(e, est, Dataset(Y⁺, Dataset(𝒮...,)))
+            H_𝒮 = entropy(e, est, Dataset(𝒮...))
 
             # Original TE
             cmiₖ = H_Y⁺_𝒮 +
-                    entropy(e, Dataset([cₖ, 𝒮...,]...,), est) -
-                    entropy(e, Dataset(Y⁺, Dataset([cₖ, 𝒮...,]...,)), est) -
+                    entropy(e, est, Dataset([cₖ, 𝒮...,]...,)) -
+                    entropy(e, est, Dataset(Y⁺, Dataset([cₖ, 𝒮...,]...,))) -
                     H_𝒮
 
             for i = 1:nsurr
                 surr_cₖ = s() # Surrogate version of cₖ
                 CMI_permutations[i] = H_Y⁺_𝒮 +
-                    entropy(e, Dataset([surr_cₖ, 𝒮...]...,), est) -
-                    entropy(e, Dataset(Y⁺, Dataset([surr_cₖ, 𝒮...]...,)), est) -
+                    entropy(e, est, Dataset([surr_cₖ, 𝒮...]...,)) -
+                    entropy(e, est, Dataset(Y⁺, Dataset([surr_cₖ, 𝒮...]...,))) -
                     H_𝒮
             end
         end
@@ -315,11 +315,11 @@ function optim_te(e::Entropy, Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_
         return 0.0, Int[], Int[], idxs_source, idxs_target, idxs_cond
     end
 
-    CE2 = entropy(e, Dataset(Y⁺, Dataset(𝒮...,)), est) -
-        entropy(e, Dataset(𝒮...,), est)
+    CE2 = entropy(e, est, Dataset(Y⁺, Dataset(𝒮...,))) -
+        entropy(e, est, Dataset(𝒮...,))
 
-    CE1 = entropy(e, Dataset(Y⁺, Dataset(𝒮_nonX...,)), est) -
-        entropy(e, Dataset(𝒮_nonX...,), est)
+    CE1 = entropy(e, est, Dataset(Y⁺, Dataset(𝒮_nonX...,))) -
+        entropy(e, est, Dataset(𝒮_nonX...,))
 
     CMI = CE1 - CE2
     return CMI, 𝒮_js, 𝒮_τs, idxs_source, idxs_target, idxs_cond
@@ -329,6 +329,6 @@ process_input(ts::Vector{T}) where T <: Number = [ts]
 process_input(ts::AbstractVector{V}) where V <: Vector{N} where N <: Number = ts
 process_input(ts::Dataset) = [columns(ts)...,]
 
-optim_te(Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est; base = 2,
+optim_te(est::ProbabilitiesEstimator, Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond; base = 2,
         α = 0.05, nsurr = 100, surr::Surrogate = RandomShuffle()) =
-    optim_te(Shannon(; base), Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond, est)
+    optim_te(est, Shannon(; base), Ω, Y⁺, τs, js, idxs_source, idxs_target, idxs_cond)

@@ -19,13 +19,13 @@ function marginal_indices(visited_bins, selected_axes)
 end
 
 """
-    marginal_probs_from_μ(seleced_axes, visited_bins, iv::InvariantMeasure, inds_μpositive)
+    marginal_probs_from_μ(seleced_axes, visited_bins, iv::InvariantMeasure, inds_non0measure)
 
 Estimate marginal probabilities from a pre-computed invariant measure, given a set
 of visited bins, an invariant measure and the indices of the positive-measure bins.
 The indices in `selected_axes` determines which marginals are selected.
 """
-function marginal_probs_from_μ(seleced_axes, visited_bins, iv::InvariantMeasure, inds_μpositive)
+function marginal_probs_from_μ(seleced_axes, visited_bins, iv::InvariantMeasure, inds_non0measure)
 
     marginal_inds::Vector{Vector{Int}} =
         marginal_indices(visited_bins, seleced_axes)
@@ -34,7 +34,7 @@ function marginal_probs_from_μ(seleced_axes, visited_bins, iv::InvariantMeasure
     # need to estimate histograms. We simply sum over the nonzero entries of the
     # (already estimated) invariant distribution `iv` in the marginal space
     # (whose indices are given by `seleced_axes`).
-    μpos = iv.ρ[inds_μpositive]
+    μpos = iv.ρ[inds_non0measure]
     marginal = zeros(Float64, length(marginal_inds))
     @inbounds for i in eachindex(marginal_inds)
         marginal[i] = sum(μpos[marginal_inds[i]])
@@ -42,8 +42,7 @@ function marginal_probs_from_μ(seleced_axes, visited_bins, iv::InvariantMeasure
     return marginal
 end
 
-function transferentropy(e::Entropy, s, t, est::TransferOperator{<:RectangularBinning};
-        kwargs...)
+function transferentropy(e::Entropy, est::TransferOperator{<:RectangularBinning}, s, t)
 
     emb = EmbeddingTE(; kwargs...)
     joint_pts, vars, τs, js = te_embed(s, t, emb)
@@ -53,17 +52,17 @@ function transferentropy(e::Entropy, s, t, est::TransferOperator{<:RectangularBi
     unique_visited_bins = unique(iv.to.bins)
 
     # # The subset of visited bins with nonzero measure
-    inds_μpositive = findall(iv.ρ .> 0)
-    positive_measure_bins = unique_visited_bins[inds_μpositive]
+    inds_non0measure = findall(iv.ρ .> 0)
+    positive_measure_bins = unique_visited_bins[inds_non0measure]
 
     # Estimate marginal probability distributions from joint measure
     cols_ST = [vars.S; vars.T]
     cols_T𝒯 = [vars.𝒯; vars.T]
     cols_T = vars.T
-    p_T  = marginal_probs_from_μ(cols_T, positive_measure_bins, iv, inds_μpositive)
-    p_ST = marginal_probs_from_μ(cols_ST, positive_measure_bins, iv, inds_μpositive)
-    p_T𝒯 = marginal_probs_from_μ(cols_T𝒯, positive_measure_bins, iv, inds_μpositive)
-    p_joint = iv.ρ[inds_μpositive]
+    p_T  = marginal_probs_from_μ(cols_T, positive_measure_bins, iv, inds_non0measure)
+    p_ST = marginal_probs_from_μ(cols_ST, positive_measure_bins, iv, inds_non0measure)
+    p_T𝒯 = marginal_probs_from_μ(cols_T𝒯, positive_measure_bins, iv, inds_non0measure)
+    p_joint = iv.ρ[inds_non0measure]
 
     te = entropy(e, Probabilities(p_ST)) +
         entropy(e, Probabilities(p_T𝒯)) -
@@ -71,8 +70,7 @@ function transferentropy(e::Entropy, s, t, est::TransferOperator{<:RectangularBi
         entropy(e, Probabilities(p_joint))
 end
 
-function transferentropy(e::Entropy, s, t, c, est::TransferOperator{<:RectangularBinning};
-        kwargs...)
+function transferentropy(e::Entropy, est::TransferOperator{<:RectangularBinning}, s, t, c)
 
     emb = EmbeddingTE(; kwargs...)
 
@@ -83,17 +81,17 @@ function transferentropy(e::Entropy, s, t, c, est::TransferOperator{<:Rectangula
     unique_visited_bins = unique(iv.to.bins)
 
     # # The subset of visited bins with nonzero measure
-    inds_μpositive = findall(iv.ρ .> 0)
-    positive_measure_bins = unique_visited_bins[inds_μpositive]
+    inds_non0measure = findall(iv.ρ .> 0)
+    positive_measure_bins = unique_visited_bins[inds_non0measure]
 
     # Estimate marginal probability distributions from joint measure
     cols_ST = [vars.S; vars.T; vars.C]
     cols_T𝒯 = [vars.𝒯; vars.T; vars.C]
     cols_T = [vars.T; vars.C]
-    p_T  = marginal_probs_from_μ(cols_T, positive_measure_bins, iv, inds_μpositive)
-    p_ST = marginal_probs_from_μ(cols_ST, positive_measure_bins, iv, inds_μpositive)
-    p_T𝒯 = marginal_probs_from_μ(cols_T𝒯, positive_measure_bins, iv, inds_μpositive)
-    p_joint = iv.ρ[inds_μpositive]
+    p_T  = marginal_probs_from_μ(cols_T, positive_measure_bins, iv, inds_non0measure)
+    p_ST = marginal_probs_from_μ(cols_ST, positive_measure_bins, iv, inds_non0measure)
+    p_T𝒯 = marginal_probs_from_μ(cols_T𝒯, positive_measure_bins, iv, inds_non0measure)
+    p_joint = iv.ρ[inds_non0measure]
 
     te = entropy(e, Probabilities(p_ST)) +
         entropy(e, Probabilities(p_T𝒯)) -
@@ -101,8 +99,7 @@ function transferentropy(e::Entropy, s, t, c, est::TransferOperator{<:Rectangula
         entropy(e, Probabilities(p_joint))
 end
 
-transferentropy(s, t, est::TransferOperator{<:RectangularBinning}; base = 2,
-        kwargs...) = transferentropy(Shannon(; base), s, t, est)
-
-transferentropy(s, t, c, est::TransferOperator{<:RectangularBinning}; base = 2,
-        kwargs...) = transferentropy(Shannon(; base), s, t, c, est)
+transferentropy(est::TransferOperator{<:RectangularBinning}, s, t) =
+    transferentropy(Shannon(; base), est, s, t)
+transferentropy(est::TransferOperator{<:RectangularBinning}, s, t, c) =
+    transferentropy(Shannon(; base), est, s, t, c)
